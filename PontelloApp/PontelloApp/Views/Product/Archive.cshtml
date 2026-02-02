@@ -1,0 +1,26 @@
+﻿@model IEnumerable<PontelloApp.Models.Product>
+
+<h2>Archived Products</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.ProductName</td>
+                <td>@item.Category?.Name</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.ID" class="btn btn-sm btn-outline-primary">Edit
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

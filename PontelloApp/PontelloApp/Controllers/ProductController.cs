@@ -30,6 +30,7 @@ namespace PontelloApp.Controllers
             PopulateDropDownLists();
 
             var products = _context.Products
+                .Where(p => p.IsActive)
                 .Include(p => p.Category)
                 .AsNoTracking();
 
@@ -229,7 +230,7 @@ namespace PontelloApp.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product != null)
             {
-                _context.Products.Remove(product);
+                product.IsActive = false;
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
@@ -281,6 +282,18 @@ namespace PontelloApp.Controllers
 
             return items;
         }
+
+        public async Task<IActionResult> Archive()
+        {
+            var archivedProducts = await _context.Products
+                .Where(p => !p.IsActive)
+                .Include(p => p.Category)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return View(archivedProducts);
+        }
+
 
     }
 }

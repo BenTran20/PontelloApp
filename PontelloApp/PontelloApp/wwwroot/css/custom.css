@@ -114,14 +114,14 @@ a {
 
 
 .btn-success {
-    color: #000;
+    color: white;
     transition: all 0.2s;
     font-weight: bold;
 }
 
     .btn-success:hover {
         text-decoration: none;
-        color: #000;
+        color: white;
     }
 
 .btn-archive {

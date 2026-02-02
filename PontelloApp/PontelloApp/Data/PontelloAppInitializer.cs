@@ -67,18 +67,13 @@ namespace PontelloApp.Data
                     if (!context.Categories.Any())
                     {
                         context.Categories.AddRange(
-                            new Category
-                            {
-                                Name = "OIL"
-                            },
-                            new Category
-                            {
-                                Name = "BODY"
-                            },
-                            new Category
-                            {
-                                Name="Uncategorized"
-                            }
+                            new Category { Name = "Steering" },
+                            new Category { Name = "Chassis" },
+                            new Category { Name = "Hardware" },
+                            new Category { Name = "Wheels" },
+                            new Category { Name = "Seats" },
+                            new Category { Name = "Accessories" },
+                            new Category { Name = "Uncategorized" }
                         );
                         context.SaveChanges();
                     }
@@ -92,76 +87,76 @@ namespace PontelloApp.Data
                                 ProductName = "1/2\" Camber Rod End",
                                 Description = "The 1/2\" Camber Rod End is a durable, precision-machined chassis component for Charger Racing Chassis, engineered for high-performance kart applications.",
                                 IsActive = true,
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID
+                                CategoryID = context.Categories.First(c => c.Name == "Steering").ID
                             },
                             new Product //2
                             {
                                 ProductName = "1/2 - 20 Hex Slotted Jam Nut",
                                 Description = "The 1/2 - 20 Hex Slotted Jam Nut is a durable and precision-machined fastener designed for kart chassis applications.",
-                                IsActive = true,
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                IsActive = false,
+                                CategoryID = context.Categories.First(c => c.Name == "Hardware").ID,
                             },
                             new Product //3
                             {
                                 ProductName = "6 1/2\" Tie Rod",
                                 Description = "The Tie Rod (6-1/2\") by Charger Racing Chassis is a durable steering linkage component designed to maintain accurate toe settings and consistent steering response.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Steering").ID,
                                 IsActive = true
                             },
                             new Product //4
                             {
                                 ProductName = "Pedal Grips",
                                 Description = "Pedal Grips with logo engraved. Two to a set.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Accessories").ID,
                                 IsActive = true
                             },
                             new Product //5
                             {
                                 ProductName = "Champ Buggy Chassis Package",
                                 Description = "The Champ Buggy Chassis Package Silver Edition from Charger Racing Chassis is a complete, race-ready chassis system built for high performance, durability, and ease of maintenance.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Chassis").ID,
                                 IsActive = true
                             },
                             new Product //6
                             {
                                 ProductName = "Tie Rod",
                                 Description = "The Tie Rod (11-3/4\") by Charger Racing Chassis is a durable steering linkage component designed to maintain accurate toe settings and consistent steering response.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Steering").ID,
                                 IsActive = true
                             },
                             new Product //7
                             {
                                 ProductName = "Tie Rod Ends",
                                 Description = "The Tie Rod End (3/8\") by Charger Racing Chassis is a precision steering linkage component designed to provide smooth articulation and reliable steering response.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Steering").ID,
                                 IsActive = true
                             },
                             new Product //8
                             {
                                 ProductName = "Tie Rod Jam Nut",
                                 Description = "The Tie Rod Jam Nut by Charger Racing Chassis is a precision-threaded locking fastener designed to secure tie rod ends and maintain consistent toe alignment.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Hardware").ID,
                                 IsActive = true
                             },
                             new Product //9
                             {
                                 ProductName = "1/2\" Camber Rod End Assembly",
                                 Description = "The 1/2\" Camber Rod End Assembly is a precision-engineered component from Charger Racing Chassis, designed for reliability and smooth articulation within the kart’s steering and suspension geometry",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Steering").ID,
                                 IsActive = true
                             },
                             new Product //10
                             {
                                 ProductName = "Axle Assembly",
                                 Description = "The Axle Assembly Charger Racing Chassis is a complete, ready-to-install rear axle system designed for performance, durability, and precision.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Chassis").ID,
                                 IsActive = true
                             },
                             new Product //11
                             {
                                 ProductName = "JKB Fiberglass Seat",
                                 Description = "The JKB Fiberglass Seat provides a durable, lightweight, and performance-driven seating solution for kart racers.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Seats").ID,
                                 IsActive = true
                             },
                             new Product //12
@@ -170,14 +165,14 @@ namespace PontelloApp.Data
                                 Description = "6\", 7\", or 8\" width — 8\" diameter, 3\" back‑space, American 4×4.00\" (2.50\" register)\r\n\r\n9\" " +
                                               "width — 8\" diameter, 4\" back‑space, American 4×4.00\" (2.50\" register)\r\n\r\n10\" " +
                                               "width — 8\" diameter, 5\" back‑space, American 4×4.00\" (2.50\" register)",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Wheels").ID,
                                 IsActive = true
                             },
                             new Product //13
                             {
                                 ProductName = "Lower Steering Upright Bolt Assembly",
                                 Description = "The Lower Steering Upright Bolt Assembly Charger Racing Chassis is a complete, race-ready hardware set designed to secure the Steering shaft to the tie rods.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Hardware").ID,
                                 IsActive = true
                             },
                             new Product //14
@@ -191,14 +186,14 @@ namespace PontelloApp.Data
                             {
                                 ProductName = "Steering Wheel Hex Slotted Nut 1/2 - 20",
                                 Description = "The Steering Wheel Hex Slotted Nut (1/2\"-20) by Charger Racing Chassis is a zinc-finished fastening component designed to securely retain the steering wheel and hub assembly on the steering shaft.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Hardware").ID,
                                 IsActive = true
                             },
                             new Product //16
                             {
                                 ProductName = "Splined Steering Wheel Hub & Bolt Assembly",
                                 Description = "The Splined Steering Wheel Hub Bolt Assembly by Charger Racing Chassis is a precision-machined steering component designed to provide a secure, slop-free connection between the steering shaft and wheel.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Steering").ID,
                                 IsActive = true
                             },
                             new Product //17
@@ -227,7 +222,7 @@ namespace PontelloApp.Data
                                 ProductName = "Caster Block Safety Pin Assembly",
                                 Description = "The Caster Block Safety Pin Assembly from Charger Racing Chassis is a precision-engineered safety component designed to secure the caster block assembly and prevent unwanted movement or separation " +
                                               "during racing. Built for reliability, this assembly adds an extra layer of security to the front-end setup, ensuring consistent handling and durability under high-stress conditions.",
-                                CategoryID = context.Categories.First(c => c.Name == "Uncategorized").ID,
+                                CategoryID = context.Categories.First(c => c.Name == "Accessories").ID,
                                 IsActive = true
                             }
                             );
@@ -249,11 +244,22 @@ namespace PontelloApp.Data
                                        new Variant { Name="Type", Value="Steel" }
                                     }
                             },
+                            new ProductVariant //1
+                            {
+                                ProductId = 1,
+                                UnitPrice = 12.99m,
+                                StockQuantity = 20,
+                                SKU_ExternalID = "1140",
+                                Options = new List<Variant>
+                                    {
+                                       new Variant { Name="Type", Value="Metal" }
+                                    }
+                            },
                             new ProductVariant //2
                             {
                                 ProductId = 2,
                                 UnitPrice = 2.47m,
-                                StockQuantity = 0,
+                                StockQuantity = 33,
                                 SKU_ExternalID = "1142",
                                 Options = new List<Variant>
                                     {
@@ -264,7 +270,7 @@ namespace PontelloApp.Data
                              {
                                  ProductId = 3,
                                  UnitPrice = 20.45m,
-                                 StockQuantity = 0,
+                                 StockQuantity = 90,
                                  SKU_ExternalID = "1075",
                                  Options = new List<Variant>
                                     {
@@ -275,7 +281,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 4,
                                 UnitPrice = 28.25m,
-                                StockQuantity = 0,
+                                StockQuantity = 70,
                                 SKU_ExternalID = "1188",
                                 Options = new List<Variant>
                                     {
@@ -286,42 +292,51 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 5,
                                 UnitPrice = 4850m,
-                                StockQuantity = 0,
+                                StockQuantity = 2,
                                 SKU_ExternalID = "1096",
                                 Options = new List<Variant>
                                     {
                                        new Variant { Name="Chassis", Value="Sr.Champ" },
-                                       new Variant { Name="Color", Value="Black" }
                                     }
                             },
                             new ProductVariant //5 (Option 2)
                             {
                                 ProductId = 5,
                                 UnitPrice = 4850m,
-                                StockQuantity = 0,
-                                SKU_ExternalID = "1006",
+                                StockQuantity = 10,
+                                SKU_ExternalID = "1096",
                                 Options = new List<Variant>
                                     {
                                        new Variant { Name="Chassis", Value="Jr. Sportsman Champ" },
-                                       new Variant { Name="Color", Value="Red" }
                                     }
                             },
                             new ProductVariant //6
                             {
                                 ProductId = 6,
                                 UnitPrice = 14.3m,
-                                StockQuantity = 0,
+                                StockQuantity = 30,
                                 SKU_ExternalID = "1033",
                                 Options = new List<Variant>
                                     {
                                        new Variant { Name="Type", Value="6 1/2\" Tie Rod Left" }
                                     }
                             },
+                            new ProductVariant //6
+                            {
+                                ProductId = 6,
+                                UnitPrice = 14.3m,
+                                StockQuantity = 22,
+                                SKU_ExternalID = "1033",
+                                Options = new List<Variant>
+                                    {
+                                       new Variant { Name="Type", Value="6 1/2\" Tie Rod Right" }
+                                    }
+                            },
                             new ProductVariant //7
                             {
                                 ProductId = 7,
                                 UnitPrice = 9.75m,
-                                StockQuantity = 0,
+                                StockQuantity = 26,
                                 SKU_ExternalID = "1078",
                                 Options = new List<Variant>
                                     {
@@ -332,18 +347,29 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 8,
                                 UnitPrice = 1.3m,
-                                StockQuantity = 0,
+                                StockQuantity = 11,
                                 SKU_ExternalID = "1080",
                                 Options = new List<Variant>
                                     {
                                        new Variant { Name="Hand", Value="Left" }
                                     }
                             },
+                            new ProductVariant //8
+                            {
+                                ProductId = 8,
+                                UnitPrice = 1.3m,
+                                StockQuantity = 20,
+                                SKU_ExternalID = "1080",
+                                Options = new List<Variant>
+                                    {
+                                       new Variant { Name="Hand", Value="Right" }
+                                    }
+                            },
                             new ProductVariant //9
                             {
                                 ProductId = 9,
                                 UnitPrice = 22.09m,
-                                StockQuantity = 0,
+                                StockQuantity = 40,
                                 SKU_ExternalID = "1141",
                                 Options = new List<Variant>
                                     {
@@ -354,7 +380,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 10,
                                 UnitPrice = 508.5m,
-                                StockQuantity = 0,
+                                StockQuantity = 4,
                                 SKU_ExternalID = "1150",
                                 Options = new List<Variant>
                                     {
@@ -365,7 +391,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 11,
                                 UnitPrice = 129.95m,
-                                StockQuantity = 0,
+                                StockQuantity = 22,
                                 SKU_ExternalID = "se-jrsm",
                                 Options = new List<Variant>
                                     {
@@ -377,8 +403,8 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 11,
                                 UnitPrice = 129.95m,
-                                StockQuantity = 0,
-                                SKU_ExternalID = "se-jrsm1",
+                                StockQuantity = 10,
+                                SKU_ExternalID = "se-jrsm",
                                 Options = new List<Variant>
                                     {
                                        new Variant { Name="Style", Value="Evolution" },
@@ -389,7 +415,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 12,
                                 UnitPrice = 74.38m,
-                                StockQuantity = 0,
+                                StockQuantity = 42,
                                 SKU_ExternalID = "VK-180.8600.3.44",
                                 Options = new List<Variant>
                                     {
@@ -401,7 +427,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 13,
                                 UnitPrice = 5.65m,
-                                StockQuantity = 0,
+                                StockQuantity = 15,
                                 SKU_ExternalID = "1086",
                                 Options = new List<Variant>
                                     {
@@ -412,7 +438,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 14,
                                 UnitPrice = 15.6m,
-                                StockQuantity = 0,
+                                StockQuantity = 31,
                                 SKU_ExternalID = "1088",
                                 Options = new List<Variant>
                                     {
@@ -423,7 +449,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 15,
                                 UnitPrice = 1.62m,
-                                StockQuantity = 0,
+                                StockQuantity = 9,
                                 SKU_ExternalID = "1089",
                                 Options = new List<Variant>
                                     {
@@ -434,7 +460,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 16,
                                 UnitPrice = 16.95m,
-                                StockQuantity = 0,
+                                StockQuantity = 8,
                                 SKU_ExternalID = "1090",
                                 Options = new List<Variant>
                                     {
@@ -445,7 +471,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 17,
                                 UnitPrice = 57.18m,
-                                StockQuantity = 0,
+                                StockQuantity = 41,
                                 SKU_ExternalID = "1091",
                                 Options = new List<Variant>
                                     {
@@ -456,7 +482,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 18,
                                 UnitPrice = 37.29m,
-                                StockQuantity = 0,
+                                StockQuantity = 5,
                                 SKU_ExternalID = "1092",
                                 Options = new List<Variant>
                                     {
@@ -467,7 +493,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 19,
                                 UnitPrice = 25.99m,
-                                StockQuantity = 0,
+                                StockQuantity = 13,
                                 SKU_ExternalID = "1093",
                                 Options = new List<Variant>
                                     {
@@ -478,7 +504,7 @@ namespace PontelloApp.Data
                             {
                                 ProductId = 20,
                                 UnitPrice = 15.59m,
-                                StockQuantity = 0,
+                                StockQuantity = 30,
                                 SKU_ExternalID = "1137",
                                 Options = new List<Variant>
                                     {
