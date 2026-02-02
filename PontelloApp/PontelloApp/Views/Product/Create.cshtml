@@ -1,0 +1,58 @@
+﻿    @model PontelloApp.Models.Product
+
+    @{
+        ViewData["Title"] = "Create Product";
+    }
+
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+    </div>
+
+    <h1 class="text-center mb-4">Create Product</h1>
+
+    <div class="card shadow-sm p-4 mb-4" style="max-width: 700px; margin: auto;">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="ProductName" class="form-label"></label>
+                <input asp-for="ProductName" class="form-control" />
+                <span asp-validation-for="ProductName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" asp-for="IsActive" />
+                <label class="form-check-label">
+                    @Html.DisplayNameFor(model => model.IsActive)
+                </label>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CategoryID" class="form-label"></label>
+                <select asp-for="CategoryID"
+                        asp-items="@(ViewData["CategoryID"] as IEnumerable<SelectListItem>)"
+                        class="form-select">
+                    <option value="">-- Select Category --</option>
+                </select>
+
+            </div>
+
+            <div class="text-center">
+                <input type="submit" value="Create" class="btn btn-success" />
+            </div>
+        </form>
+    </div>
+
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+    }

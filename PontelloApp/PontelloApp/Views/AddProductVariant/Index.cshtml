@@ -1,0 +1,48 @@
+﻿@model IEnumerable<PontelloApp.Models.ProductVariant>
+
+@{
+    ViewData["Title"] = "Index";
+    PontelloApp.Models.Product product = (PontelloApp.Models.Product)ViewBag.Product;
+    <partial name="_ProductDetail" model="product" />
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Variants</h2>
+    <a class="btn btn-primary" asp-action="Add" asp-route-productId="@product?.ID">Add New Variant</a>
+</div>
+
+<table class="table table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>SKU</th>
+            <th>Unit Price</th>
+            <th>Stock Quantity</th>
+            <th>Options</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var variant in Model)
+        {
+            <tr>
+                <td class="fw-semibold">
+                    @variant.SKU_ExternalID
+                </td>
+                <td>@variant.UnitPrice.ToString("C")</td>
+                <td>@variant.StockQuantity</td>
+                <td> @if (variant.Options != null && variant.Options.Any()) {
+                    @string.Join("; ", variant.Options.Select(o => $"{o.Name}: {o.Value}"))} 
+                    else
+                    {
+                        <span class="text-muted">No options</span>
+                    }
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Update" asp-route-id="@variant.Id">&#x270D;</a>
+                    <a class="btn btn-sm btn-outline-danger" asp-action="Remove" asp-route-id="@variant.Id">&#x274C;</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-controller="Product" asp-action="Index">Back to Product List</a>

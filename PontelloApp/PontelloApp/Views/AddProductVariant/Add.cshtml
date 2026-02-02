@@ -1,0 +1,81 @@
+﻿@model PontelloApp.Models.ProductVariant
+
+@{
+    ViewData["Title"] = "Add Product Variant";
+}
+
+<h2>Add Variant for @ViewBag.Product?.ProductName</h2>
+
+<form asp-action="Add" method="post">
+    <input type="hidden" asp-for="ProductId" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="SKU_ExternalID" class="form-label"></label>
+        <input asp-for="SKU_ExternalID" class="form-control" />
+        <span asp-validation-for="SKU_ExternalID" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="UnitPrice" class="form-label"></label>
+        <input asp-for="UnitPrice" class="form-control" />
+        <span asp-validation-for="UnitPrice" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="StockQuantity" class="form-label"></label>
+        <input asp-for="StockQuantity" class="form-control" />
+        <span asp-validation-for="StockQuantity" class="text-danger"></span>
+    </div>
+
+    <hr />
+    <h4>Options</h4>
+    <table class="table table-sm" id="optionsTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <button type="button" class="btn btn-secondary mb-3" id="addOptionBtn">Add Option</button>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Save Variant</button>
+        <a asp-action="Index" asp-route-id="@Model.ProductId" class="btn btn-secondary">Back</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        let optionIndex = 0;
+
+        document.getElementById('addOptionBtn').addEventListener('click', function () {
+            const tbody = document.querySelector('#optionsTable tbody');
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <input type="hidden" name="Options[${optionIndex}].Id" value="0" />
+                <td>
+                    <input type="text" name="Options[${optionIndex}].Name" class="form-control" />
+                </td>
+                <td>
+                    <input type="text" name="Options[${optionIndex}].Value" class="form-control" />
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm removeOptionBtn">Remove</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+            optionIndex++;
+
+            row.querySelector('.removeOptionBtn').addEventListener('click', function () {
+                row.remove();
+            });
+        });
+    </script>
+}

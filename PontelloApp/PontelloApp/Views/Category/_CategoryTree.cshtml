@@ -1,0 +1,17 @@
+﻿@model IEnumerable<PontelloApp.Models.Category>
+
+<ul class="list-group ms-4 mt-2">
+    @foreach (var sub in Model)
+    {
+        <li class="list-group-item">
+            @sub.Name
+            <a asp-action="Create" asp-route-parentId="@sub.ID"
+               class="btn btn-sm btn-outline-secondary ms-2">+ Subcategory</a>
+
+            @if (sub.SubCategories.Any())
+            {
+                <partial name="_CategoryTree" model="sub.SubCategories" />
+            }
+        </li>
+    }
+</ul>

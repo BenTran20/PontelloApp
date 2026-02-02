@@ -1,0 +1,23 @@
+﻿@model PontelloApp.Models.Product
+
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="m-0">@Model.ProductName</h2>
+    <a asp-controller="Product" asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-primary">
+        <i class="bi bi-pencil"></i> Edit
+    </a>
+</div>
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <p class="card-text">
+            <strong>Description:</strong> @Model.Description 
+        </p>
+        <p class="card-text">
+            <strong>Category:</strong> @Model.Category?.Name
+        </p>
+    </div>
+</div>

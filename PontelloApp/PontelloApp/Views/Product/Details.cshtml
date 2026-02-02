@@ -1,0 +1,107 @@
+﻿@model PontelloApp.Models.Product
+
+@{
+    ViewData["Title"] = "Product Information";
+}
+
+<div class="mb-3">
+    <a asp-action="Index"
+       class="text-decoration-none text-muted back-link"
+       title="Back">
+        <i class="bi bi-arrow-left fs-4"></i>
+    </a>
+</div>
+
+
+<div class="row">
+    <!-- Product Info -->
+    <div class="col-md-6">
+        <h1 class="fw-bold">@Html.DisplayFor(model => model.ProductName)</h1>
+        <hr />
+        <p>
+            <strong>Category:</strong> @Model.Category?.Name
+        </p>
+        <p>@Model.Description</p>
+    </div>
+
+    <!-- Purchase and options -->
+    <div class="col-md-6">
+        <div class="p-5">
+            <h5 class="mb-4">Select Options</h5>
+
+            <div id="options"></div>
+            <hr />
+
+            <h2 id="price" style="color: #2D4654">$0.00</h2>
+            <p id="stock" class="fw-semibold"></p>
+
+            <button class="btn btn-lg btn-primary w-10 mt-2" id="addToCart" disabled>
+                Add to Cart
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const variants = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        Model.Variants.Select(v => new {
+            v.Id,
+            v.SKU_ExternalID,
+            v.UnitPrice,
+            v.StockQuantity,
+            Options = v.Options.Select(o => new { o.Name, o.Value })
+        })
+    ));
+</script>
+
+<script>
+    const optionsArea = document.getElementById("options");
+    const price = document.getElementById("price");
+    const stock = document.getElementById("stock");
+    const addBtn = document.getElementById("addToCart");
+
+    const optionGroups = {};
+    variants.forEach(v => {
+        v.Options.forEach(o => {
+            if (!optionGroups[o.Name]) {
+                optionGroups[o.Name] = new Set();
+            }
+            optionGroups[o.Name].add(o.Value);
+        });
+    });
+
+    const selectedOptions = {};
+    for (const [name, values] of Object.entries(optionGroups)) {
+        const div = document.createElement("div");
+        div.innerHTML = `<strong>${name}</strong><br/>`;
+
+        values.forEach(value => {
+            const id = `${name}-${value}`;
+            div.innerHTML += `
+                <input type="radio" name="${name}" value="${value}" id="${id}">
+                <label for="${id}" style="margin-right:30px; margin-top: 5px;" >${value}</label>
+            `;
+        });
+
+        optionsArea.appendChild(div);
+    }
+
+    optionsArea.addEventListener("change", () => {
+        document.querySelectorAll("input[type=radio]:checked")
+            .forEach(r => selectedOptions[r.name] = r.value);
+
+        const match = variants.find(v =>
+            v.Options.every(o => selectedOptions[o.Name] === o.Value)
+        );
+
+        if (match) {
+            price.innerText = match.UnitPrice.toLocaleString("en-CA", {
+                style: "currency",
+                currency: "CAD"
+            });
+            stock.innerText = `Stock: ${match.StockQuantity}`;
+            addBtn.disabled = match.StockQuantity <= 0;
+        }
+    });
+</script>

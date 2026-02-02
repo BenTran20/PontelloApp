@@ -1,0 +1,161 @@
+﻿:root {
+    --grey-main: #F0F0F0;
+    --sand: #D4D6B9;
+    --evergreen: #1F3D2B;
+    --brown: #5B4636;
+    --carbon: #1A1A1A;
+}
+
+body {
+    background-color: var(--grey-main);
+    color: var(--carbon);
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+h1, h2, h3, h4, h5 {
+    color: var(--brown);
+    font-weight: 700;
+}
+
+.card,
+.section-box {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background-color: var(--evergreen);
+    border-color: var(--evergreen);
+    color: white;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+        background-color: #173123;
+        border-color: #173123;
+        color: white;
+        text-decoration: none;
+    }
+.btn-primary:disabled {
+    background-color: #173123 !important;
+    border-color: #173123 !important;
+    color: white !important;
+    text-decoration: none;
+    opacity: 1;
+}
+
+.btn-secondary {
+    background-color: var(--brown);
+    border-color: var(--brown);
+    font-weight: bold;
+    color: white;
+}
+
+.btn-secondary:hover {
+        background-color: #4a382b;
+        border-color: #4a382b;
+    }
+
+.btn-outline-dark {
+    color: var(--carbon);
+    border-color: var(--carbon);
+}
+
+.btn-outline-dark:hover {
+        background-color: var(--carbon);
+        color: #fff;
+    }
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.form-control:focus {
+        border-color: var(--evergreen);
+        box-shadow: 0 0 0 0.15rem rgba(30, 60, 40, 0.2);
+}
+
+.table {
+    background-color: #fff;
+}
+
+.table thead {
+        background-color: var(--sand);
+        color: var(--evergreen);
+    }
+
+
+a {
+    color: var(--evergreen);
+    text-decoration: none;
+}
+
+    a:hover {
+        color: var(--brown);
+        text-decoration: underline;
+    }
+
+.btn-addcart {
+    background-color: #D4D6B9;
+    color: #000; 
+    border: 1px solid #D4D6B9;
+    transition: all 0.2s;
+    font-weight:bold;
+}
+
+    .btn-addcart:hover {
+        background-color: #c0c2aa;
+        text-decoration: none;
+        color: #000;
+    }
+
+
+
+.btn-success {
+    color: #000;
+    transition: all 0.2s;
+    font-weight: bold;
+}
+
+    .btn-success:hover {
+        text-decoration: none;
+        color: #000;
+    }
+
+.btn-archive {
+    background-color: #EEC643;
+    color: #000;
+    font-weight: bold;
+    border: 1px solid #EEC643;
+    transition: all 0.2s;
+}
+
+    .btn-archive:hover {
+        background-color: #E9C039;
+        text-decoration: none;
+        color: #000;
+    }
+
+.pagination .page-item.active .page-link {
+    background-color: #7D614C;
+    color: #fff;
+    border-color: #D4D6B9;
+}
+
+.pagination .page-item.active .page-link:hover {
+    background-color: #7D614C;
+    color: #000;
+}
+
+#pageSizeModal .btn {
+    background-color: #7D614C;
+    color: #fff;
+    border-color: #D4D6B9;
+}
+
+    #pageSizeModal .btn:hover {
+        background-color: #D614C; 
+        color: #000;
+    }
