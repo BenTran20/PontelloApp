@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PontelloApp.Models;
 using System.Numerics;
 
@@ -46,6 +46,7 @@ namespace PontelloApp.Data
         public DbSet<ProductVariant> ProductVariants { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Shipping> Shippings { get; set; }
 
         public DbSet<Vendor> Vendors { get; set; }  
 
@@ -68,6 +69,13 @@ namespace PontelloApp.Data
             modelBuilder.Entity<Product>()
                 .HasIndex(p => p.Handle)
                 .IsUnique();
+
+            //1:1 Order -> Shipping
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.Shipping)
+                .WithOne(s => s.Order)
+                .HasForeignKey<Shipping>(s => s.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
