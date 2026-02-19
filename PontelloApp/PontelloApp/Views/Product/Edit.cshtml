@@ -1,54 +1,137 @@
 ﻿@model PontelloApp.Models.Product
 
-@{
-    ViewData["Title"] = "Edit Product";
-}
+<partial name="_ViewHeading" />
 
-<div class="mb-3">
-    <a asp-action="Index" class="btn btn-outline-secondary">
-        <em class="bi bi-arrow-left"></em>
+<div class="mb-1">
+    <a asp-action="Index" asp-controller="AddProductVariant" asp-route-id="@Model.ID" class="btn btn-outline-secondary btn-sm">
+        <em class="bi bi-arrow-left"></em> Back to Product detail
     </a>
 </div>
 
 <h1 class="text-center mb-4">Edit Product</h1>
 
-<div class="card shadow-sm p-4 mb-4" style="max-width: 700px; margin: auto;">
-    <form asp-action="Edit" asp-route-id="@Model.ID">
+<div class="card shadow-sm p-4 mb-4" style="max-width: 900px; margin: auto;">
+    <form asp-action="Edit" asp-route-id="@Model.ID" method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <input type="hidden" asp-for="RowVersion" />
 
-        <div class="mb-3">
-            <label asp-for="ProductName" class="form-label"></label>
-            <input asp-for="ProductName" class="form-control" />
-            <span asp-validation-for="ProductName" class="text-danger"></span>
-        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Product Name -->
+                <div class="mb-3">
+                    <label asp-for="ProductName" class="form-label">
+                        Product Name
+                        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip" title="Enter the product name, max 200 characters"></i>
+                    </label>
+                    <input asp-for="ProductName" class="form-control" placeholder="Enter product name" />
+                    <span asp-validation-for="ProductName" class="text-danger"></span>
+                </div>
 
-        <div class="mb-3">
-            <label asp-for="Description" class="form-label"></label>
-            <textarea asp-for="Description" class="form-control"></textarea>
-            <span asp-validation-for="Description" class="text-danger"></span>
-        </div>
+                <!-- Handle -->
+                <div class="mb-3">
+                    <label asp-for="Handle" class="form-label">
+                        Handle
+                        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip" title="Lowercase letters, hyphens only."></i>
+                    </label>
+                    <input asp-for="Handle" class="form-control" placeholder="e.g., my-product-name" />
+                    <span asp-validation-for="Handle" class="text-danger"></span>
+                </div>
 
-        <div class="form-check mb-3">
-            <input class="form-check-input" asp-for="IsActive" />
-            <label class="form-check-label">
-                @Html.DisplayNameFor(model => model.IsActive)
-            </label>
-        </div>
+                <!-- Vendor -->
+                <div class="mb-3">
+                    <label asp-for="Vendor" class="form-label">
+                        Vendor
+                        <i class="bi bi-info-circle text-primary"
+                           data-bs-toggle="tooltip"
+                           title="Select the product vendor."></i>
+                    </label>
 
-        <div class="mb-3">
-            <label asp-for="CategoryID" class="form-label"></label>
-            <select asp-for="CategoryID" class="form-select" asp-items="ViewBag.CategoryID"></select>
-        </div>
+                    <select asp-for="VendorID"
+                            asp-items="@(ViewData["VendorID"] as IEnumerable<SelectListItem>)"
+                            class="form-select">
+                        <option value="">-- Select Vendor --</option>
+                    </select>
 
-        <!-- Nút Save ở giữa -->
-        <div class="text-center">
-            <input type="submit" value="Save" class="btn btn-success" />
+                    <span asp-validation-for="VendorID" class="text-danger"></span>
+                </div>
+
+                <!-- Type -->
+                <div class="mb-3">
+                    <label asp-for="Type" class="form-label">
+                        Type
+                        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip" title="Optional: Product category type, e.g., Accessories, Hardware"></i>
+                    </label>
+                    <input asp-for="Type" class="form-control" placeholder="E.g., Accessories, Hardware" />
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+
+                <!-- Tag -->
+                <div class="mb-3">
+                    <label asp-for="Tag" class="form-label">
+                        Tag
+                        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip" title="Optional: Comma-separated keywords for search and filtering."></i>
+                    </label>
+                    <input asp-for="Tag" class="form-control" placeholder="Enter keywords" />
+                    <span asp-validation-for="Tag" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <!-- Description -->
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">
+                        Description
+                        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip" title="Description for product;"></i>
+                    </label>
+                    <textarea asp-for="Description" class="form-control" rows="7" placeholder="Short description for listing"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <!-- IsActive -->
+                <div class="form-check mb-3">
+                    <input class="form-check-input" asp-for="IsActive" />
+                    <label class="form-check-label" asp-for="IsActive"></label>
+                </div>
+
+                <!-- Category -->
+                <div class="mb-3">
+                    <label asp-for="CategoryID" class="form-label">
+                        Category
+                        <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip" title="Select the main category for the product."></i>
+                    </label>
+                    <select asp-for="CategoryID"
+                            asp-items="@(ViewData["CategoryID"] as IEnumerable<SelectListItem>)"
+                            class="form-select">
+                        <option value="">-- Select Category --</option>
+                    </select>
+                    <span asp-validation-for="CategoryID" class="text-danger"></span>
+                </div>
+
+                <!-- Submit -->
+                <div class="mt-4 d-flex justify-content-end">
+                    <a asp-action="Details"
+                       asp-route-id="@Model.ID"
+                       class="btn btn-outline-secondary me-2">
+                        Cancel
+                    </a>
+
+                    <input type="submit"
+                           value="Save Changes"
+                           class="btn btn-primary" />
+                </div>
+            </div>
         </div>
     </form>
 </div>
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
 }
