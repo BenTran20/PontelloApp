@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -62,9 +62,16 @@ namespace PontelloApp.Controllers
         // GET: Category/Create
         public IActionResult Create(int? parentId)
         {
-            ViewData["ParentCategoryID"] = new SelectList(_context.Categories, "ID", "Name", parentId);
+            var model = new Category();
 
-            return View();
+            if (parentId.HasValue)
+            {
+                model.ParentCategoryID = parentId.Value;
+
+                ViewBag.FullCategory = GetFullCategoryPath(parentId.Value);
+            }
+
+            return View(model);
         }
 
 
@@ -105,11 +112,10 @@ namespace PontelloApp.Controllers
             }
 
             var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-            ViewData["ParentCategoryID"] = new SelectList(_context.Categories, "ID", "Name", category.ParentCategoryID);
+            if (category == null) return NotFound();
+
+            ViewBag.FullCategory = GetFullCategoryPath(category.ID);
+
             return View(category);
         }
 
@@ -149,7 +155,8 @@ namespace PontelloApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ParentCategoryID"] = new SelectList(_context.Categories, "ID", "Name", category.ParentCategoryID);
+
+            ViewBag.FullCategory = GetFullCategoryPath(category.ID);
             return View(category);
         }
 
@@ -163,12 +170,14 @@ namespace PontelloApp.Controllers
 
             var category = await _context.Categories
                 .Include(c => c.ParentCategory)
+                .Include(c => c.SubCategories)
                 .FirstOrDefaultAsync(m => m.ID == id);
             if (category == null)
             {
                 return NotFound();
             }
 
+            ViewBag.FullCategory = GetFullCategoryPath(category.ID);
             return View(category);
         }
 
@@ -177,19 +186,73 @@ namespace PontelloApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category != null)
+            var category = await _context.Categories
+                .Include(c => c.SubCategories) 
+                .FirstOrDefaultAsync(c => c.ID == id);
+
+            try
             {
+                if (category.SubCategories.Any())
+                {
+                    var categoryWithParents = await _context.Categories
+                        .Include(c => c.ParentCategory)
+                        .FirstOrDefaultAsync(c => c.ID == id);
+
+                    ViewBag.FullCategory = GetFullCategoryPath(categoryWithParents.ID);
+                    ModelState.AddModelError("", "Cannot delete this category because it has subcategories");
+                    return View("Delete", categoryWithParents);
+                }
+
                 _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+
+            }
+            catch (DbUpdateException dex)
+            {
+                if (dex.GetBaseException().Message.Contains("FOREIGN KEY constraint failed"))
+                {
+                    ModelState.AddModelError("", "Unable to Delete Category. Remember, you cannot delete a Category that has Products assigned.");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
+                }
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return View(category);
         }
 
         private bool CategoryExists(int id)
         {
             return _context.Categories.Any(e => e.ID == id);
         }
+
+        private void LoadCategoryParents(Category? category)
+        {
+            while (category != null && category.ParentCategoryID != null)
+            {
+                category.ParentCategory = _context.Categories
+                    .FirstOrDefault(c => c.ID == category.ParentCategoryID);
+                category = category.ParentCategory;
+            }
+        }
+
+        private string GetFullCategoryPath(int categoryId)
+        {
+            var category = _context.Categories
+                .AsNoTracking()  
+                .FirstOrDefault(c => c.ID == categoryId);
+
+            if (category == null)
+                return "";
+
+            if (category.ParentCategoryID == null)
+                return category.Name;
+
+            return GetFullCategoryPath(category.ParentCategoryID.Value) + " > " + category.Name;
+        }
+
+
     }
 }

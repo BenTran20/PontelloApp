@@ -9,7 +9,7 @@ using System.Numerics;
 
 namespace PontelloApp.Controllers
 {
-    public class ProductController : CognizantController
+    public class ProductController : ElephantController
     {
         private readonly PontelloAppContext _context;
 
@@ -30,6 +30,7 @@ namespace PontelloApp.Controllers
             PopulateDropDownLists();
 
             var products = _context.Products
+                .Include(p => p.Vendor)
                 .Where(p => p.IsActive)
                 .Include(p => p.Category)
                 .AsNoTracking();
@@ -115,6 +116,10 @@ namespace PontelloApp.Controllers
 
             int pageSize = PageSizeHelper.SetPageSize(HttpContext, pageSizeID, ControllerName());
             ViewData["pageSizeID"] = PageSizeHelper.PageSizeList(pageSize);
+
+            int totalItems = await products.CountAsync();
+            ViewData["TotalItems"] = totalItems;
+
             var pagedData = await PaginatedList<Product>.CreateAsync(products.AsNoTracking(), page ?? 1, pageSize);
 
             return View(pagedData);
@@ -127,26 +132,35 @@ namespace PontelloApp.Controllers
 
             var product = await _context.Products
                 .Include(p => p.Category)
+                .Include(p => p.Vendor)
                 .Include(p => p.Variants)
-                .ThenInclude(v => v.Options)
+                    .ThenInclude(v => v.Options)
                 .FirstOrDefaultAsync(p => p.ID == id);
 
             if (product == null) return NotFound();
 
+            LoadCategoryParents(product.Category);
+
             return View(product);
         }
+
 
         // GET: Products/Create
         public IActionResult Create()
         {
+            var product = new Product
+            {
+                IsActive = true 
+            };
+
             PopulateDropDownLists();
-            return View();
+            return View(product);
         }
 
         // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductName,Description,IsActive,CategoryID")] Product product)
+        public async Task<IActionResult> Create([Bind("ProductName,Handle,VendorID,Type,Tag,Description,IsActive,CategoryID")] Product product)
         {
             try
             {
@@ -154,13 +168,37 @@ namespace PontelloApp.Controllers
                 {
                     _context.Add(product);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
+                    var returnUrl = ViewData["returnURL"]?.ToString();
+                    if (string.IsNullOrEmpty(returnUrl))
+                    {
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    TempData["Success"] = "Create new product successfully ";
+                    if (product.IsActive == true)
+                    {
+                        TempData["Status"] = "Status: Active";
+                    }
+                    else
+                    {
+                        TempData["Status"] = "Status: Archived";
+
+                    }
+                    return Redirect(returnUrl);
                 }
             }
             catch (DbUpdateException dex)
             {
-                throw new Exception(dex.Message);
+                if (dex.InnerException != null && dex.InnerException.Message.Contains("UNIQUE"))
+                {
+                    ModelState.AddModelError("", "This product already exists. Please choose a different Handle.");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Unable to create product. Try again, and if the problem persists see your system administrator.");
+                }
             }
+
 
             PopulateDropDownLists(product);
             return View(product);
@@ -181,27 +219,93 @@ namespace PontelloApp.Controllers
         // POST: Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Edit(int id, Byte[] RowVersion)
         {
             var productToUpdate = await _context.Products.FirstOrDefaultAsync(p => p.ID == id);
             if (productToUpdate == null) return NotFound();
 
+            _context.Entry(productToUpdate).Property("RowVersion").OriginalValue = RowVersion;
+
             if (await TryUpdateModelAsync<Product>(productToUpdate, "",
-                p => p.ProductName, p => p.Description, p => p.IsActive, p => p.CategoryID))
+                p => p.ProductName, p => p.Description, p => p.IsActive, p => p.CategoryID,
+                p => p.Handle, p => p.VendorID, p => p.Type, p => p.Tag))
             {
                 try
                 {
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
+                    var returnUrl = ViewData["returnURL"]?.ToString();
+                    if (string.IsNullOrEmpty(returnUrl))
+                    {
+                        return RedirectToAction(nameof(Index));
+                    }
+
+                    TempData["Success"] = "Edit product successfully";
+                    if (productToUpdate.IsActive == true)
+                    {
+                        TempData["Status"] = "Status: Active";
+                    }
+                    else
+                    {
+                        TempData["Status"] = "Status: Archived";
+
+                    }
+                    return Redirect(returnUrl);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
-                    if (!_context.Products.Any(e => e.ID == id)) return NotFound();
-                    else throw;
+                    var exceptionEntry = ex.Entries.Single();
+                    var clientValues = (Product)exceptionEntry.Entity;
+                    var databaseEntry = exceptionEntry.GetDatabaseValues();
+                    if (databaseEntry == null)
+                    {
+                        ModelState.AddModelError("",
+                            "Unable to save changes. The Product was archived by another user.");
+                    }
+                    else
+                    {
+                        var databaseValues = (Product)databaseEntry.ToObject();
+                        if (databaseValues.ProductName != clientValues.ProductName)
+                            ModelState.AddModelError("ProductName", "Current value: "
+                                + databaseValues.ProductName);
+                        if (databaseValues.Handle != clientValues.Handle)
+                            ModelState.AddModelError("Handle", "Current value: "
+                                + databaseValues.Handle);
+                        if (databaseValues.Vendor != clientValues.Vendor)
+                            ModelState.AddModelError("Vendor", "Current value: "
+                                + databaseValues.Vendor);
+                        if (databaseValues.Type != clientValues.Type)
+                            ModelState.AddModelError("Type", "Current value: "
+                                + databaseValues.Type);
+                        if (databaseValues.Tag != clientValues.Tag)
+                            ModelState.AddModelError("Tag", "Current value: "
+                                + databaseValues.Tag);
+                        if (databaseValues.Description != clientValues.Description)
+                            ModelState.AddModelError("Description", "Current value: "
+                                + databaseValues.Description);
+                        if (databaseValues.IsActive != clientValues.IsActive)
+                            ModelState.AddModelError("IsActive", "Current value: "
+                                + databaseValues.IsActive);
+                        //For the foreign key, we need to go to the database to get the information to show
+                        if (databaseValues.CategoryID != clientValues.CategoryID)
+                        {
+                            Category? databaseCategory = await _context.Categories.FirstOrDefaultAsync(i => i.ID == databaseValues.CategoryID);
+                            ModelState.AddModelError("CategoryID", $"Current value: {databaseCategory?.Name}");
+                        }
+                        ModelState.AddModelError(string.Empty, "The record you attempted to edit "
+                                + "was modified by another user after you received your values. The "
+                                + "edit operation was canceled and the current values in the database "
+                                + "have been displayed. If you still want to save your version of this record, click "
+                                + "the Save button again. Otherwise click the 'Back to Product List' hyperlink.");
+
+                        //Final steps before redisplaying: Update RowVersion from the Database
+                        //and remove the RowVersion error from the ModelState
+                        productToUpdate.RowVersion = databaseValues.RowVersion ?? Array.Empty<byte>();
+                        ModelState.Remove("RowVersion");
+                    }
                 }
                 catch (DbUpdateException dex)
                 {
-                    throw new Exception(dex.Message);
+                    ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
                 }
             }
             PopulateDropDownLists(productToUpdate);
@@ -215,9 +319,12 @@ namespace PontelloApp.Controllers
 
             var product = await _context.Products
                 .Include(p => p.Category)
+                .Include(p => p.Variants)
+                .ThenInclude(p => p.Options)
                 .FirstOrDefaultAsync(p => p.ID == id);
 
             if (product == null) return NotFound();
+            LoadCategoryParents(product?.Category);
 
             return View(product);
         }
@@ -225,20 +332,57 @@ namespace PontelloApp.Controllers
         // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id, Byte[] RowVersion)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Variants)
+                .ThenInclude(p => p.Options)
+                .FirstOrDefaultAsync(p => p.ID == id);
+
+            try
             {
-                product.IsActive = false;
+                if (product != null)
+                {
+                    _context.Entry(product).Property("RowVersion").OriginalValue = RowVersion;
+                    LoadCategoryParents(product?.Category);
+                    product.IsActive = false;
+                }
+
                 await _context.SaveChangesAsync();
+                var returnUrl = ViewData["returnURL"]?.ToString();
+
+                if (string.IsNullOrEmpty(returnUrl))
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                TempData["Success"] = "Archive product Successfully";
+                TempData["Status"] = "Status: Archived";
+                return Redirect(returnUrl);
+
             }
-            return RedirectToAction(nameof(Index));
+            catch (DbUpdateConcurrencyException)
+            {
+                ModelState.AddModelError(string.Empty, "The Product you attempted to archive "
+                                + "was modified by another user. Please go back on refresh.");
+                ViewData["CantSave"] = "disabled='disabled'";
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError("", "Unable to archive Product. Try again, and if the problem persists see your system administrator.");
+            }
+
+            return View(product);
         }
         private SelectList CategorySelectList(int? selectedId)
         {
             return new SelectList(_context.Categories
                 .OrderBy(d => d.Name), "ID", "Name", selectedId);
+        }
+        private SelectList VendorSelectList(int? selectedId)
+        {
+            return new SelectList(_context.Vendors
+                .OrderBy(d => d.Name), "VendorID", "Name", selectedId);
         }
 
         private void PopulateDropDownLists(Product? product = null)
@@ -256,6 +400,9 @@ namespace PontelloApp.Controllers
 
             ViewData["CategoryID"] =
                 BuildCategorySelectList(rootCategories, product?.CategoryID);
+
+            ViewData["VendorID"] = VendorSelectList(product?.VendorID);
+
         }
 
         private List<SelectListItem> BuildCategorySelectList(IEnumerable<Category> categories,
@@ -294,6 +441,15 @@ namespace PontelloApp.Controllers
             return View(archivedProducts);
         }
 
+        private void LoadCategoryParents(Category? category)
+        {
+            while (category != null && category.ParentCategoryID != null)
+            {
+                category.ParentCategory = _context.Categories
+                    .FirstOrDefault(c => c.ID == category.ParentCategoryID);
+                category = category.ParentCategory;
+            }
+        }
 
     }
 }
