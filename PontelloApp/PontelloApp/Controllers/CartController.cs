@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Models;
@@ -50,7 +50,7 @@ namespace PontelloApp.Controllers
 
                 order.TotalAmount = order.Items.Sum(x => x.TotalPrice);
 
-                await  _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
 
             return RedirectToAction("Cart");
@@ -92,7 +92,7 @@ namespace PontelloApp.Controllers
             return RedirectToAction("Cart");
         }
 
-
+        // POST: create/submit the order only, then redirect to Shipping controller to collect shipping info
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Checkout(int id)
@@ -107,33 +107,20 @@ namespace PontelloApp.Controllers
             if (cart == null || cart.Items == null || !cart.Items.Any())
                 return RedirectToAction("Cart");
 
-            var order = new Order
-            {
-                PONumber = $"PO-{DateTime.Now:yyyyMMddHHmmss}",
-                DealerId = cart.DealerId,
-                Status = OrderStatus.Submitted,
-                CreatedAt = DateTime.Now,
-                Items = cart.Items.Select(s => new OrderItem
-                {
-                    ProductId = s.ProductId,
-                    ProductVariantId = s.ProductVariantId,
-                    Quantity = s.Quantity,
-                    UnitPrice = s.UnitPrice
-                }).ToList()
-            };
-
-            order.TaxAmount = Math.Round(order.Items.Sum(i => i.TotalPrice) * 0.13m, 2);
-            order.TotalAmount = order.Items.Sum(i => i.TotalPrice) + order.TaxAmount;
-
-            _context.Orders.Add(order);
-
+            cart.PONumber = $"PO-{DateTime.Now:yyyyMMddHHmmss}";
             cart.Status = OrderStatus.Submitted;
+            cart.CreatedAt = DateTime.Now;
+
+            cart.TaxAmount = Math.Round(cart.Items.Sum(i => i.TotalPrice) * 0.13m, 2);
+            cart.TotalAmount = cart.Items.Sum(i => i.TotalPrice) + cart.TaxAmount;
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Details", "Order", new { id = order.Id });
-        }
+            // show success message at the top of the shipping form
+            TempData["SuccessMessage"] = "Order created successfully.";
 
+            return RedirectToAction("Create", "Shipping", new { orderId = cart.Id });
+        }
 
     }
 }
