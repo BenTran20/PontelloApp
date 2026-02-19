@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Build.Tasks.Deployment.Bootstrapper;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Models;
@@ -65,6 +66,7 @@ namespace PontelloApp.Controllers
                 {
                     _context.Add(productVariant);
                     await _context.SaveChangesAsync();
+                    TempData["Success"] = "Create new product variant Successfully";
                     return RedirectToAction(nameof(Index));
                 }
             }
@@ -99,32 +101,76 @@ namespace PontelloApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,UnitPrice,StockQuantity,SKU_ExternalID,ProductId")] ProductVariant productVariant)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,UnitPrice,StockQuantity,SKU_ExternalID,ProductId")] ProductVariant productVariant, Byte[] RowVersion)
         {
             if (id != productVariant.Id)
             {
                 return NotFound();
             }
 
+            _context.Entry(productVariant).Property("RowVersion").OriginalValue = RowVersion;
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     await _context.SaveChangesAsync();
+                    TempData["Success"] = "Edit product variant Successfully";
                     return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
-                    if (!ProductVariantExists(productVariant.Id))
+                    var exceptionEntry = ex.Entries.Single();
+                    var clientValues = (ProductVariant)exceptionEntry.Entity;
+                    var databaseEntry = exceptionEntry.GetDatabaseValues();
+                    if (databaseEntry == null)
                     {
-                        return NotFound();
+                        ModelState.AddModelError("",
+                            "Unable to save changes. The Product was archived by another user.");
                     }
                     else
                     {
-                        throw;
+                        var databaseValues = (ProductVariant)databaseEntry.ToObject();
+                        if (databaseValues.UnitPrice != clientValues.UnitPrice)
+                            ModelState.AddModelError("UnitPrice", "Current value: "
+                                + databaseValues.UnitPrice);
+                        if (databaseValues.StockQuantity != clientValues.StockQuantity)
+                            ModelState.AddModelError("StockQuantity", "Current value: "
+                                + databaseValues.StockQuantity);
+                        if (databaseValues.SKU_ExternalID != clientValues.SKU_ExternalID)
+                            ModelState.AddModelError("SKU_ExternalID", "Current value: "
+                                + databaseValues.SKU_ExternalID);
+                        if (databaseValues.CompareAtPrice != clientValues.CompareAtPrice)
+                            ModelState.AddModelError("CompareAtPrice", "Current value: "
+                                + databaseValues.CompareAtPrice);
+                        if (databaseValues.Weight != clientValues.Weight)
+                            ModelState.AddModelError("Weight", "Current value: "
+                                + databaseValues.Weight);
+                        if (databaseValues.Barcode != clientValues.Barcode)
+                            ModelState.AddModelError("Barcode", "Current value: "
+                                + databaseValues.Barcode);
+                        if (databaseValues.InventoryPolicy != clientValues.InventoryPolicy)
+                            ModelState.AddModelError("InventoryPolicy", "Current value: "
+                                + databaseValues.InventoryPolicy);
+                        //For the foreign key, we need to go to the database to get the information to show
+                        if (databaseValues.ProductId != clientValues.ProductId)
+                        {
+                            Models.Product? databaseProduct = await _context.Products.FirstOrDefaultAsync(i => i.ID == databaseValues.ProductId);
+                            ModelState.AddModelError("ProductId", $"Current value: {databaseProduct?.ProductName}");
+                        }
+                        ModelState.AddModelError(string.Empty, "The record you attempted to edit "
+                                + "was modified by another user after you received your values. The "
+                                + "edit operation was canceled and the current values in the database "
+                                + "have been displayed. If you still want to save your version of this record, click "
+                                + "the Save button again. Otherwise click the 'Back to Product List' hyperlink.");
+
+                        //Final steps before redisplaying: Update RowVersion from the Database
+                        //and remove the RowVersion error from the ModelState
+                        productVariant.RowVersion = databaseValues.RowVersion ?? Array.Empty<byte>();
+                        ModelState.Remove("RowVersion");
                     }
                 }
-                catch (DbUpdateException)
+                catch (DbUpdateException dex)
                 {
                     ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
                 }
@@ -156,23 +202,30 @@ namespace PontelloApp.Controllers
         // POST: ProductVariant/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id, Byte[] RowVersion)
         {
             var productVariant = await _context.ProductVariants.FindAsync(id);
             try
             {
                 if (productVariant != null)
                 {
+                    _context.Entry(productVariant).Property("RowVersion").OriginalValue = RowVersion;
                     _context.ProductVariants.Remove(productVariant);
                 }
 
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "Delete product variant Successfully";
                 return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                ModelState.AddModelError(string.Empty, "The Product Variant you attempted to delete "
+                                + "was modified by another user. Please go back on refresh.");
+                ViewData["CantSave"] = "disabled='disabled'";
             }
             catch (DbUpdateException)
             {
-                ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
-
+                ModelState.AddModelError("", "Unable to delete Product Variant. Try again, and if the problem persists see your system administrator.");
             }
             return View(productVariant);
 
