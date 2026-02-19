@@ -1,0 +1,81 @@
+﻿@model IEnumerable<PontelloApp.Models.Vendor>
+
+@{
+    ViewData["Title"] = "Vendors";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="m-0">Vendors</h1>
+
+    <div>
+        <a asp-action="Create" class="btn btn-primary me-2">
+            <em class="bi bi-plus-lg"></em> New Vendor
+        </a>
+
+        <a asp-action="Archived" class="btn btn-outline-secondary">
+            <em class="bi bi-archive"></em> Archived Vendors
+        </a>
+    </div>
+</div>
+
+<table class="table table-hover shadow-sm align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>Contact</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>EIN</th>
+            <th>Tax Exempt</th>
+            <th class="text-end">Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.ContactName</td>
+                <td>@item.Phone</td>
+                <td>@item.Email</td>
+                <td>@item.EIN</td>
+                <td>
+                    @if (item.IsTaxExempt)
+                    {
+                        <span class="badge bg-success">Yes</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">No</span>
+                    }
+                </td>
+
+                <td class="text-end">
+                    <a asp-action="Edit" asp-route-id="@item.VendorID" style="text-decoration: none"
+                       class="btn btn-primary"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="top"
+                       title="Edit vendor">Edit</a> 
+
+                    <a asp-controller="VendorProducts"
+                       asp-action="Index"
+                       asp-route-vendorId="@item.VendorID"
+                       class="btn btn-secondary"
+                       style="text-decoration: none"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="top"
+                       title="Details">
+                        Details
+                    </a> 
+
+                    <a asp-action="Archive" asp-route-id="@item.VendorID" class="btn btn-danger"
+                       style="text-decoration: none"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="top"
+                       title="Archive vendor">Archive</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
