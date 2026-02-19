@@ -5,8 +5,21 @@
     {
         <li class="list-group-item">
             @sub.Name
-            <a asp-action="Create" asp-route-parentId="@sub.ID"
-               class="btn btn-sm btn-outline-secondary ms-2">+ Subcategory</a>
+            <span class="ms-2">
+                <a asp-action="Create" asp-route-parentId="@sub.ID"
+                   class="btn btn-sm btn-outline-secondary me-1">+ Subcategory</a>
+                <a asp-action="Edit" asp-route-id="@sub.ID"
+                   class="btn btn-sm btn-outline-primary me-1"
+                   aria-label="Edit @sub.Name">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+
+                <a asp-action="Delete" asp-route-id="@sub.ID"
+                   class="btn btn-sm btn-outline-danger"
+                   aria-label="Delete @sub.Name">
+                    <i class="bi bi-trash3"></i>
+                </a>
+            </span>
 
             @if (sub.SubCategories.Any())
             {
