@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PontelloApp.Models
 {
-    public class Variant : IValidatableObject
+    public class Variant :Auditable
     {
         public int Id { get; set; }
 
@@ -16,12 +16,6 @@ namespace PontelloApp.Models
         public int ProductVariantId { get; set; }
         public ProductVariant? ProductVariant { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (Value.Length <= 2)
-            {
-                yield return new ValidationResult("Variant Name must be at least 3 Characters long", new[] { "Value" });
-            }
-        }
+       
     }
 }
