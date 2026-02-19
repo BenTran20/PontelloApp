@@ -1,55 +1,112 @@
-@model PontelloApp.Models.Order
+﻿@model PontelloApp.Models.Order
 
 @{
     ViewData["Title"] = "Order Confirmed";
 }
 
 <div class="container py-5">
-    <h2 class="fw-bold mb-4">Order Confirmed - @Model.PONumber</h2>
+    <!-- HEADER -->
+    <div class="text-center mb-5">
+        <div class="display-6 fw-bold text-success">
+            ✓ Order Confirmed
+        </div>
+        <p class="text-muted mb-1">Thank you for your purchase!</p>
+        <p class="fw-semibold">Order #: @Model.PONumber</p>
+    </div>
 
-    <div class="row">
+    <div class="row g-4">
 
-        <!-- LEFT SIDE: Order Items -->
+        <!-- LEFT SIDE -->
         <div class="col-lg-8">
-            @foreach (var item in Model.Items)
-            {
-                <div class="card mb-2 p-2">
-                    <h6>@item.Product?.ProductName</h6>
-                    @if (item.ProductVariant != null && item.ProductVariant.Options.Any())
-                    {
-                        <small class="text-muted">
-                            @string.Join(" / ", item.ProductVariant.Options.Select(o => $"{o.Name}: {o.Value}"))
-                        </small>
-                    }
-                    <p>@item.Quantity x $@item.UnitPrice = $@item.TotalPrice</p>
-                </div>
-            }
+
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-4">Items in Your Order</h5>
+
+                @foreach (var item in Model.Items)
+                {
+                    <div class="row align-items-center mb-4 pb-3 border-bottom">
+
+                        <!-- Product Info -->
+                        <div class="col-md-8">
+                            <h6 class="fw-semibold mb-1">
+                                @item.Product?.ProductName
+                            </h6>
+
+                            @if (item.ProductVariant != null && item.ProductVariant.Options.Any())
+                            {
+                                <small class="text-muted">
+                                    @string.Join(" • ", item.ProductVariant.Options.Select(o => $"{o.Name}: {o.Value}"))
+                                </small>
+                            }
+
+                            <div class="mt-2 text-muted small">
+                                Unit Price: $@item.UnitPrice
+                            </div>
+                        </div>
+
+                        <!-- Quantity + Total -->
+                        <div class="col-md-4 text-md-end">
+                            <div>Qty: <strong>@item.Quantity</strong></div>
+                            <div class="fw-bold mt-1">
+                                $@item.TotalPrice
+                            </div>
+                        </div>
+
+                    </div>
+                }
+            </div>
+
         </div>
 
-        <!-- RIGHT SIDE: Summary -->
+        <!-- RIGHT SIDE -->
         <div class="col-lg-4">
-            <div class="card p-3 shadow-sm">
-                <h5 class="fw-bold mb-3">Order Summary</h5>
+
+            <div class="card border-0 shadow rounded-4 p-4 sticky-top" style="top: 100px;">
+                <h5 class="fw-bold mb-4">Order Summary</h5>
 
                 <div class="d-flex justify-content-between mb-2">
-                    <span>Subtotal:</span>
+                    <span>Subtotal</span>
                     <span>$@Model.Items.Sum(i => i.TotalPrice)</span>
                 </div>
+
                 <div class="d-flex justify-content-between mb-2">
-                    <span>Tax (13%):</span>
+                    <span>Tax (13%)</span>
                     <span>$@Model.TaxAmount</span>
                 </div>
+
                 <hr />
-                <div class="d-flex justify-content-between fw-bold fs-5 mb-3">
-                    <span>Total:</span>
+
+                <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+                    <span>Total</span>
                     <span>$@Model.TotalAmount</span>
                 </div>
 
-                <a asp-controller="Home" asp-action="Index" class="btn btn-dark w-100 py-2">
-                    Back to Home
+                @if (Model.Shipping != null)
+                {
+                    <div class="bg-light rounded-3 p-3 mb-4">
+                        <h6 class="fw-bold mb-2">Shipping Info</h6>
+                        <small class="text-muted d-block">@Model.Shipping.Address</small>
+                        <small class="text-muted d-block">Phone: @Model.Shipping.Phone</small>
+                        <small class="text-muted d-block">Email: @Model.Shipping.Email</small>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Shipping.TrackingNumber))
+                        {
+                            <small class="text-muted d-block mt-2">
+                                Tracking: @Model.Shipping.TrackingNumber
+                            </small>
+                        }
+                    </div>
+                }
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="btn btn-dark w-100 py-3 rounded-pill">
+                    Continue Shopping
                 </a>
             </div>
+
         </div>
 
     </div>
+
 </div>

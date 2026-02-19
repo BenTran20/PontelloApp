@@ -1,0 +1,75 @@
+@model IEnumerable<PontelloApp.Models.Order>
+
+@{
+	ViewData["Title"] = "Order Management";
+}
+
+<div class="container py-5">
+	<h2 class="fw-bold mb-4">Order Management</h2>
+
+	<ul class="nav nav-tabs" id="orderTabs" role="tablist">
+		@foreach (var status in Enum.GetValues(typeof(PontelloApp.Models.OrderStatus)).Cast<PontelloApp.Models.OrderStatus>())
+		{
+			var tabId = status.ToString();
+			<li class="nav-item" role="presentation">
+				<button class="nav-link @(status == PontelloApp.Models.OrderStatus.Submitted ? "active" : "")" id="@tabId-tab" data-bs-toggle="tab" data-bs-target="#@tabId" type="button" role="tab" aria-controls="@tabId" aria-selected="@(status == PontelloApp.Models.OrderStatus.Submitted)">@tabId</button>
+			</li>
+		}
+	</ul>
+
+	<div class="tab-content mt-3" id="orderTabsContent">
+		@foreach (var status in Enum.GetValues(typeof(PontelloApp.Models.OrderStatus)).Cast<PontelloApp.Models.OrderStatus>())
+		{
+			var tabId = status.ToString();
+			<div class="tab-pane fade @(status == PontelloApp.Models.OrderStatus.Submitted ? "show active" : "")" id="@tabId" role="tabpanel" aria-labelledby="@tabId-tab">
+
+				@{
+					var list = Model.Where(o => o.Status == status).ToList();
+				}
+
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th>PO#</th>
+							<th>Date</th>
+							<th>Dealer</th>
+							<th>Total</th>
+							<th>Shipping</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						@if (!list.Any())
+						{
+							<tr><td colspan="6" class="text-muted">No orders</td></tr>
+						}
+						else
+						{
+							@foreach (var o in list)
+							{
+								<tr>
+									<td>@o.PONumber</td>
+									<td>@o.CreatedAt.ToString("g")</td>
+									<td>@o.DealerId</td>
+									<td>$@o.TotalAmount</td>
+									<td>
+										@if (o.Shipping != null)
+										{
+											@o.Shipping.Address
+										}
+										else
+										{
+											<span class="text-muted">Not provided</span>
+										}
+									</td>
+									<td><a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">View</a></td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+
+			</div>
+		}
+	</div>
+</div>

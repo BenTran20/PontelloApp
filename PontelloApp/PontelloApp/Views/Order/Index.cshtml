@@ -1,0 +1,65 @@
+@using PontelloApp.Models
+@model IEnumerable<PontelloApp.Models.Order>
+
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<div class="container py-5">
+
+    <h2 class="fw-bold mb-4">Order History</h2>
+
+    @foreach (var o in Model.OrderByDescending(x => x.CreatedAt))
+    {
+        <div class="card border-0 shadow-sm rounded-4 mb-4 p-4">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+                    <h5 class="fw-bold mb-1">Order #@o.PONumber</h5>
+                    <small class="text-muted">
+                        @o.CreatedAt.ToString("MMMM dd, yyyy - hh:mm tt")
+                    </small>
+                </div>
+
+                @{
+                    string status = o.Status switch
+                    {
+                        OrderStatus.Draft => "bg-secondary",
+                        OrderStatus.Submitted => "bg-warning text-dark",
+                        OrderStatus.Approved => "bg-success",
+                        OrderStatus.Rejected => "bg-danger",
+                        OrderStatus.Shipped => "bg-primary",
+                        _ => "bg-dark"
+                    };
+                }
+
+                <span class="badge @status px-3 py-2 rounded-pill">
+                    @o.Status
+                </span>
+
+            </div>
+
+            <hr />
+
+            <div class="row align-items-center">
+
+                <div class="col-md-6">
+                    <small class="text-muted d-block">Total</small>
+                    <span class="fw-semibold fs-5">$@o.TotalAmount</span>
+                </div>
+
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <a asp-action="Details"
+                       asp-route-id="@o.Id"
+                       class="btn btn-dark px-4 py-2 rounded-pill">
+                        View Details
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>
