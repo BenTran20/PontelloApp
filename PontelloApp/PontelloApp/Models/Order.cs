@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PontelloApp.Models
@@ -25,6 +25,10 @@ namespace PontelloApp.Models
         public ICollection<OrderItem>? Items { get; set; } = new HashSet<OrderItem>();
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        //1:1 relationship to Shipping
+        public int ShippingId { get; set; } 
+        public Shipping? Shipping { get; set; }
 
         [Timestamp]
         public byte[]? RowVersion { get; set; }
