@@ -6,13 +6,14 @@
 
 <h1>Edit</h1>
 
-<h4>ProductVariant</h4>
+<h2 class="headingfontsize">ProductVariant</h2>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="RowVersion" />
             <div class="form-group">
                 <label asp-for="UnitPrice" class="control-label"></label>
                 <input asp-for="UnitPrice" class="form-control" />
