@@ -1,0 +1,64 @@
+@model PontelloApp.Models.Product
+
+<div class="container mt-4">
+
+    <!-- Success Message -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-1"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+
+        <div class="col-md-7">
+            <h2 class="fw-bold">@Model.ProductName</h2>
+            <p class="text-muted mb-2">@Html.Raw(Model.Description)</p>
+
+            <ul class="list-unstyled">
+                <li><strong>Vendor:</strong> @Model.Vendor</li>
+                <li><strong>Handle:</strong> @Model.Handle</li>
+                <li><strong>Category:</strong> @Model.Category?.FullCategory</li>
+                <li><strong>Type:</strong> @Model.Type</li>
+            </ul>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm p-3">
+                <h5 class="mb-3">Buy Product</h5>
+                <form asp-action="AddToCart" method="post">
+                    <input type="hidden" name="productId" value="@Model.ID" />
+
+                    <!-- Variant Select -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Choose Variant</label>
+                        <select name="variantId" class="form-select" required>
+                            <option value="">Select option</option>
+                            @foreach (var v in Model.Variants ?? Enumerable.Empty<PontelloApp.Models.ProductVariant>())
+                            {
+                                <option value="@v.Id">
+                                    @string.Join(" / ", v.Options.Select(o => $"{o.Name}: {o.Value}"))
+                                    - $@v.UnitPrice
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Quantity</label>
+                        <input type="number" name="quantity" value="1" min="1" class="form-control" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
