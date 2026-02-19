@@ -5,7 +5,7 @@
 }
 
 <div class="d-flex align-items-center justify-content-between mb-3">
-    <h2 class="m-0">@Model.ProductName</h2>
+    <h1 class="m-0">@Model.ProductName</h1>
     <a asp-controller="Product" asp-action="Edit" asp-route-id="@Model.ID" class="btn btn-primary">
         <em class="bi bi-pencil"></em> Edit
     </a>
@@ -13,11 +13,11 @@
 
 <div class="card mb-4 shadow-sm">
     <div class="card-body">
-        <p class="card-text">
-            <strong>Description:</strong> @Model.Description 
-        </p>
-        <p class="card-text">
-            <strong>Category:</strong> @Model.Category?.Name
-        </p>
+        <p><strong>Description:</strong>@Html.Raw(Model.Description)</p>
+        <p><strong>Vendor:</strong> @Model.Vendor.Name</p>
+        <p><strong>Type:</strong> @(Model.Type ?? "N/A")</p>
+        <p><strong>Tag:</strong> @(Model.Tag ?? "N/A")</p>
+        <p><strong>Category:</strong> @(Model.Category?.FullCategory ?? "N/A")</p>
+        <p><strong>Status:</strong> @(Model.IsActive ? "Active" : "Inactive")</p>
     </div>
 </div>
