@@ -498,6 +498,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1170",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "TP1170",
                                 Status = true,
                                 Options = new List<Variant>
@@ -513,6 +514,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1171",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "TP1171",
                                 Status = true,
                                 Options = new List<Variant>
@@ -528,6 +530,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1182",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "BP1182",
                                 Status = true,
                                 Options = new List<Variant>
@@ -543,6 +546,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1183",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "BP1183",
                                 Status = true,
                                 Options = new List<Variant>
@@ -558,6 +562,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1075",
                                 InventoryPolicy = InventoryPolicy.Continue,
                                 Weight = 453.59237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -573,6 +578,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1074",
                                 InventoryPolicy = InventoryPolicy.Continue,
                                 Weight = 453.59237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -588,6 +594,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1092",
                                 InventoryPolicy = InventoryPolicy.Continue,
                                 Weight = 907.18474m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "TL1092J",
                                 Status = true,
                                 Options = new List<Variant>
@@ -603,6 +610,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1100",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 113.3980925m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -618,6 +626,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1101",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 113.3980925m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -633,6 +642,7 @@ namespace PontelloApp.Data
                                  SKU_ExternalID = "3fuel",
                                  InventoryPolicy = InventoryPolicy.Deny,
                                  Weight = 453.59237m,
+                                 Unit = ImperialUnits.lb,
                                  Barcode = "",
                                  Status = true,
                                  Options = new List<Variant>
@@ -648,6 +658,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "5fuel",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 907.1847m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -663,6 +674,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "7fuel",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 3175.14659m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -678,6 +690,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "2fuel",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -705,6 +718,7 @@ namespace PontelloApp.Data
                                 StockQuantity = 27,
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -734,6 +748,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1223",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 45.359237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -749,6 +764,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1070",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 226.796185m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -764,6 +780,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1085",
                                 InventoryPolicy = InventoryPolicy.Continue,
                                 Weight = 226.796185m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -807,6 +824,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1153",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "AX1153",
                                 Status = true,
                                 Options = new List<Variant>
@@ -822,6 +840,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1147",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 113.3980925m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -837,6 +856,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1137",
                                 InventoryPolicy = InventoryPolicy.Continue,
                                 Weight = 226.796185m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "CA1137",
                                 Status = true,
                                 Options = new List<Variant>
@@ -852,6 +872,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1106",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 113.3980925m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -867,6 +888,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1095",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -882,6 +904,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1091",
                                 InventoryPolicy = InventoryPolicy.Continue,
                                 Weight = 2267.96185m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "QR1091L",
                                 Status = true,
                                 Options = new List<Variant>
@@ -897,6 +920,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1086",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 113.3980925m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -912,6 +936,7 @@ namespace PontelloApp.Data
                                  SKU_ExternalID = "1109",
                                  InventoryPolicy = InventoryPolicy.Deny,
                                  Weight = 113.3980925m,
+                                 Unit = ImperialUnits.lb,
                                  Barcode = "",
                                  Status = true,
                                  Options = new List<Variant>
@@ -927,6 +952,7 @@ namespace PontelloApp.Data
                                 SKU_ExternalID = "1110",
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 113.3980925m,
+                                Unit = ImperialUnits.lb,
                                 Barcode = "",
                                 Status = true,
                                 Options = new List<Variant>
@@ -947,3 +973,4 @@ namespace PontelloApp.Data
         }
     }
 }
+
