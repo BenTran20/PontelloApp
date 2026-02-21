@@ -29,6 +29,8 @@ namespace PontelloApp.Models
         [Column(TypeName = "decimal(17,7)")]
         public decimal? Weight { get; set; }
 
+        public ImperialUnits Unit { get; set; }
+
         [StringLength(50, ErrorMessage = "Barcode cannot be more than 50 characters long.")]
         public string? Barcode { get; set; }
 
@@ -58,3 +60,4 @@ namespace PontelloApp.Models
         }
     }
 }
+
