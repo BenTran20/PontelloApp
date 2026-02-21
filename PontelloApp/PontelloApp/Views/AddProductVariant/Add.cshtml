@@ -85,6 +85,9 @@
                 </label>
                 <input asp-for="Weight" type="text" list="WeightList" class="form-control" placeholder="0.0000000" inputmode="decimal"
                        oninput="this.value = this.value.match(/^\d*(\.?\d{0,7})/)[0];" />
+                @Html.DropDownListFor(i => i.Unit,
+                    new SelectList(Enum.GetValues(typeof(ImperialUnits))),
+                    new { @class = "form-control" })
                 <span asp-validation-for="Weight" class="text-danger"></span>
                 <datalist id="WeightList">
                     <option value="4989.51607"></option>
@@ -226,3 +229,4 @@
         });
     </script>
 }
+
