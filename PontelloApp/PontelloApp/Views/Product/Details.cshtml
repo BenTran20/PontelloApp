@@ -15,31 +15,22 @@
 
 <div class="row">
     <!-- PRODUCT INFO -->
-    <div class="col-md-5">
-        <div class="card shadow mb-4">
-            <div class="card-header fw-bold">
-                Product Information
-            </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold bg-light">
+            Product Information
+        </div>
 
-            <div class="card-body">
-                <dl class="row mb-0">
-                    <dt class="col-sm-4">Handle</dt>
-                    <dd class="col-sm-8">@Model.Handle</dd>
+        <div class="card-body">
+            <div class="row g-4">
 
-                    <dt class="col-sm-4">Vendor</dt>
-                    <dd class="col-sm-8">@Model.Vendor.Name</dd>
+                <div class="col-md-6">
+                    <small class="text-muted text-uppercase">Handle</small>
+                    <div class="fw-semibold">@Model.Handle</div>
+                </div>
 
-                    <dt class="col-sm-4">Category</dt>
-                    <dd class="col-sm-8">@Model.Category?.FullCategory</dd>
-
-                    <dt class="col-sm-4">Type</dt>
-                    <dd class="col-sm-8">@Model.Type</dd>
-
-                    <dt class="col-sm-4">Tag</dt>
-                    <dd class="col-sm-8">@Model.Tag</dd>
-
-                    <dt class="col-sm-4">Status</dt>
-                    <dd class="col-sm-8">
+                <div class="col-md-6">
+                    <small class="text-muted text-uppercase">Status</small>
+                    <div>
                         @if (Model.IsActive)
                         {
                             <span class="badge bg-success">Active</span>
@@ -48,19 +39,45 @@
                         {
                             <span class="badge bg-secondary">Archived</span>
                         }
-                    </dd>
+                    </div>
+                </div>
 
-                    <dt class="col-sm-4">Description</dt>
-                    <dd class="col-sm-8">
-                        @Html.Raw(Model.Description)
-                    </dd>
-                </dl>
+                <div class="col-md-6">
+                    <small class="text-muted text-uppercase">Vendor</small>
+                    <div class="fw-semibold">@Model.Vendor?.Name</div>
+                </div>
+
+                <div class="col-md-6">
+                    <small class="text-muted text-uppercase">Category</small>
+                    <div class="fw-semibold">@Model.Category?.FullCategory</div>
+                </div>
+
+                <div class="col-md-6">
+                    <small class="text-muted text-uppercase">Type</small>
+                    <div class="fw-semibold">@Model.Type</div>
+                </div>
+
+                <div class="col-md-6">
+                    <small class="text-muted text-uppercase">Tags</small>
+                    <div class="fw-semibold">@Model.Tag</div>
+                </div>
+
             </div>
+
+            <hr class="my-4" />
+
+            <div>
+                <small class="text-muted text-uppercase">Description</small>
+                <div class="mt-2">
+                    @Html.Raw(Model.Description)
+                </div>
+            </div>
+
         </div>
     </div>
 
     <!-- VARIANTS -->
-    <div class="col-md-7">
+
         <div class="card shadow">
             <div class="card-header fw-bold d-flex justify-content-between">
                 Variants
@@ -125,5 +142,6 @@
                 </table>
             </div>
         </div>
-    </div>
+
 </div>
+
