@@ -20,48 +20,62 @@
 
     <div class="row">
         <!-- PRODUCT INFO -->
-        <div class="col-md-5">
-            <div class="card shadow mb-4 border-danger">
-                <div class="card-header fw-bold bg-danger-subtle">
-                    Product Information
+        <div class="card shadow-sm mb-4 border-danger">
+            <div class="card-header fw-semibold bg-danger-subtle">
+                Product Information
+            </div>
+
+            <div class="card-body">
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+                        <small class="text-muted text-uppercase">Handle</small>
+                        <div class="fw-semibold">@Model.Handle</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted text-uppercase">Status</small>
+                        <div>
+                            <span class="badge bg-success">Active</span>
+                            <span class="text-muted ms-2">→ Will be archived</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted text-uppercase">Vendor</small>
+                        <div class="fw-semibold">@Model.Vendor</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted text-uppercase">Category</small>
+                        <div class="fw-semibold">@Model.Category?.FullCategory</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted text-uppercase">Type</small>
+                        <div class="fw-semibold">@Model.Type</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted text-uppercase">Tags</small>
+                        <div class="fw-semibold">@Model.Tag</div>
+                    </div>
+
                 </div>
 
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Handle</dt>
-                        <dd class="col-sm-8">@Model.Handle</dd>
+                <hr class="my-4" />
 
-                        <dt class="col-sm-4">Vendor</dt>
-                        <dd class="col-sm-8">@Model.Vendor</dd>
-
-                        <dt class="col-sm-4">Category</dt>
-                        <dd class="col-sm-8">@Model.Category?.FullCategory</dd>
-
-                        <dt class="col-sm-4">Type</dt>
-                        <dd class="col-sm-8">@Model.Type</dd>
-
-                        <dt class="col-sm-4">Tag</dt>
-                        <dd class="col-sm-8">@Model.Tag</dd>
-
-                        <dt class="col-sm-4">Status</dt>
-                        <dd class="col-sm-8">
-                            <span class="badge bg-success">
-                                Active
-                            </span>
-                            <span class="text-muted ms-2">→ will be archived</span>
-                        </dd>
-
-                        <dt class="col-sm-4">Description</dt>
-                        <dd class="col-sm-8">
-                            @Html.Raw(Model.Description)
-                        </dd>
-                    </dl>
+                <div>
+                    <small class="text-muted text-uppercase">Description</small>
+                    <div class="mt-2">
+                        @Html.Raw(Model.Description)
+                    </div>
                 </div>
+
             </div>
         </div>
 
         <!-- VARIANTS -->
-        <div class="col-md-7">
             <div class="card shadow border-danger">
                 <div class="card-header fw-bold bg-danger-subtle d-flex justify-content-between">
                     Variants
@@ -123,7 +137,6 @@
                     </table>
                 </div>
             </div>
-        </div>
     </div>
 
     <div class="mt-4 d-flex justify-content-end">
@@ -139,3 +152,4 @@
         </button>
     </div>
 </form>
+
