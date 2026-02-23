@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using PontelloApp.Ultilities;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using static PontelloApp.Models.InventoryPolicy;
 
@@ -60,4 +61,5 @@ namespace PontelloApp.Models
         }
     }
 }
+
 
