@@ -13,6 +13,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDbContext<PontelloAppContext>(options =>
     options.UseSqlite(connectionString));
+builder.Services.AddScoped<OrderService>();
 
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
