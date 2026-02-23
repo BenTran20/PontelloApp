@@ -9,9 +9,15 @@
     This page lets you manage main categories and subcategories. 
 </p>
 
+
 <div class="alert alert-info">
-    <strong>Tip:</strong> Click “+” to add a subcategory under the main category.
-    You can also Edit or Delete categories using the buttons on each item.
+    <strong>Tip:</strong> Use <strong>Create New</strong> to add a <strong>main category</strong>.
+    <br>To add a <strong>subcategory</strong>, click <strong> + Subcategory</strong> beside the category you want.
+    <br>You can also Edit
+    <i class="bi bi-pencil-square text-primary"></i>
+    or Delete 
+    <i class="bi bi-trash3 text-danger"></i>
+    categories using the buttons on each item.
 </div>
 
 <p>
@@ -28,7 +34,9 @@
             @cat.Name
             <span class="ms-2">
                 <a asp-action="Create" asp-route-parentId="@cat.ID"
-                   class="btn btn-sm btn-outline-secondary icon-btn me-1" title="Add Subcategory">
+                   class="btn btn-sm btn-outline-secondary icon-btn me-1"
+                   title="Add subcategory under @cat.Name"
+                   aria-label="Add subcategory under @cat.Name">
                     <i class="bi bi-plus"></i>
                     <span class="btn-text">Subcategory</span>
                 </a>
@@ -38,10 +46,23 @@
                     <i class="bi bi-pencil-square"></i>
                 </a>
 
-                <a asp-action="Delete" asp-route-id="@cat.ID"
-                   class="btn btn-sm btn-outline-danger icon-btn" title="Delete">
-                    <i class="bi bi-trash3"></i>
-                </a>
+                @if (!cat.SubCategories.Any() && (cat.Products == null || !cat.Products.Any()))
+                {
+                    <a asp-action="Delete" asp-route-id="@cat.ID"
+                       class="btn btn-sm btn-outline-danger icon-btn" title="Delete">
+                        <i class="bi bi-trash3"></i>
+                    </a>
+                }
+                else
+                {
+                    <span data-bs-toggle="tooltip"
+                          data-bs-placement="top"
+                          title="Cannot delete. This category contains subcategories or assigned products.">
+                        <button class="btn btn-sm btn-outline-danger icon-btn" disabled>
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </span>
+                }
             </span>
 
             @if (cat.SubCategories.Any())
@@ -51,3 +72,4 @@
         </li>
     }
 </ul>
+
