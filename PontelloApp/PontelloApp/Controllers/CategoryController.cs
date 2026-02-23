@@ -23,14 +23,29 @@ namespace PontelloApp.Controllers
         public async Task<IActionResult> Index()
         {
             var categories = await _context.Categories
-                .Where(c => c.ParentCategoryID == null) 
-                .Include(c => c.SubCategories)              
-                    .ThenInclude(sc1 => sc1.SubCategories)  
-                        .ThenInclude(sc2 => sc2.SubCategories) 
-                            .ThenInclude(sc3 => sc3.SubCategories) 
-                                .ThenInclude(sc4 => sc4.SubCategories) 
-                                    .ThenInclude(sc5 => sc5.SubCategories) 
-                                        .ThenInclude(sc6 => sc6.SubCategories) 
+                .Where(c => c.ParentCategoryID == null)
+                .Include(c => c.Products)
+
+                .Include(c => c.SubCategories)
+                    .ThenInclude(sc1 => sc1.Products)
+                .Include(c => c.SubCategories)
+                    .ThenInclude(sc1 => sc1.SubCategories)
+                        .ThenInclude(sc2 => sc2.Products)
+                .Include(c => c.SubCategories)
+                    .ThenInclude(sc1 => sc1.SubCategories)
+                        .ThenInclude(sc2 => sc2.SubCategories)
+                            .ThenInclude(sc3 => sc3.Products)
+                .Include(c => c.SubCategories)
+                    .ThenInclude(sc1 => sc1.SubCategories)
+                        .ThenInclude(sc2 => sc2.SubCategories)
+                            .ThenInclude(sc3 => sc3.SubCategories)
+                                .ThenInclude(sc4 => sc4.Products)
+                .Include(c => c.SubCategories)
+                    .ThenInclude(sc1 => sc1.SubCategories)
+                        .ThenInclude(sc2 => sc2.SubCategories)
+                            .ThenInclude(sc3 => sc3.SubCategories)
+                                .ThenInclude(sc4 => sc4.SubCategories)
+                                    .ThenInclude(sc5 => sc5.Products)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -256,3 +271,4 @@ namespace PontelloApp.Controllers
 
     }
 }
+
