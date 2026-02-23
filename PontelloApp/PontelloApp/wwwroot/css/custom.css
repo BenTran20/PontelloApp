@@ -1,9 +1,14 @@
 :root {
     --grey-main: #F0F0F0;
     --sand: #D4D6B9;
-    --evergreen: #1F3D2B;
+    --evergreen: #F4E9CD;
     --brown: #5B4636;
+    --gray: #363635;
     --carbon: #1A1A1A;
+}
+
+.headingfontsize {
+    font-size: 0.85rem;
 }
 
 body {
@@ -13,7 +18,7 @@ body {
 }
 
 h1, h2, h3, h4, h5 {
-    color: var(--brown);
+    color: var(--gray);
     font-weight: 700;
 }
 
@@ -24,39 +29,55 @@ h1, h2, h3, h4, h5 {
     box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
-.btn-primary {
-    background-color: var(--evergreen);
-    border-color: var(--evergreen);
-    color: white;
+.btn-lightgray {
+    background-color: #DADADA;
+    border-color: #434343;
+    color: black;
     font-weight: bold;
 }
 
-.btn-primary:hover {
-        background-color: #173123;
-        border-color: #173123;
+    .btn-lightgray:hover {
+        background-color: #B8B8B8;
+        border-color: #434343;
+        color: black;
+        text-decoration: none;
+    }
+
+.btn-gray {
+    background-color: #434343;
+    color: white;
+    font-weight: bold;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+    .btn-gray:hover {
+        background-color: #272727;
         color: white;
         text-decoration: none;
     }
-.btn-primary:disabled {
-    background-color: #173123 !important;
-    border-color: #173123 !important;
-    color: white !important;
-    text-decoration: none;
-    opacity: 1;
-}
 
-.btn-secondary {
-    background-color: var(--brown);
-    border-color: var(--brown);
+.btn-blue {
+    background-color: #399EF1;
+    color: black;
     font-weight: bold;
-    color: white;
+    border: 1px solid #2A8DDD;
+    transition: background-color 0.2s ease;
 }
 
-.btn-secondary:hover {
-        background-color: #4a382b;
-        border-color: #4a382b;
+    .btn-blue:hover {
+        background-color: #2A8DDD;
+        color: black;
+        text-decoration: none;
     }
 
+.btn-outline-secondary:hover {
+    text-decoration:none;
+}
+
+.btn-outline-secondary {
+    color: #4A5159;
+}
 .btn-outline-dark {
     color: var(--carbon);
     border-color: var(--carbon);
@@ -88,12 +109,10 @@ h1, h2, h3, h4, h5 {
 
 
 a {
-    color: var(--evergreen);
     text-decoration: none;
 }
 
     a:hover {
-        color: var(--brown);
         text-decoration: underline;
     }
 
@@ -124,38 +143,24 @@ a {
         color: white;
     }
 
-.btn-archive {
-    background-color: #EEC643;
-    color: #000;
-    font-weight: bold;
-    border: 1px solid #EEC643;
-    transition: all 0.2s;
-}
-
-    .btn-archive:hover {
-        background-color: #E9C039;
-        text-decoration: none;
-        color: #000;
-    }
 
 .pagination .page-item.active .page-link {
-    background-color: #7D614C;
-    color: #fff;
-    border-color: #D4D6B9;
+    background-color: #399EF1;
+    border-color: #2A8DDD;
 }
 
-.pagination .page-item.active .page-link:hover {
-    background-color: #7D614C;
-    color: #000;
-}
+    .pagination .page-item.active .page-link:hover {
+        background-color: #2A8DDD;
+    }
 
 #pageSizeModal .btn {
-    background-color: #7D614C;
-    color: #fff;
-    border-color: #D4D6B9;
+    background-color: #399EF1;
+    border: 1px solid #2A8DDD;
+    color: black;
 }
 
     #pageSizeModal .btn:hover {
-        background-color: #D614C; 
-        color: #000;
+        background-color: #2A8DDD;
+        color: black;
+        text-decoration: none;
     }
