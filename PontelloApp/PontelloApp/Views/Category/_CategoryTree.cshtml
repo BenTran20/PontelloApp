@@ -1,4 +1,4 @@
-﻿@model IEnumerable<PontelloApp.Models.Category>
+@model IEnumerable<PontelloApp.Models.Category>
 
 <ul class="list-group ms-4 mt-2">
     @foreach (var sub in Model)
@@ -7,18 +7,36 @@
             @sub.Name
             <span class="ms-2">
                 <a asp-action="Create" asp-route-parentId="@sub.ID"
-                   class="btn btn-sm btn-outline-secondary me-1">+ Subcategory</a>
+                   class="btn btn-sm btn-outline-secondary icon-btn me-1"
+                   title="Add subcategory under @sub.Name"
+                   aria-label="Add subcategory under @sub.Name">
+                    <i class="bi bi-plus"></i>
+                    <span class="btn-text">Subcategory</span>
+                </a>
                 <a asp-action="Edit" asp-route-id="@sub.ID"
                    class="btn btn-sm btn-outline-primary me-1"
                    aria-label="Edit @sub.Name">
                     <i class="bi bi-pencil-square"></i>
                 </a>
 
-                <a asp-action="Delete" asp-route-id="@sub.ID"
-                   class="btn btn-sm btn-outline-danger"
-                   aria-label="Delete @sub.Name">
-                    <i class="bi bi-trash3"></i>
-                </a>
+                @if (!sub.SubCategories.Any() && (sub.Products == null || !sub.Products.Any()))
+                {
+                    <a asp-action="Delete" asp-route-id="@sub.ID"
+                       class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash3"></i>
+                    </a>
+                }
+                else
+                {
+                    <span data-bs-toggle="tooltip"
+                          data-bs-placement="top"
+                          title="Cannot delete. This category contains subcategories or assigned products.">
+                        <button class="btn btn-sm btn-outline-danger icon-btn" disabled>
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </span>
+                }
+                
             </span>
 
             @if (sub.SubCategories.Any())
