@@ -23,8 +23,8 @@
                 <span asp-validation-for="StockQuantity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="SKU_ExternalID" class="control-label"></label>
-                <input asp-for="SKU_ExternalID" class="form-control" />
+                <label asp-for="SKU_ExternalID" class="control-label">SKU</label>
+                <input asp-for="SKU_ExternalID" class="form-control" placeholder="Example: 1076 or PRC-1111141R" />
                 <span asp-validation-for="SKU_ExternalID" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -45,3 +45,4 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+
