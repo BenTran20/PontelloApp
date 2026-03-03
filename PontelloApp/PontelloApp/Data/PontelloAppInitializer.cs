@@ -424,7 +424,7 @@ namespace PontelloApp.Data
                                 VendorID = chargerId,
                                 Tag = "Spindle Items",
                                 Type = "Spindle Items"
-                            }
+                            },
                             new Product //22
                             {
                                 ProductName = "1/2 Kingpin Washer - 0.30\" Thin",
@@ -435,11 +435,11 @@ namespace PontelloApp.Data
                                 VendorID = authenticId,
                                 Tag = "Kingpins",
                                 Type = "Kingpins"
-                            }
+                            },
                             new Product //23
                             {
                                 ProductName = "2019 Vintage Short-Sleeve Unisex T-Shirt",
-                                Description = "This t-shirt is everything you've dreamed of and more. It feels soft and lightweight, with the right amount of stretch. It\'s comfortable and flattering for both men and women. 100% combed and ring-spun cotton (heather colors contain polyester) Fabric weight: 4.2 oz (142 g/m2) Shoulder-to-shoulder taping Side-seamed The Male model is wearing a size M. He's 6.2 feet (190 cm) tall, chest circumference 37.7\" (96 cm), waist circumference 33.4\" (85 cm). The female model is wearing a size M. She\'s 5.8 feet (178 cm) tall, chest circumference 34.6\" (88 cm), waist circumference 27.16\" (69 cm), hip circumference 37.7" (96cm). Size guide XS S M L XL 2XL 3XL 4XL Length (inches) 27 28 29 30 31 32 33 34 Width (inches) 16 18 20 22 24 26 28 30",
+                                Description = "This t-shirt is everything you've dreamed of and more. It feels soft and lightweight, with the right amount of stretch. It\'s comfortable and flattering for both men and women. 100% combed and ring-spun cotton (heather colors contain polyester) Fabric weight: 4.2 oz (142 g/m2) Shoulder-to-shoulder taping Side-seamed The Male model is wearing a size M. He's 6.2 feet (190 cm) tall, chest circumference 37.7\" (96 cm), waist circumference 33.4\" (85 cm). The female model is wearing a size M. She\'s 5.8 feet (178 cm) tall, chest circumference 34.6\" (88 cm), waist circumference 27.16\" (69 cm), hip circumference 37.7",
                                 IsActive = true,
                                 CategoryID = catUncategorizedId,
                                 Handle = "2019-vintage-short-sleeve-unisex-t-shirt",
@@ -981,42 +981,45 @@ namespace PontelloApp.Data
                                     {
                                         new Variant { Name = "Axle Size", Value = "18 thick x3/4" },
                                     }
-                            }
+                            },
                            new ProductVariant //22
-                            {
-                                ProductId = 22,
-                                UnitPrice = 0.9m,
-                                StockQuantity = 16,
-                                SKU_ExternalID = "PRC-1111019T",
-                                InventoryPolicy = InventoryPolicy.Deny,
-                                Weight = 0.008454m,
-                                Unit = ImperialUnits.floz,
-                                Barcode = "56420316",
-                                Status = true,
-                                Options = new List<Variant>
+                           {
+                               ProductId = 22,
+                               UnitPrice = 0.9m,
+                               StockQuantity = 16,
+                               SKU_ExternalID = "PRC-1111019T",
+                               InventoryPolicy = InventoryPolicy.Deny,
+                               Weight = 0.008454m,
+                               Unit = ImperialUnits.floz,
+                               Barcode = "56420316",
+                               Status = true,
+                               Options = new List<Variant>
                                     {
                                         new Variant { Name = "Title", Value = "Default" }
-                                    }
+                                    },
+                           },
                            new ProductVariant //23
-                            {
-                                ProductId = 23,
-                                UnitPrice =  22.5m,
-                                StockQuantity = 0,
-                                SKU_ExternalID = "3726894",
-                                InventoryPolicy = InventoryPolicy.Continue,
-                                Weight = 130.4078064m,
-                                Unit = ImperialUnits.oz,
-                                Barcode = "",
-                                Status = true,
-                                Options = new List<Variant>
+                           {
+                               ProductId = 23,
+                               UnitPrice = 22.5m,
+                               StockQuantity = 0,
+                               SKU_ExternalID = "3726894",
+                               InventoryPolicy = InventoryPolicy.Continue,
+                               Weight = 130.4078064m,
+                               Unit = ImperialUnits.oz,
+                               Barcode = "",
+                               Status = true,
+                               Options = new List<Variant>
                                     {
-                                        new Variant { Name = "Size", Value = "Small" }
-                                        new Variant { Name = "Color", Value = "Forest" }
-                                        new Variant { Name = "Size", Value = "Medium" }
-                                        new Variant { Name = "Color", Value = "Forest" }
-                                        new Variant { Name = "Size", Value = "Large" }
+                                        new Variant { Name = "Size", Value = "Small" },
+                                        new Variant { Name = "Color", Value = "Forest" },
+                                        new Variant { Name = "Size", Value = "Medium" },
+                                        new Variant { Name = "Color", Value = "Forest" },
+                                        new Variant { Name = "Size", Value = "Large" },
                                         new Variant { Name = "Color", Value = "Forest" }
                                     }
+                           }
+
                             );
                         context.SaveChanges();
                     }
