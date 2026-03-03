@@ -17,6 +17,10 @@ namespace PontelloApp.Models
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; } = string.Empty;
 
+        // Optional BIN or EIN. If provided, customer will be tax-exempt for the order.
+        [Display(Name = "BIN / EIN")]
+        public string? BinOrEin { get; set; }
+
         public string? TrackingNumber { get; set; }
 
         // navigation
