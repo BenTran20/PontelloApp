@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 
 namespace PontelloApp.Controllers
 {
-    public class VendorProductController : Controller
+    public class VendorProductController : ElephantController
     {
         private readonly PontelloAppContext _context;
 

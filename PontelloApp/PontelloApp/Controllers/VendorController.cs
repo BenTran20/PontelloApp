@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 
@@ -58,12 +60,48 @@ namespace PontelloApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("VendorID,Name,ContactName,Phone,Email,EIN,IsTaxExempt,IsArchived,RowVersion")] Vendor vendor)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _context.Add(vendor);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (ModelState.IsValid)
+                {
+                    _context.Add(vendor);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                    //return Redirect(ViewData["returnURL"]?.ToString() ?? "/");
+                }
             }
+
+            catch (DbUpdateException dex)
+                {
+                if (dex.GetBaseException().Message.Contains("UNIQUE constraint failed"))
+                {
+                    ModelState.AddModelError("Name", "Unable to save changes. " +
+                        "Remember, you cannot have duplicate Vendor Names.");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Unable to save changes. Try again, " +
+                        "and if the problem persists see your system administrator.");
+                }
+            }
+
+            //Decide if we need to send the Validaiton Errors directly to the client
+            if (!ModelState.IsValid && Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                //Was an AJAX request so build a message with all validation errors
+                string errorMessage = "";
+                foreach (var modelState in ViewData.ModelState.Values)
+                {
+                    foreach (ModelError error in modelState.Errors)
+                    {
+                        errorMessage += error.ErrorMessage + "|";
+                    }
+                }
+                //Note: returning a BadRequest results in HTTP Status code 400
+                return BadRequest(errorMessage);
+            }
+
+
             return View(vendor);
         }
 
@@ -113,6 +151,20 @@ namespace PontelloApp.Controllers
                         throw;
                     }
                 }
+                catch (DbUpdateException dex)
+                {
+                    if (dex.GetBaseException().Message.Contains("UNIQUE constraint failed"))
+                    {
+                        ModelState.AddModelError("Name", "Unable to save changes. " +
+                            "Remember, you cannot have duplicate Vendor Names.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Unable to save changes. Try again, " +
+                            "and if the problem persists see your system administrator.");
+                    }
+                }
+
                 return RedirectToAction(nameof(Index));
             }
             return View(vendor);
