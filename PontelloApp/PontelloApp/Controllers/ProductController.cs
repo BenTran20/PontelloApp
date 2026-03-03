@@ -374,6 +374,12 @@ namespace PontelloApp.Controllers
 
             return View(product);
         }
+
+        [HttpGet]
+        public JsonResult GetVendor(int? id)
+        {
+            return Json(VendorSelectList(id));
+        }
         private SelectList CategorySelectList(int? selectedId)
         {
             return new SelectList(_context.Categories
