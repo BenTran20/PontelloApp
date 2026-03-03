@@ -70,6 +70,10 @@ namespace PontelloApp.Data
                 .HasIndex(p => p.Handle)
                 .IsUnique();
 
+            modelBuilder.Entity<Vendor>()
+                .HasIndex(v => v.Name)
+                .IsUnique();
+
             //1:1 Order -> Shipping
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Shipping)
