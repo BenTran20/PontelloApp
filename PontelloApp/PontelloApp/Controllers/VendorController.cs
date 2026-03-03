@@ -135,6 +135,7 @@ namespace PontelloApp.Controllers
         }
 
 
+
         // POST: Vendor/Archive/5
         [HttpPost, ActionName("Archive")]
         [ValidateAntiForgeryToken]
@@ -145,10 +146,21 @@ namespace PontelloApp.Controllers
                 return NotFound();
 
             vendor.IsArchived = true;
+
+            var products = await _context.Products
+                                         .Where(p => p.VendorID == id && p.IsActive)
+                                         .ToListAsync();
+
+            foreach (var p in products)
+            {
+                p.IsActive = false;
+            }
+
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
+
 
 
         // GET: Vendor/Archived
@@ -162,6 +174,32 @@ namespace PontelloApp.Controllers
 
             return View(archivedVendors);
         }
+
+
+        // POST: Vendor/Unarchive/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Unarchive(int id)
+        {
+            var vendor = await _context.Vendors.FindAsync(id);
+            if (vendor == null)
+                return NotFound();
+
+            vendor.IsArchived = false;
+
+            var products = await _context.Products
+                                         .Where(p => p.VendorID == id && !p.IsActive)
+                                         .ToListAsync();
+
+            foreach (var p in products)
+            {
+                p.IsActive = true;
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Archived));
+        }
+
 
         private bool VendorExists(int id)
         {

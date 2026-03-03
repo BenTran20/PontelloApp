@@ -24,6 +24,7 @@ else
                 <th>Phone</th>
                 <th>EIN</th>
                 <th>Tax Exempt</th>
+                <th class="text-end">Actions</th>
             </tr>
         </thead>
 
@@ -46,6 +47,18 @@ else
                             <span class="badge bg-secondary">No</span>
                         }
                     </td>
+
+                    <td class="text-end">
+                        <form asp-action="Unarchive" asp-route-id="@v.VendorID" method="post" >
+                            <button type="submit" class="btn btn-success" style="text-decoration: none"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Details">
+                                Active
+                            </button>
+                        </form>
+                    </td>
+
                 </tr>
             }
         </tbody>
