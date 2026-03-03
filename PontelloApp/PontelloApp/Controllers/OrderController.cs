@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
+using PontelloApp.Models;
+using PontelloApp.Utilities;
 
 namespace PontelloApp.Controllers
 {
@@ -14,17 +17,63 @@ namespace PontelloApp.Controllers
         }
 
         // GET: /Order
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? SearchString, int? OrderStatusID, OrderStatus? Status, DateTime? FromDate, DateTime? ToDate, int? page, int? pageSizeID, string? actionButton)
         {
             int dealerId =1; // TODO: replace with current dealer/user
 
-            var orders = await _context.Orders
+            ViewData["Filtering"] = "btn-outline-secondary";
+            int numberFilters = 0;
+
+            ViewData["OrderStatusID"] = OrderStatusSelectList(Status);
+
+            var orders = _context.Orders
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                 .Include(o => o.Shipping)
                 .Where(o => o.DealerId == dealerId && o.Status != Models.OrderStatus.Draft)
                 .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
+                .AsNoTracking();
+
+            if (!String.IsNullOrEmpty(SearchString))
+            {
+                orders = orders.Where(o => o.PONumber.ToUpper().Contains(SearchString.ToUpper()));
+
+                numberFilters++;
+            }
+
+            if (FromDate.HasValue)
+            {
+                orders = orders.Where(o => o.CreatedAt >= FromDate);
+                numberFilters++;
+            }
+
+            if (ToDate.HasValue)
+            {
+                orders = orders.Where(o => o.CreatedAt <= ToDate);
+                numberFilters++;
+            }
+
+            if (Status.HasValue)
+            {
+                orders = orders.Where(o => o.Status == Status.Value);
+            }
+
+            if (numberFilters != 0)
+            {
+                ViewData["numberFilters"] = "(" + numberFilters.ToString() + ")";
+                ViewData["ShowFilter"] = "show";
+            }
+
+            int pageSize = PageSizeHelper.SetPageSize(HttpContext, pageSizeID, "Order");
+            ViewData["pageSizeID"] = PageSizeHelper.PageSizeList(pageSize);
+
+            int totalOrders = orders.Count();
+            ViewData["TotalOrders"] = totalOrders;
+
+            var pagedData = await PaginatedList<Order>.CreateAsync(orders, page ?? 1, pageSize);
+
+            return View(pagedData);
+
 
             return View(orders);
         }
@@ -58,5 +107,17 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
+        private SelectList OrderStatusSelectList(OrderStatus? selectedStatus)
+        {
+            var statusList = Enum.GetValues(typeof(OrderStatus))
+                                 .Cast<OrderStatus>()
+                                 .Select(s => new
+                                 {
+                                     Value = s,
+                                     Text = s.ToString()
+                                 });
+
+            return new SelectList(statusList, "Value", "Text", selectedStatus);
+        }
     }
 }
