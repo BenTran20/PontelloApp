@@ -7,6 +7,7 @@
         <em class="bi bi-arrow-left"></em> Back to Product detail
     </a>
 </div>
+<partial name="_addVendorModal" />
 
 <h1 class="text-center mb-4">Edit Product</h1>
 
@@ -38,20 +39,25 @@
                 </div>
 
                 <!-- Vendor -->
+                <!-- Vendor -->
                 <div class="mb-3">
-                    <label asp-for="Vendor" class="form-label">
-                        Vendor
-                        <i class="bi bi-info-circle text-primary"
-                           data-bs-toggle="tooltip"
-                           title="Select the product vendor."></i>
-                    </label>
-
-                    <select asp-for="VendorID"
-                            asp-items="@(ViewData["VendorID"] as IEnumerable<SelectListItem>)"
-                            class="form-select">
-                        <option value="">-- Select Vendor --</option>
-                    </select>
-
+                    <div class="form-group">
+                        <label asp-for="Vendor" class="form-label">
+                            Vendor
+                            <i class="bi bi-info-circle text-primary"
+                               data-bs-toggle="tooltip"
+                               title="Select the product vendor."></i>
+                        </label>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <button class="btn btn-outline-secondary" id="nowAddVendor" data-bs-toggle="modal" data-bs-target="#addVendorModal" type="button">&#x2795;</button>
+                            </div>
+                            <select asp-for="VendorID" class="form-control" asp-items="ViewBag.VendorID">
+                                <option value="">None</option>
+                            </select>
+                            <span asp-validation-for="VendorID" class="text-danger"></span>
+                        </div>
+                    </div>
                     <span asp-validation-for="VendorID" class="text-danger"></span>
                 </div>
 
@@ -133,5 +139,66 @@
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
         })
+    </script>
+    <script src="~/js/refreshDDL.js"></script>
+
+    <script type="text/javascript">
+        $('#submitVendorCreate').click(function (event) {
+            event.preventDefault();
+            ClearErrors();
+            var form = $('#createVendorForm');
+            if (form.valid()) {
+                $.ajax({
+                    type: "POST",
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    success: function () {
+                        $('#addVendorModal').modal('hide');
+                    },
+                    error: function (xhr) { //Note: xhr is the XMLHttpRequest
+                        var errorMessages = [];
+                        switch (xhr.status) {
+                            case 401:
+                                errorMessages.push("You must be logged in first.");
+                                break;
+                            case 403:
+                                errorMessages.push("You are not authorized for this action.");
+                                break;
+                            default:
+                                //Messages coming from the Model State Errors
+                                //We split on the | delimeter and the .slice removes the last one
+                                errorMessages = xhr.responseText.split("|").slice(0, -1);
+                        }
+                        //This checks if there are any elements with some content
+                        //and if not then it provides a default feedback message.
+                        if (!errorMessages.some((str) => str !== "")) {
+                          errorMessages.push("Error: Unable to complete operation");
+                        }
+                        //Put the messages in the ErrorList ul contained in the 'ValidaitonSummary' div.
+                        var ul = document.getElementById("ErrorList");
+                        for (var i = 0; i < errorMessages.length; i++) {
+                          var errorMessage = errorMessages[i];
+                          var li = document.createElement("li");
+                          li.innerHTML = errorMessage;
+                          ul.appendChild(li);
+                        }
+                    }
+                });
+            }
+            return false;
+        });
+        $('#addVendorModal').on('hide.bs.modal', function () {
+            document.getElementById("createVendorForm").reset();//to clear the data in the popup form
+            ClearErrors();
+            var selectedOption = $('#VendorID').val();//Return to the current selected value
+            refreshDDL('VendorID', '/Product/GetVendor/' + selectedOption, false, null, true, 'None', true);
+        });
+        function ClearErrors() {
+            //Empty out the list of validation errors if there are any
+            var ul = document.getElementById("ErrorList");
+            while (ul.firstChild) {
+              ul.removeChild(ul.firstChild);
+            }
+        }
     </script>
 }
