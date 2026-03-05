@@ -1,4 +1,4 @@
-﻿@model PontelloApp.Models.Order
+@model PontelloApp.Models.Order
 
 @{
     ViewData["Title"] = "Order Confirmed";
@@ -84,10 +84,17 @@
                 @if (Model.Shipping != null)
                 {
                     <div class="bg-light rounded-3 p-3 mb-4">
-                        <h6 class="fw-bold mb-2">Shipping Info</h6>
+                        <h6 class="fw-bold mb-2">Shipping Information</h6>
                         <small class="text-muted d-block">@Model.Shipping.Address</small>
                         <small class="text-muted d-block">Phone: @Model.Shipping.Phone</small>
                         <small class="text-muted d-block">Email: @Model.Shipping.Email</small>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Shipping.BinOrEin))
+                        {
+                            <small class="text-muted d-block mt-1">
+                                BIN / EIN: @Model.Shipping.BinOrEin
+                            </small>
+                        }
 
                         @if (!string.IsNullOrWhiteSpace(Model.Shipping.TrackingNumber))
                         {
