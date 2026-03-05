@@ -1,0 +1,192 @@
+﻿@model IEnumerable<PontelloApp.Models.Product>
+
+@if (TempData["Success"] != null)
+{
+    <div id="successAlert" class="alert alert-success fade show">
+        <strong>
+            @TempData["Success"]<br />
+            @TempData["Status"]
+        </strong>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            const alert = document.getElementById("successAlert");
+            if (alert) {
+                alert.classList.remove("show");
+                setTimeout(() => alert.remove(), 500);
+            }
+        }, 4000);
+    </script>
+}
+
+
+<form asp-action="Index" method="get">
+    <div class="container-fluid mt-4">
+        <div class="row">
+
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3">
+
+                    <!-- SEARCH -->
+                    <div class="mb-3">
+                        <label for="SearchString" class="form-label fw-semibold">Search</label>
+                        <div class="input-group">
+                            @Html.TextBox("SearchString", null, new { @class = "form-control", placeholder = "SKU or product name" })
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <em class="bi bi-search" aria-hidden="true"></em>
+                                <span class="visually-hidden">Search</span>
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <!-- SORT -->
+                    <fieldset class="mb-3">
+                        <legend class="form-label fw-semibold fs-6">Sort</legend>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="actionButton" value="A-Z"
+                                    class="btn btn-outline-secondary btn-sm w-100">
+                                A–Z
+                            </button>
+                            <button type="submit" name="actionButton" value="Z-A"
+                                    class="btn btn-outline-secondary btn-sm w-100">
+                                Z–A
+                            </button>
+                        </div>
+                    </fieldset>
+
+
+                    <!-- CATEGORY -->
+                    <div class="mb-3">
+                        <label for="CategoryID" class="form-label fw-semibold">Category</label>
+                        @Html.DropDownList("CategoryID", null, "All categories", new { @class = "form-select", id = "CategoryID" })
+                    </div>
+
+                    <a asp-action="Index" class="btn btn-outline-dark w-100 mb-2">Clear</a>
+
+                    <button type="submit" class="btn btn-blue w-100 mb-2">Apply</button>
+
+                    <hr />
+
+                    <a asp-action="Create" class="btn btn-lightgray w-100 mb-2">
+                        <em class="bi bi-plus-lg"></em> New Product
+                    </a>
+
+                    <a asp-action="Archive" class="btn btn-outline-secondary w-100">
+                        <em class="bi bi-archive"></em> View Archived   
+                    </a>
+
+                    <hr />
+                    <a asp-action="Index" asp-controller="Category" class="btn btn-outline-secondary w-100 mb-2">
+                        <em class="bi bi-list-task"></em> Categories
+                    </a>
+                    <a asp-action="Index" asp-controller="Vendor" class="btn btn-outline-secondary w-100">
+                        <em class="bi bi-list-task"></em> Vendors
+                    </a>
+
+                    <hr />
+					<a asp-area="" asp-controller="Product" asp-action="DownloadPontello" class="btn btn-outline-secondary w-100 mb-2">
+						<em class="bi bi-list-task"></em> export Pontello Sports
+                    </a>
+                </div>
+            </div>
+
+            <!-- PRODUCT LIST -->
+            <div class="col-md-9">
+
+                <!-- TITLE -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="m-0">Products</h3>
+                    <span class="text-muted small">
+                        @ViewData["TotalItems"] items
+                    </span>
+                </div>
+
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 25%">Product</th>
+                            <th style="width: 15%">SKU / Handle</th>
+                            <th style="width: 20%">Vendor</th>
+                            <th style="width: 15%">Category</th>
+                            <th style="width: 10%">Status</th>
+                            <th class="text-end" style="width: 15%">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.ProductName</strong><br />
+                                    <small class="text-muted">@item.Type</small>
+                                </td>
+
+                                <td>@item.Handle</td>
+
+                                <td>@item.Vendor.Name</td>
+
+                                <td>@item.Category?.Name</td>
+
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success-subtle" style="color: #0D4E30">
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary">
+                                            Archived
+                                        </span>
+                                    }
+                                </td>
+
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details"
+                                           asp-route-id="@item.ID"
+                                           class="btn btn-secondary"
+                                            style="text-decoration: none"
+                                           data-bs-toggle="tooltip"
+                                           data-bs-placement="top"
+                                           title="Details">
+                                            Details
+                                        </a>
+
+                                        <a asp-controller="AddProductVariant"
+                                           asp-action="Index"
+                                           asp-route-id="@item.ID"
+                                           style="text-decoration: none"
+                                           class="btn btn-primary"
+                                           data-bs-toggle="tooltip"
+                                           data-bs-placement="top"
+                                           title="Edit product">
+                                            Edit
+                                        </a>
+
+                                        <a asp-action="Delete"
+                                           asp-route-id="@item.ID"
+                                           class="btn btn-danger"
+                                           style="text-decoration: none"
+                                           data-bs-toggle="tooltip"
+                                           data-bs-placement="top"
+                                           title="Archive product">
+                                            Archive
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <partial name="_PagingNavBar" />
+            </div>
+        </div>
+    </div>
+</form>
