@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 using PontelloApp.Data;
 using PontelloApp.Ultilities;
 
@@ -61,5 +62,7 @@ using (var scope = app.Services.CreateScope())
         UseMigrations: false, SeedSampleData: false);
 
 }
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 app.Run();
