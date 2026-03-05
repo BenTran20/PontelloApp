@@ -26,8 +26,8 @@ namespace PontelloApp.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        //1:1 relationship to Shipping
-        public int ShippingId { get; set; } 
+        // make ShippingId nullable so Order can exist without shipping
+        public int? ShippingId { get; set; }
         public Shipping? Shipping { get; set; }
 
         [Timestamp]
