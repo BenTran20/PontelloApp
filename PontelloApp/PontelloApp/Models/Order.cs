@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PontelloApp.Models
 {
-    public class Order
+    public class Order : Auditable
     {
         public int Id { get; set; }
 

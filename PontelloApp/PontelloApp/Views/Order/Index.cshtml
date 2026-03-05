@@ -201,8 +201,18 @@
                                             </a>
                                         }
 
-                                    </div>
+                                        @if (o.Status == OrderStatus.Approved || o.Status == OrderStatus.Shipped)
+                                        {
+                                            <form asp-action="Reorder" asp-controller="Order" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@o.Id" />
+                                                <button type="submit" class="btn btn-outline-success">
+                                                    <i class="bi bi-arrow-repeat"></i> Reorder
+                                                </button>
+                                            </form>
+                                        }
 
+                                    </div>
                                 </td>
 
                             </tr>
