@@ -1,11 +1,16 @@
+using System.Drawing;
+using System.Numerics;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
+using PontelloApp.Ultilities;
 using PontelloApp.Utilities;
-using System.Numerics;
 
 namespace PontelloApp.Controllers
 {
@@ -455,6 +460,613 @@ namespace PontelloApp.Controllers
                     .FirstOrDefault(c => c.ID == category.ParentCategoryID);
                 category = category.ParentCategory;
             }
+        }
+
+        public IActionResult DownloadPontello()
+        {
+            var products = _context.Variants
+                .Include(p => p.ProductVariant)
+                .ThenInclude(p => p.Product)
+                .ThenInclude(p => p.Category)
+                .OrderByDescending(a => a.ProductVariant.Product.ProductName)
+                .Select(a => new
+                {
+                    Product = a.ProductVariant.Product.ProductName,
+                    Handle = a.ProductVariant.Product.Handle,
+                    Vendor = a.ProductVariant.Product.Vendor.Name,
+                    Types = a.ProductVariant.Product.Type,
+                    Tags = a.ProductVariant.Product.Tag,
+                    Description = a.ProductVariant.Product.Description,
+                    Status = a.ProductVariant.Product.IsActive,
+                    Category = a.ProductVariant.Product.Category.Name,
+                    UnitPrice = a.ProductVariant.UnitPrice,
+                    Stock = a.ProductVariant.StockQuantity,
+                    SKU = a.ProductVariant.SKU_ExternalID,
+                    Weight = a.ProductVariant.Weight,
+                    Unit = a.ProductVariant.Unit,
+                    Code = a.ProductVariant.Barcode,
+                    Policy = a.ProductVariant.InventoryPolicy,
+                    VariantStatus = a.ProductVariant.Status,
+                    VariantName = a.Name,
+                    VariantValue = a.Value
+                })
+                .ToList();
+
+            if (!products.Any())
+                return NotFound("No data.");
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine("Product,Handle,Vendor,Types,Tags,Description,Status,Category,UnitPrice,Stock,SKU,Weight,Unit,Code,Policy,VariantStatus,VariantName,VariantValue");
+
+            foreach (var p in products)
+            {
+                sb.AppendLine(string.Join(",", new[]
+                {
+                    CsvEscape(p.Product),
+                    CsvEscape(p.Handle),
+                    CsvEscape(p.Vendor),
+                    CsvEscape(p.Types),
+                    CsvEscape(p.Tags),
+                    CsvEscape(p.Description),
+                    CsvEscape(p.Status.ToString()),
+                    CsvEscape(p.Category),
+                    CsvEscape(p.UnitPrice.ToString()),
+                    CsvEscape(p.Stock.ToString()),
+                    CsvEscape(p.SKU),
+                    CsvEscape(p.Weight.ToString()),
+                    CsvEscape(p.Unit.ToString()),
+                    CsvEscape(p.Code),
+                    CsvEscape(p.Policy.ToString()),
+                    CsvEscape(p.VariantStatus.ToString()),
+                    CsvEscape(p.VariantName),
+                    CsvEscape(p.VariantValue)
+                }));
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            return File(bytes, "text/csv", "PontelloSports.csv");
+        }
+
+        private string CsvEscape(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            if (value.Contains(",") || value.Contains("\"") || value.Contains("\n"))
+                return $"\"{value.Replace("\"", "\"\"")}\"";
+
+            return value;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> InsertFromCsv(IFormFile theExcel)
+        {
+            string feedBack = string.Empty;
+            if (theExcel != null)
+            {
+                string mimeType = theExcel.ContentType;
+                long fileLength = theExcel.Length;
+                if (!(mimeType == "" || fileLength == 0))
+                {
+                    if (mimeType.Contains("csv") || theExcel.FileName.EndsWith(".csv"))
+                    {
+                        using (var excel = new ExcelPackage())
+                        {
+                            var workSheet = excel.Workbook.Worksheets.Add("TempSheet");
+
+                            using (var reader = new StreamReader(theExcel.OpenReadStream()))
+                            {
+                                string csvText = await reader.ReadToEndAsync();
+
+                                var format = new ExcelTextFormat
+                                {
+                                    Delimiter = ',',
+                                    TextQualifier = '"'
+                                };
+
+                                workSheet.Cells.LoadFromText(csvText, format);
+                            }
+
+                            #region Error Handling
+                            var start = workSheet.Dimension.Start;
+                            var end = workSheet.Dimension.End;
+                            int successCount = 0;
+                            int errorCount = 0;
+
+                            if (workSheet.Cells[1, 1].Text == "ProductName" || workSheet.Cells[1, 2].Text == "Handle" ||
+                         workSheet.Cells[1, 3].Text == "Vendor" || workSheet.Cells[1, 4].Text == "Types" ||
+                         workSheet.Cells[1, 5].Text == "Tags" || workSheet.Cells[1, 6].Text == "Description" ||
+                         workSheet.Cells[1, 7].Text == "Status" || workSheet.Cells[1, 8].Text == "Category" ||
+                         workSheet.Cells[1, 9].Text == "UnitPrice" || workSheet.Cells[1, 10].Text == "Stock" ||
+                         workSheet.Cells[1, 11].Text == "SKU" || workSheet.Cells[1, 12].Text == "Weight" ||
+                         workSheet.Cells[1, 13].Text == "Unit" || workSheet.Cells[1, 14].Text == "Code" ||
+                         workSheet.Cells[1, 15].Text == "Policy" || workSheet.Cells[1, 16].Text == "VariantStatus" ||
+                         workSheet.Cells[1, 17].Text == "VariantName" || workSheet.Cells[1, 18].Text == "VariantValue")
+                            {
+                                for (int row = start.Row + 1; row <= end.Row; row++)
+                                {
+                                    Product product = new Product();
+                                    ProductVariant productVariant = new ProductVariant();
+                                    Variant variant = new Variant();
+
+                                    //ProductName
+                                    try
+                                    {
+                                        product.ProductName = workSheet.Cells[row, 1].Text;
+                                        _context.Products.Add(product);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + product.ProductName
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + product.ProductName
+                                                + " caused and error." + "<br />";
+                                        }
+                                    }
+
+                                    //Handle
+                                    try
+                                    {
+                                        product.Handle = workSheet.Cells[row, 2].Text;
+                                        _context.Products.Add(product);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (DbUpdateException dex)
+                                    {
+                                        errorCount++;
+                                        if (dex.GetBaseException().Message.Contains("UNIQUE constraint failed"))
+                                        {
+                                            feedBack += "Error: Record " + product.Handle +
+                                                " was rejected as a duplicate." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + product.Handle +
+                                                " caused an error." + "<br />";
+                                        }
+                                        _context.Remove(product);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + product.Handle
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + product.Handle
+                                                + " caused and error." + "<br />";
+                                        }
+                                    }
+
+                                    //Vendor
+                                    try
+                                    {
+                                        product.Vendor.Name = workSheet.Cells[row, 3].Text;
+                                        _context.Products.Add(product);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (DbUpdateException dex)
+                                    {
+                                        errorCount++;
+                                        if (dex.GetBaseException().Message.Contains("UNIQUE constraint failed"))
+                                        {
+                                            feedBack += "Error: Record " + product.Vendor +
+                                                " was rejected as a duplicate." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + product.Vendor +
+                                                " caused an error." + "<br />";
+                                        }
+                                        _context.Remove(product);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + product.Vendor
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + product.Vendor
+                                                + " caused and error." + "<br />";
+                                        }
+                                    }
+
+                                    //Type
+                                    try
+                                    {
+                                        product.Type = workSheet.Cells[row, 4].Text;
+                                        _context.Products.Add(product);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + product.Type
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + product.Type
+                                                + " caused and error." + "<br />";
+                                        }
+                                    }
+
+                                    //Tag
+                                    try
+                                    {
+                                        product.Tag = workSheet.Cells[row, 5].Text;
+                                        _context.Products.Add(product);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + product.Tag
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + product.Tag
+                                                + " caused and error." + "<br />";
+                                        }
+                                    }
+
+                                    //Description
+                                    try
+                                    {
+                                        product.Handle = workSheet.Cells[row, 6].Text;
+                                        _context.Products.Add(product);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + product.Description
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + product.Description
+                                                + " caused and error." + "<br />";
+                                        }
+                                    }
+
+                                    //IsActive
+                                    try
+                                    {
+                                        string cellText = workSheet.Cells[row, 7].Text.Trim().ToLower();
+                                        product.IsActive = (cellText.Equals(true) || cellText.Equals(false)); _context.Products.Add(product);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + product.IsActive
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + product.IsActive
+                                                + " caused and error." + "<br />";
+                                        }
+                                    }
+                                    //Category
+                                    try
+                                    {
+                                        product.Type = workSheet.Cells[row, 8].Text;
+                                        _context.Products.Add(product);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + product.Category
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + product.Category
+                                                + " caused and error." + "<br />";
+                                        }
+                                    }
+
+                                    //UnitPrice
+                                    try
+                                    {
+                                        productVariant.UnitPrice = Convert.ToDecimal(workSheet.Cells[row, 9].Value);
+                                        _context.ProductVariants.Add(productVariant);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + productVariant.UnitPrice
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + productVariant.UnitPrice
+                                                + " caused an error." + "<br />";
+                                        }
+                                    }
+
+                                    //Stock
+                                    try
+                                    {
+                                        productVariant.StockQuantity = Convert.ToInt32(workSheet.Cells[row, 10].Value);
+                                        _context.ProductVariants.Add(productVariant);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + productVariant.StockQuantity
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + productVariant.StockQuantity
+                                                + " caused an error." + "<br />";
+                                        }
+                                    }
+                                    //SKU
+                                    try
+                                    {
+                                        productVariant.SKU_ExternalID = workSheet.Cells[row, 11].Text;
+                                        _context.ProductVariants.Add(productVariant);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + productVariant.SKU_ExternalID
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + productVariant.SKU_ExternalID
+                                                + " caused an error." + "<br />";
+                                        }
+                                    }
+                                    //Weight
+                                    try
+                                    {
+                                        productVariant.Weight = Convert.ToDecimal(workSheet.Cells[row, 12].Value);
+                                        _context.ProductVariants.Add(productVariant);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + productVariant.Weight
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + productVariant.Weight
+                                                + " caused an error." + "<br />";
+                                        }
+                                    }
+                                    //Unit
+                                    try
+                                    {
+                                        string cellText = workSheet.Cells[row, 13].Text.Trim().ToString();
+                                        bool isValid =
+                                        cellText.Equals(nameof(ImperialUnits.lb), StringComparison.OrdinalIgnoreCase) ||
+                                        cellText.Equals(nameof(ImperialUnits.oz), StringComparison.OrdinalIgnoreCase) ||
+                                        cellText.Equals(nameof(ImperialUnits.floz), StringComparison.OrdinalIgnoreCase);
+                                        _context.ProductVariants.Add(productVariant);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + productVariant.Unit
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + productVariant.Unit
+                                                + " caused an error." + "<br />";
+                                        }
+                                    }
+                                    //Barcode
+                                    try
+                                    {
+                                        productVariant.Barcode = workSheet.Cells[row, 14].Text;
+                                        _context.ProductVariants.Add(productVariant);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + productVariant.Barcode
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + productVariant.Barcode
+                                                + " caused an error." + "<br />";
+                                        }
+                                    }
+
+                                    //Policy
+                                    try
+                                    {
+                                        string cellText = workSheet.Cells[row, 15].Text.Trim();
+                                        bool isValid =
+                                            cellText.Equals(nameof(InventoryPolicy.Deny), StringComparison.OrdinalIgnoreCase) ||
+                                            cellText.Equals(nameof(InventoryPolicy.Continue), StringComparison.OrdinalIgnoreCase); 
+                                        _context.ProductVariants.Add(productVariant);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + productVariant.InventoryPolicy
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + productVariant.InventoryPolicy
+                                                + " caused an error." + "<br />";
+                                        }
+                                    }
+                                    //Status
+                                    try
+                                    {
+                                        string cellText = workSheet.Cells[row, 16].Text.Trim().ToLower();
+                                        productVariant.Status = (cellText.Equals(true) || cellText.Equals(false));
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + productVariant.Status
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + productVariant.Status
+                                                + " caused an error." + "<br />";
+                                        }
+                                    }
+                                    //VariantName
+                                    try
+                                    {
+                                        variant.Name = workSheet.Cells[row, 17].Text;
+                                        _context.Variants.Add(variant);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + variant.Name
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + variant.Name
+                                                + " caused an error." + "<br />";
+                                        }
+                                    }
+
+                                    //VariantValuw
+                                    try
+                                    {
+                                        variant.Value = workSheet.Cells[row, 18].Text;
+                                        _context.Variants.Add(variant);
+                                        _context.SaveChanges();
+                                        successCount++;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        errorCount++;
+                                        if (ex.GetBaseException().Message.Contains("correct format"))
+                                        {
+                                            feedBack += "Error: Record " + variant.Value
+                                                + " was rejected becuase it was not in the correct format." + "<br />";
+                                        }
+                                        else
+                                        {
+                                            feedBack += "Error: Record " + variant.Value
+                                                + " caused an error." + "<br />";
+                                        }
+                                    }
+                                }
+                            }
+
+                            else
+                            {
+                                feedBack += "Finished Importing " + (successCount + errorCount).ToString() +
+                                    " Records with " + successCount.ToString() + " inserted and " +
+                                    errorCount.ToString() + " rejected";
+
+                                feedBack = "Error: You may have selected the wrong file to upload.<br /> " +
+                                    "Remember, you must have the heading 'Type' in the " +
+                                    "eighteenth cell of the first row.";
+                            }
+                            #endregion
+                        }
+                    }
+                    else
+                    {
+                        feedBack = "Error: That file is not an csv spreadsheet.";
+                    }
+                }
+                else
+                {
+                    feedBack = "Error:  file appears to be empty";
+                }
+            }
+            else
+            {
+                feedBack = "Error: No file uploaded";
+            }
+
+            TempData["Feedback"] = feedBack + "<br />";
+
+            return RedirectToAction(nameof(Index));
         }
 
     }
