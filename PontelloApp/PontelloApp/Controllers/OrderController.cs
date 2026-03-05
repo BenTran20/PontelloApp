@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Models;
 using PontelloApp.Utilities;
+using QuestPDF.Fluent;
 
 namespace PontelloApp.Controllers
 {
@@ -19,7 +20,7 @@ namespace PontelloApp.Controllers
         // GET: /Order
         public async Task<IActionResult> Index(string? SearchString, int? OrderStatusID, OrderStatus? Status, DateTime? FromDate, DateTime? ToDate, int? page, int? pageSizeID, string? actionButton)
         {
-            int dealerId = 1; // TODO: replace with current dealer/user
+            int dealerId =1; // TODO: replace with current dealer/user
 
             ViewData["Filtering"] = "btn-outline-secondary";
             int numberFilters = 0;
@@ -107,6 +108,139 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
+        public IActionResult ExportOrderPO(int id)
+        {
+            var order = _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(oi => oi.Product)
+                .Include(o => o.Shipping)
+                .FirstOrDefault(o => o.Id == id);
+
+            if (order == null)
+                return NotFound();
+
+            var items = order.Items.Select(i => new
+            {
+                Product = i.Product.ProductName,
+                Quantity = i.Quantity,
+                Price = i.UnitPrice,
+                Total = i.Quantity * i.UnitPrice
+            }).ToList();
+
+            decimal subtotal = items.Sum(i => i.Total);
+            decimal tax = order.TaxAmount;
+            decimal grandTotal = order.TotalAmount;
+
+            byte[] pdf = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(30);
+
+                    // HEADER
+                    page.Header().Row(row =>
+                    {
+                        row.RelativeItem().Column(col =>
+                        {
+                            col.Item().Text("Pontello").FontSize(20).Bold();
+                            col.Item().Text("Purchase Order").FontSize(14);
+                        });
+
+                        row.ConstantItem(200).AlignRight().Column(col =>
+                        {
+                            col.Item().Text($"PO #: {order.PONumber}").Bold();
+                            col.Item().Text($"Date: {order.CreatedAt:yyyy-MM-dd}");
+                        });
+                    });
+
+                    // CONTENT
+                    page.Content().PaddingVertical(15).Column(col =>
+                    {
+
+                        // SHIPPING INFO
+                        col.Item().Row(row =>
+                        {
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text("Ship To").Bold();
+                                c.Item().Text(order.Shipping?.FullName ?? "");
+                                c.Item().Text(order.Shipping?.Address ?? "N/A");
+                                c.Item().Text(order.Shipping?.Email ?? "");
+                                c.Item().Text(order.Shipping?.Phone ?? "");
+
+                                if (!string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin))
+                                    c.Item().Text($"BIN: {order.Shipping.BinOrEin}");
+                            });
+                        });
+
+                        col.Item().PaddingVertical(10);
+
+                        // TABLE
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(5);
+                                columns.RelativeColumn(2);
+                                columns.RelativeColumn(2);
+                                columns.RelativeColumn(2);
+                            });
+
+                            table.Header(header =>
+                            {
+                                header.Cell().Background("#F3F4F6").Padding(6).Text("Product").Bold();
+                                header.Cell().Background("#F3F4F6").Padding(6).Text("Qty").Bold();
+                                header.Cell().Background("#F3F4F6").Padding(6).Text("Unit Price").Bold();
+                                header.Cell().Background("#F3F4F6").Padding(6).Text("Total").Bold();
+                            });
+
+                            foreach (var i in items)
+                            {
+                                table.Cell().Padding(5).Text(i.Product);
+                                table.Cell().Padding(5).Text(i.Quantity.ToString());
+                                table.Cell().Padding(5).Text("$" + i.Price.ToString("0.00"));
+                                table.Cell().Padding(5).Text("$" + i.Total.ToString("0.00"));
+                            }
+                        });
+
+                        col.Item().PaddingTop(15);
+
+                        // TOTALS
+                        col.Item().AlignRight().Column(c =>
+                        {
+                            c.Item().Row(r =>
+                            {
+                                r.RelativeItem().AlignRight().Text("Subtotal:");
+                                r.ConstantItem(100).AlignRight().Text("$" + subtotal.ToString("0.00"));
+                            });
+
+                            c.Item().Row(r =>
+                            {
+                                r.RelativeItem().AlignRight().Text("Tax:");
+                                r.ConstantItem(100).AlignRight().Text("$" + tax.ToString("0.00"));
+                            });
+
+                            c.Item().Row(r =>
+                            {
+                                r.RelativeItem().AlignRight().Text("Total:").Bold();
+                                r.ConstantItem(100).AlignRight().Text("$" + grandTotal.ToString("0.00")).Bold();
+                            });
+                        });
+                    });
+
+                    // FOOTER
+                    page.Footer()
+                        .AlignCenter()
+                        .Text($"Generated {DateTime.Now:yyyy-MM-dd HH:mm}")
+                        .FontSize(10)
+                        .FontColor("#777777");
+                });
+
+            }).GeneratePdf();
+
+            return File(pdf, "application/pdf", $"Purchase Order .pdf");
+        }
+
         private SelectList OrderStatusSelectList(OrderStatus? selectedStatus)
         {
             var statusList = Enum.GetValues(typeof(OrderStatus))
@@ -119,5 +253,6 @@ namespace PontelloApp.Controllers
 
             return new SelectList(statusList, "Value", "Text", selectedStatus);
         }
+
     }
 }

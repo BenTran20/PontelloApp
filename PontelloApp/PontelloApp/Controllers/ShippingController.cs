@@ -17,14 +17,13 @@ namespace PontelloApp.Controllers
         }
 
         // GET: Shipping/Create?orderId=123
-        // allow Draft or Submitted orders so users can fill shipping after Checkout (which leaves Draft)
         public async Task<IActionResult> Create(int orderId)
         {
             var order = await _context.Orders
                 .Include(o => o.Items)
                 .Include(o => o.Shipping)
-                .FirstOrDefaultAsync(o => o.Id == orderId && (o.Status == OrderStatus.Draft 
-                    || o.Status == OrderStatus.Progress || o.Status == OrderStatus.Submitted));
+                .FirstOrDefaultAsync(o => o.Id == orderId && (o.Status == OrderStatus.Draft
+                || o.Status == OrderStatus.Progress || o.Status == OrderStatus.Submitted));
 
             if (order == null)
                 return RedirectToAction("Cart", "Cart");
@@ -35,20 +34,20 @@ namespace PontelloApp.Controllers
         // POST: Shipping/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int orderId, string address, string phone, string email, string? binOrEin)
+        public async Task<IActionResult> Create(int orderId, string fullName, string address, string phone, string email, string? binOrEin)
         {
             var order = await _context.Orders
                 .Include(o => o.Items)
                 .Include(o => o.Shipping)
-                .FirstOrDefaultAsync(o => o.Id == orderId && (o.Status == OrderStatus.Draft 
-                            || o.Status == OrderStatus.Progress));
+                .FirstOrDefaultAsync(o => o.Id == orderId && (o.Status == OrderStatus.Draft ||
+                   o.Status == OrderStatus.Progress || o.Status == OrderStatus.Submitted));
 
             if (order == null)
                 return RedirectToAction("Cart", "Cart");
 
-            if (string.IsNullOrWhiteSpace(address) || string.IsNullOrWhiteSpace(phone) || string.IsNullOrWhiteSpace(email))
+            if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(address) || string.IsNullOrWhiteSpace(phone) || string.IsNullOrWhiteSpace(email))
             {
-                ModelState.AddModelError(string.Empty, "Please fill all shipping fields.");
+                ModelState.AddModelError(string.Empty, "Please fill all required shipping fields.");
                 return View(order);
             }
 
@@ -56,6 +55,7 @@ namespace PontelloApp.Controllers
             {
                 order.Shipping = new Shipping
                 {
+                    FullName = fullName,
                     Address = address,
                     Phone = phone,
                     Email = email,
@@ -64,6 +64,7 @@ namespace PontelloApp.Controllers
             }
             else
             {
+                order.Shipping.FullName = fullName;
                 order.Shipping.Address = address;
                 order.Shipping.Phone = phone;
                 order.Shipping.Email = email;
@@ -83,6 +84,7 @@ namespace PontelloApp.Controllers
 
             order.TotalAmount = Math.Round(subtotal + order.TaxAmount, 2);
 
+            // mark submitted now shipping provided
             order.Status = OrderStatus.Submitted;
 
             await _context.SaveChangesAsync();
