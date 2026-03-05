@@ -8,6 +8,10 @@ namespace PontelloApp.Models
         public int ID { get; set; }
 
         [Required]
+        [Display(Name = "Full Name")]
+        public string FullName { get; set; } = string.Empty;
+
+        [Required]
         public string Address { get; set; } = string.Empty;
 
         [Required]
