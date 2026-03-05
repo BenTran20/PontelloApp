@@ -141,7 +141,7 @@ namespace PontelloApp.Controllers
             if (!(source.Status == OrderStatus.Approved || source.Status == OrderStatus.Shipped))
             {
                 TempData["Error"] = $"Cannot reorder from a {source.Status} order.";
-                return RedirectToAction(nameof(Details), new { id });
+                return RedirectToAction(nameof(Index));
             }
 
             using var tx = await _context.Database.BeginTransactionAsync();
@@ -208,7 +208,7 @@ namespace PontelloApp.Controllers
 
                 await tx.CommitAsync();
 
-                TempData["SuccessMessage"] = "Reorder successful. You can edit your shopping cart before checkout.";
+                // TempData["SuccessMessage"] = "Reorder successful. You can edit your shopping cart before checkout.";
                 return RedirectToAction("Cart", "Cart");
             }
 
