@@ -92,7 +92,26 @@ namespace PontelloApp.Controllers
             return RedirectToAction("Cart");
         }
 
-        // POST: create/submit the order only, then redirect to Shipping controller to collect shipping info
+        // Ensure a Shipping placeholder exists for the order (prevents null ref and gives a place to fill BIN/EIN)
+        private void EnsureShippingPlaceholder(Order order)
+        {
+            if (order == null) return;
+            if (order.Shipping != null) return;
+
+            var shipping = new Shipping
+            {
+                Address = string.Empty,
+                Phone = string.Empty,
+                Email = string.Empty,
+                OrderId = order.Id
+            };
+
+            // Track the new shipping and attach to the order
+            _context.Shippings.Add(shipping);
+            order.Shipping = shipping;
+        }
+
+        // POST: create the order (keeps it in Draft) then redirect to Shipping controller to collect shipping info
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Checkout(int id)
@@ -107,17 +126,27 @@ namespace PontelloApp.Controllers
             if (cart == null || cart.Items == null || !cart.Items.Any())
                 return RedirectToAction("Cart");
 
+            // generate PO, keep status as Draft until shipping is provided
             cart.PONumber = $"PO-{DateTime.Now:yyyyMMddHHmmss}";
-            cart.Status = OrderStatus.Submitted;
+
+            cart.Status = OrderStatus.Progress;
             cart.CreatedAt = DateTime.Now;
 
+            // create a shipping placeholder so Shipping view/controller always has an object to update (including BIN/EIN)
+            if (cart.Shipping == null)
+            {
+                EnsureShippingPlaceholder(cart);
+            }
+
+            // calculate current tax/total for informational purposes (will be recalculated when shipping saved)
             cart.TaxAmount = Math.Round(cart.Items.Sum(i => i.TotalPrice) * 0.13m, 2);
             cart.TotalAmount = cart.Items.Sum(i => i.TotalPrice) + cart.TaxAmount;
 
+            // persist the created order (with its items and shipping placeholder)
             await _context.SaveChangesAsync();
 
             // show success message at the top of the shipping form
-            TempData["SuccessMessage"] = "Order created successfully.";
+            TempData["SuccessMessage"] = "Order created. Please provide shipping to complete submission.";
 
             return RedirectToAction("Create", "Shipping", new { orderId = cart.Id });
         }

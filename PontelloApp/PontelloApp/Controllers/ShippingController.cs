@@ -17,12 +17,14 @@ namespace PontelloApp.Controllers
         }
 
         // GET: Shipping/Create?orderId=123
+        // allow Draft or Submitted orders so users can fill shipping after Checkout (which leaves Draft)
         public async Task<IActionResult> Create(int orderId)
         {
             var order = await _context.Orders
                 .Include(o => o.Items)
                 .Include(o => o.Shipping)
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.Status == OrderStatus.Submitted);
+                .FirstOrDefaultAsync(o => o.Id == orderId && (o.Status == OrderStatus.Draft 
+                    || o.Status == OrderStatus.Progress || o.Status == OrderStatus.Submitted));
 
             if (order == null)
                 return RedirectToAction("Cart", "Cart");
@@ -38,7 +40,8 @@ namespace PontelloApp.Controllers
             var order = await _context.Orders
                 .Include(o => o.Items)
                 .Include(o => o.Shipping)
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.Status == OrderStatus.Submitted);
+                .FirstOrDefaultAsync(o => o.Id == orderId && (o.Status == OrderStatus.Draft 
+                            || o.Status == OrderStatus.Progress));
 
             if (order == null)
                 return RedirectToAction("Cart", "Cart");
@@ -79,6 +82,8 @@ namespace PontelloApp.Controllers
             }
 
             order.TotalAmount = Math.Round(subtotal + order.TaxAmount, 2);
+
+            order.Status = OrderStatus.Submitted;
 
             await _context.SaveChangesAsync();
 
