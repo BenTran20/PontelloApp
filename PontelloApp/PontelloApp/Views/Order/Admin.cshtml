@@ -2,13 +2,18 @@
 
 @{
 	ViewData["Title"] = "Order Management";
+
+	var statuses = Enum.GetValues(typeof(PontelloApp.Models.OrderStatus))
+	.Cast<PontelloApp.Models.OrderStatus>()
+	.Where(s => s != PontelloApp.Models.OrderStatus.Draft)
+	.ToList();
 }
 
 <div class="container py-5">
 	<h2 class="fw-bold mb-4">Order Management</h2>
 
 	<ul class="nav nav-tabs" id="orderTabs" role="tablist">
-		@foreach (var status in Enum.GetValues(typeof(PontelloApp.Models.OrderStatus)).Cast<PontelloApp.Models.OrderStatus>())
+		@foreach (var status in statuses)
 		{
 			var tabId = status.ToString();
 			<li class="nav-item" role="presentation">
@@ -18,7 +23,7 @@
 	</ul>
 
 	<div class="tab-content mt-3" id="orderTabsContent">
-		@foreach (var status in Enum.GetValues(typeof(PontelloApp.Models.OrderStatus)).Cast<PontelloApp.Models.OrderStatus>())
+		@foreach (var status in statuses)
 		{
 			var tabId = status.ToString();
 			<div class="tab-pane fade @(status == PontelloApp.Models.OrderStatus.Submitted ? "show active" : "")" id="@tabId" role="tabpanel" aria-labelledby="@tabId-tab">
