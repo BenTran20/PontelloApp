@@ -97,10 +97,12 @@ namespace PontelloApp.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // For each variant referenced in the order, load tracked entity and decrement
+                // For each variant referenced in the order, load tracked entity and decrement.
+                // Important: Do NOT decrement stock for special-order variants (InventoryPolicy == Continue).
                 foreach (var vq in variantQuantities)
                 {
                     var variant = await _context.ProductVariants
+                        .Include(v => v.Product)
                         .FirstOrDefaultAsync(v => v.Id == vq.VariantId);
 
                     if (variant == null)
@@ -110,6 +112,17 @@ namespace PontelloApp.Controllers
                         return View(order);
                     }
 
+                    // Treat null policy as Deny (conservative)
+                    var policy = variant.InventoryPolicy ?? InventoryPolicy.Deny;
+
+                    // If variant is special-order (Continue), skip local stock checks and decrement.
+                    if (policy == InventoryPolicy.Continue)
+                    {
+                        // Special-order items are fulfilled externally; do not touch local stock.
+                        continue;
+                    }
+
+                    // For Deny (normal inventory) enforce stock availability
                     if (variant.StockQuantity < vq.Quantity)
                     {
                         ModelState.AddModelError(string.Empty, $"Insufficient stock for variant '{variant.SKU_ExternalID ?? variant.Id.ToString()}'. Available: {variant.StockQuantity}, requested: {vq.Quantity}.");
