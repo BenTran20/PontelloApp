@@ -33,6 +33,7 @@ namespace PontelloApp.Models
         [Required(ErrorMessage = "Product Name is required.")]
         public string Description { get; set; }
 
+        [Display(Name = "Is Active")]
         public bool IsActive { get; set; }
 
         [ScaffoldColumn(false)]
