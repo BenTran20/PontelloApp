@@ -35,7 +35,6 @@ namespace PontelloApp.Models
         [StringLength(50, ErrorMessage = "Barcode cannot be more than 50 characters long.")]
         public string? Barcode { get; set; }
 
-        [Required(ErrorMessage = "Must select the Inventory Policy")]
         [Display(Name = "Inventory Policy")]
         public InventoryPolicy? InventoryPolicy { get; set; }
 
