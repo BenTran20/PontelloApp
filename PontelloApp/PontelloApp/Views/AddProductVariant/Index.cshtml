@@ -1,4 +1,4 @@
-﻿@model IEnumerable<PontelloApp.Models.ProductVariant>
+@model IEnumerable<PontelloApp.Models.ProductVariant>
 
 <div class="mb-1">
     <a asp-action="Index" asp-controller="Product" class="btn btn-outline-secondary btn-sm">
@@ -14,14 +14,21 @@
 
 @if (TempData["Success"] != null)
 {
-    <div class="green">
-        <div class="alert alert-success"><strong>@TempData["Success"]?.ToString()<br />@TempData["Status"]?.ToString()</strong></div>
-        <script>
-            window.setTimeout(function () {
-                window.location = window.location.href;
-            }, 4000);
-        </script>
+    <div id="successAlert" class="alert alert-success">
+        <strong>@TempData["Success"]<br />@TempData["Status"]</strong>
     </div>
+
+    <script>
+        setTimeout(() => {
+            const alert = document.getElementById("successAlert");
+            if (alert) {
+                alert.classList.add("fade");   
+                alert.style.transition = "opacity 0.5s ease";
+                alert.style.opacity = "0";
+                setTimeout(() => alert.remove(), 500); 
+            }
+        }, 4000);
+    </script>
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -34,8 +41,9 @@
         <tr>
             <th>SKU</th>
             <th>Unit Price</th>
-            <th>Compare At Price</th>
-            <th>Stock Quantity</th>
+            <th>Cost Price</th>
+            <th>Compare Price</th>
+            <th>Stock</th>
             <th>Weight</th>
             <th>Barcode</th>
             <th>Inventory Policy</th>
@@ -50,6 +58,7 @@
             <tr>
                 <td class="fw-semibold">@variant.SKU_ExternalID</td>
                 <td>@variant.UnitPrice.ToString("C")</td>
+                <td>@(variant.CostPrice.HasValue ? variant.CostPrice.Value.ToString("C") : "-")</td>
                 <td>@(variant.CompareAtPrice.HasValue? variant.CompareAtPrice.Value.ToString("C") : "-")</td>
                 <td>@variant.StockQuantity</td>
                 <td>@(variant.Weight.HasValue? variant.Weight.Value.ToString("0.###") : "-")</td>
