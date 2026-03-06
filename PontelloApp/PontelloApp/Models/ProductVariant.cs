@@ -16,6 +16,12 @@ namespace PontelloApp.Models
         [DisplayFormat(DataFormatString = "{0:F2}", ApplyFormatInEditMode = true)]
         public decimal UnitPrice { get; set; }
 
+        [Display(Name = "Cost Price")]
+        [Column(TypeName = "decimal(18,2)")]
+        [DataType(DataType.Currency)]
+        [DisplayFormat(DataFormatString = "{0:F2}", ApplyFormatInEditMode = true)]
+        public decimal? CostPrice { get; set; }
+
         [Display(Name = "Stock Quantity")]
         [Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative.")]
         public int StockQuantity { get; set; }
@@ -57,6 +63,10 @@ namespace PontelloApp.Models
                 yield return new ValidationResult("Unit Price cannot be less than $0", new[] { "UnitPrice" });
             }
 
+            if (CostPrice.HasValue && CostPrice.Value < 0)
+            {
+                yield return new ValidationResult("Cost Price cannot be negative", new[] { "CostPrice" });
+            }
         }
     }
 }
