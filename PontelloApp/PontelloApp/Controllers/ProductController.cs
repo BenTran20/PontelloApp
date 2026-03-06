@@ -157,7 +157,8 @@ namespace PontelloApp.Controllers
         {
             var product = new Product
             {
-                IsActive = true 
+                IsActive = true ,
+                IsUnlisted = false
             };
 
             PopulateDropDownLists();
@@ -167,7 +168,7 @@ namespace PontelloApp.Controllers
         // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ProductName,Handle,VendorID,Type,Tag,Description,IsActive,CategoryID")] Product product)
+        public async Task<IActionResult> Create([Bind("ProductName,Handle,VendorID,Type,Tag,Description,IsActive,IsUnlisted,CategoryID")] Product product)
         {
             try
             {
@@ -234,7 +235,7 @@ namespace PontelloApp.Controllers
             _context.Entry(productToUpdate).Property("RowVersion").OriginalValue = RowVersion;
 
             if (await TryUpdateModelAsync<Product>(productToUpdate, "",
-                p => p.ProductName, p => p.Description, p => p.IsActive, p => p.CategoryID,
+                p => p.ProductName, p => p.Description, p => p.IsActive, p => p.IsUnlisted, p => p.CategoryID,
                 p => p.Handle, p => p.VendorID, p => p.Type, p => p.Tag))
             {
                 try
