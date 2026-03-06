@@ -157,7 +157,7 @@ namespace PontelloApp.Controllers
         {
             var product = new Product
             {
-                IsActive = true ,
+                IsActive = true,
                 IsUnlisted = false
             };
 
@@ -403,13 +403,13 @@ namespace PontelloApp.Controllers
         {
             var rootCategories = _context.Categories
                 .Where(c => c.ParentCategoryID == null)
-                .Include(c => c.SubCategories)                  
-                    .ThenInclude(sc1 => sc1.SubCategories)      
-                        .ThenInclude(sc2 => sc2.SubCategories)  
-                            .ThenInclude(sc3 => sc3.SubCategories) 
-                                .ThenInclude(sc4 => sc4.SubCategories) 
+                .Include(c => c.SubCategories)
+                    .ThenInclude(sc1 => sc1.SubCategories)
+                        .ThenInclude(sc2 => sc2.SubCategories)
+                            .ThenInclude(sc3 => sc3.SubCategories)
+                                .ThenInclude(sc4 => sc4.SubCategories)
                                     .ThenInclude(sc5 => sc5.SubCategories)
-                                        .ThenInclude(sc6 => sc6.SubCategories) 
+                                        .ThenInclude(sc6 => sc6.SubCategories)
                 .ToList();
 
             ViewData["CategoryID"] =
@@ -429,7 +429,7 @@ namespace PontelloApp.Controllers
                 items.Add(new SelectListItem
                 {
                     Value = category.ID.ToString(),
-                    Text = $"{new string('-', level * 2)} {category.Name}", 
+                    Text = $"{new string('-', level * 2)} {category.Name}",
                     Selected = category.ID == selectedId
                 });
 
@@ -467,68 +467,69 @@ namespace PontelloApp.Controllers
 
         public IActionResult DownloadPontello()
         {
-            var products = _context.Variants
-                .Include(p => p.ProductVariant)
-                .ThenInclude(p => p.Product)
-                .ThenInclude(p => p.Category)
-                .OrderByDescending(a => a.ProductVariant.Product.ProductName)
-                .Select(a => new
-                {
-                    Product = a.ProductVariant.Product.ProductName,
-                    Handle = a.ProductVariant.Product.Handle,
-                    Vendor = a.ProductVariant.Product.Vendor.Name,
-                    Types = a.ProductVariant.Product.Type,
-                    Tags = a.ProductVariant.Product.Tag,
-                    Description = a.ProductVariant.Product.Description,
-                    Status = a.ProductVariant.Product.IsActive,
-                    Category = a.ProductVariant.Product.Category.Name,
-                    UnitPrice = a.ProductVariant.UnitPrice,
-                    Stock = a.ProductVariant.StockQuantity,
-                    SKU = a.ProductVariant.SKU_ExternalID,
-                    Weight = a.ProductVariant.Weight,
-                    Unit = a.ProductVariant.Unit,
-                    Code = a.ProductVariant.Barcode,
-                    Policy = a.ProductVariant.InventoryPolicy,
-                    VariantStatus = a.ProductVariant.Status,
-                    VariantName = a.Name,
-                    VariantValue = a.Value
-                })
+            var productVariants = _context.ProductVariants
+                .Include(pv => pv.Product)
+                    .ThenInclude(p => p.Vendor)
+                .Include(pv => pv.Product)
+                    .ThenInclude(p => p.Category)
+                .Include(pv => pv.Options)
+                .AsNoTracking()
+                .OrderBy(pv => pv.Product.ProductName)
                 .ToList();
 
-            if (!products.Any())
+            if (!productVariants.Any())
                 return NotFound("No data.");
 
             var sb = new StringBuilder();
 
-            sb.AppendLine("Product,Handle,Vendor,Types,Tags,Description,Status,Category,UnitPrice,Stock,SKU,Weight,Unit,Code,Policy,VariantStatus,VariantName,VariantValue");
+            // CSV Header
+            sb.AppendLine("Product,Handle,Vendor,Types,Tags,Description,Status,Unlisted,Category,UnitPrice,CostPrice,ComparePrice,Stock,SKU,Weight,Unit,Code,Policy,VariantStatus,VariantName1,VariantValue1,VariantName2,VariantValue2,VariantName3,VariantValue3");
 
-            foreach (var p in products)
+            foreach (var pv in productVariants)
             {
+                var options = pv.Options.Take(3).ToList();
+
+                string variantName1 = options.Count > 0 ? options[0].Name ?? "" : "";
+                string variantValue1 = options.Count > 0 ? options[0].Value ?? "" : "";
+
+                string variantName2 = options.Count > 1 ? options[1].Name ?? "" : "";
+                string variantValue2 = options.Count > 1 ? options[1].Value ?? "" : "";
+
+                string variantName3 = options.Count > 2 ? options[2].Name ?? "" : "";
+                string variantValue3 = options.Count > 2 ? options[2].Value ?? "" : "";
+
                 sb.AppendLine(string.Join(",", new[]
                 {
-                    CsvEscape(p.Product),
-                    CsvEscape(p.Handle),
-                    CsvEscape(p.Vendor),
-                    CsvEscape(p.Types),
-                    CsvEscape(p.Tags),
-                    CsvEscape(p.Description),
-                    CsvEscape(p.Status.ToString()),
-                    CsvEscape(p.Category),
-                    CsvEscape(p.UnitPrice.ToString()),
-                    CsvEscape(p.Stock.ToString()),
-                    CsvEscape(p.SKU),
-                    CsvEscape(p.Weight.ToString()),
-                    CsvEscape(p.Unit.ToString()),
-                    CsvEscape(p.Code),
-                    CsvEscape(p.Policy.ToString()),
-                    CsvEscape(p.VariantStatus.ToString()),
-                    CsvEscape(p.VariantName),
-                    CsvEscape(p.VariantValue)
-                }));
+            CsvEscape(pv.Product.ProductName),
+            CsvEscape(pv.Product.Handle),
+            CsvEscape(pv.Product.Vendor?.Name ?? ""),
+            CsvEscape(pv.Product.Type),
+            CsvEscape(pv.Product.Tag),
+            CsvEscape(pv.Product.Description),
+            CsvEscape(pv.Product.IsActive.ToString()),
+            CsvEscape(pv.Product.IsUnlisted.ToString()),
+            CsvEscape(pv.Product.Category?.FullCategory ?? ""),
+            CsvEscape(pv.UnitPrice.ToString()),
+            CsvEscape(pv.CostPrice?.ToString() ?? ""),
+            CsvEscape(pv.CompareAtPrice?.ToString() ?? ""),
+            CsvEscape(pv.StockQuantity.ToString()),
+            CsvEscape(pv.SKU_ExternalID ?? ""),
+            CsvEscape(pv.Weight?.ToString() ?? ""),
+            CsvEscape(pv.Unit.ToString()),
+            CsvEscape(pv.Barcode ?? ""),
+            CsvEscape(pv.InventoryPolicy?.ToString() ?? ""),
+            CsvEscape(pv.Status.ToString()),
+            CsvEscape(variantName1),
+            CsvEscape(variantValue1),
+            CsvEscape(variantName2),
+            CsvEscape(variantValue2),
+            CsvEscape(variantName3),
+            CsvEscape(variantValue3)
+        }));
             }
 
             var bytes = Encoding.UTF8.GetBytes(sb.ToString());
-            return File(bytes, "text/csv", "PontelloSports.csv");
+            return File(bytes, "text/csv", "PontelloProducts.csv");
         }
 
         private string CsvEscape(string value)
@@ -664,7 +665,7 @@ namespace PontelloApp.Controllers
                                     UnitPrice = price,
                                     StockQuantity = stock,
                                     SKU_ExternalID = sku,
-                                    InventoryPolicy = InventoryPolicy.Continue 
+                                    InventoryPolicy = InventoryPolicy.Continue
                                 };
                                 _context.ProductVariants.Add(variant);
                                 await _context.SaveChangesAsync();
