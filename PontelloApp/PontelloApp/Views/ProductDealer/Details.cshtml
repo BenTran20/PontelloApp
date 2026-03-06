@@ -5,15 +5,41 @@
     <!-- SUCCESS MESSAGE -->
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <div id="successAlert" class="alert alert-success fade show shadow-sm">
             <i class="bi bi-check-circle-fill me-2"></i>
-            @TempData["SuccessMessage"]
-
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert">
-            </button>
+            <strong>@TempData["SuccessMessage"]</strong>
         </div>
+
+        <script>
+            setTimeout(() => {
+                const alert = document.getElementById("successAlert");
+                if (alert) {
+                    alert.style.transition = "opacity 0.5s ease";
+                    alert.style.opacity = "0";
+                    setTimeout(() => alert.remove(), 500);
+                }
+            }, 5000);
+        </script>
+    }
+
+    <!-- ERROR MESSAGE (server-side validation) -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div id="errorAlert" class="alert alert-danger fade show shadow-sm">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>@TempData["ErrorMessage"]</strong>
+        </div>
+
+        <script>
+            setTimeout(() => {
+                const alert = document.getElementById("errorAlert");
+                if (alert) {
+                    alert.style.transition = "opacity 0.5s ease";
+                    alert.style.opacity = "0";
+                    setTimeout(() => alert.remove(), 500);
+                }
+            }, 5000);
+        </script>
     }
 
     <div class="row g-5">
@@ -38,7 +64,7 @@
 
                     <div class="row mb-2">
                         <div class="col-4 text-muted">Vendor</div>
-                        <div class="col-8 fw-semibold">@Model.Vendor</div>
+                        <div class="col-8 fw-semibold">@Model.Vendor.Name</div>
                     </div>
 
                     <div class="row mb-2">
@@ -76,7 +102,7 @@
                         Buy Product
                     </h5>
 
-                    <form asp-action="AddToCart" method="post">
+                    <form asp-action="AddToCart" method="post" id="addToCartForm">
 
                         <input type="hidden"
                                name="productId"
@@ -91,6 +117,7 @@
 
                             <select name="variantId"
                                     class="form-select"
+                                    id="variantSelect"
                                     required>
 
                                 <option value="">
@@ -99,13 +126,18 @@
 
                                 @foreach (var v in Model.Variants ?? Enumerable.Empty<PontelloApp.Models.ProductVariant>())
                                 {
-                                    <option value="@v.Id">
+                                    <option value="@v.Id" data-stock="@v.StockQuantity">
                                         @string.Join(" • ", v.Options.Select(o => $"{o.Name}: {o.Value}"))
                                         — @v.UnitPrice.ToString("C")
                                     </option>
                                 }
 
                             </select>
+
+                            <div class="mt-2 text-muted small" id="variantStockInfo" style="display:none;">
+                                Stock: <span id="stockQty">0</span>
+                                <span id="stockOutLabel" class="fw-semibold text-danger" style="display:none;"> (Out of stock)</span>
+                            </div>
 
                         </div>
 
@@ -118,14 +150,20 @@
 
                             <input type="number"
                                    name="quantity"
+                                   id="quantityInput"
                                    value="1"
                                    min="1"
                                    class="form-control" />
+
+                            <div class="mt-2" id="quantityFeedback" style="display:none;">
+                                <small class="text-danger" id="quantityFeedbackText"></small>
+                            </div>
 
                         </div>
 
                         <!-- ADD TO CART -->
                         <button type="submit"
+                                id="addToCartBtn"
                                 class="btn btn-primary w-100 py-3 fw-semibold">
 
                             <i class="bi bi-cart-plus me-2"></i>
@@ -144,3 +182,100 @@
     </div>
 
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const variantSelect = document.getElementById('variantSelect');
+            const stockQtySpan = document.getElementById('stockQty');
+            const stockInfo = document.getElementById('variantStockInfo');
+            const stockOutLabel = document.getElementById('stockOutLabel');
+            const quantityInput = document.getElementById('quantityInput');
+            const addBtn = document.getElementById('addToCartBtn');
+            const quantityFeedback = document.getElementById('quantityFeedback');
+            const quantityFeedbackText = document.getElementById('quantityFeedbackText');
+            const form = document.getElementById('addToCartForm');
+
+            function getSelectedOption() {
+                return variantSelect.options[variantSelect.selectedIndex];
+            }
+
+            function parseStock(opt) {
+                if (!opt) return 0;
+                return parseInt(opt.getAttribute('data-stock') || '0', 10);
+            }
+
+            function showStock() {
+                const opt = getSelectedOption();
+                if (!opt || !opt.value) {
+                    stockInfo.style.display = 'none';
+                    quantityFeedback.style.display = 'block';
+                    quantityFeedbackText.textContent = 'Please select a variant.';
+                    addBtn.disabled = true;
+                    return;
+                }
+
+                const stock = parseStock(opt);
+                stockQtySpan.textContent = stock;
+                stockInfo.style.display = 'block';
+
+                if (stock <= 0) {
+                    stockOutLabel.style.display = 'inline';
+                } else {
+                    stockOutLabel.style.display = 'none';
+                }
+
+                validateQuantity();
+            }
+
+            function validateQuantity() {
+                const opt = getSelectedOption();
+                if (!opt || !opt.value) {
+                    addBtn.disabled = true;
+                    return;
+                }
+
+                const stock = parseStock(opt);
+                const qty = Math.max(0, parseInt(quantityInput.value || '0', 10));
+
+                if (qty <= 0) {
+                    quantityFeedback.style.display = 'block';
+                    quantityFeedbackText.textContent = 'Quantity must be at least 1.';
+                    addBtn.disabled = true;
+                    return;
+                }
+
+                if (stock <= 0) {
+                    quantityFeedback.style.display = 'block';
+                    quantityFeedbackText.textContent = 'Selected variant is out of stock.';
+                    addBtn.disabled = true;
+                    return;
+                }
+
+                if (qty > stock) {
+                    quantityFeedback.style.display = 'block';
+                    quantityFeedbackText.textContent = `Requested quantity (${qty}) exceeds available stock (${stock}).`;
+                    addBtn.disabled = true;
+                    return;
+                }
+
+                // valid
+                quantityFeedback.style.display = 'none';
+                addBtn.disabled = false;
+            }
+
+            // Prevent submission when invalid (defensive)
+            form.addEventListener('submit', function (e) {
+                if (addBtn.disabled) {
+                    e.preventDefault();
+                }
+            });
+
+            variantSelect.addEventListener('change', showStock);
+            quantityInput.addEventListener('input', validateQuantity);
+
+            // initialize
+            showStock();
+        })();
+    </script>
+}
