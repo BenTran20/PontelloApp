@@ -48,6 +48,20 @@
                 </datalist>
             </div>
 
+            <!-- Cost Price -->
+            <div class="mb-3">
+                <label asp-for="CostPrice" class="form-label">
+                    Cost Price
+                    <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip" title="Optional: cost to acquire this variant, max 2 decimal places."></i>
+                </label>
+                <input asp-for="CostPrice" type="text" list="CostPriceList" class="form-control" placeholder="0.00" inputmode="decimal"
+                       oninput="this.value = this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
+                <span asp-validation-for="CostPrice" class="text-danger"></span>
+                <datalist id="CostPriceList">
+                    <option value="1.00"></option>
+                </datalist>
+            </div>
+
             <!-- Compare At Price -->
             <div class="mb-3">
                 <label asp-for="CompareAtPrice" class="form-label">
