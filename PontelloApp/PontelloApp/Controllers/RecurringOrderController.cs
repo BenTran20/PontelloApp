@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
@@ -66,7 +66,7 @@ namespace PontelloApp.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            model.NextRun = CalculateNextRun(model); // hàm tính như đã gửi trước
+            model.NextRun = CalculateNextRun(model); 
             _context.Add(model);
             await _context.SaveChangesAsync();
 
