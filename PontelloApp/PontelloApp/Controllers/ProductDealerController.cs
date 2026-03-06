@@ -79,6 +79,7 @@ namespace PontelloApp.Controllers
                 .Include(p => p.Variants)
                     .ThenInclude(v => v.Options)
                 .Include(p => p.Category)
+                .Include(p => p.Vendor)
                 .FirstOrDefaultAsync(p => p.ID == id && p.IsActive);
 
             if (product == null) return NotFound();
@@ -89,6 +90,29 @@ namespace PontelloApp.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToCart(int productId, int variantId, int quantity)
         {
+            // Basic server-side validation
+            if (quantity <= 0)
+            {
+                TempData["ErrorMessage"] = "Quantity must be at least 1.";
+                return RedirectToAction("Details", new { id = productId });
+            }
+
+            var variant = await _context.ProductVariants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.Id == variantId);
+
+            if (variant == null)
+            {
+                TempData["ErrorMessage"] = "Selected product variant not found.";
+                return RedirectToAction("Details", new { id = productId });
+            }
+
+            if (variant.StockQuantity < quantity)
+            {
+                TempData["ErrorMessage"] = $"Requested quantity ({quantity}) exceeds available stock ({variant.StockQuantity}).";
+                return RedirectToAction("Details", new { id = productId });
+            }
+
             int dealerId = 1;
             await _orderService.AddToCartAsync(dealerId, productId, variantId, quantity);
 

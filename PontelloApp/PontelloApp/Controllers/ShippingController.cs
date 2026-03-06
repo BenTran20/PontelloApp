@@ -84,10 +84,62 @@ namespace PontelloApp.Controllers
 
             order.TotalAmount = Math.Round(subtotal + order.TaxAmount, 2);
 
-            // mark submitted now shipping provided
-            order.Status = OrderStatus.Submitted;
+            // We will mark submitted now that shipping is provided.
+            // Before persisting, decrement stock for each variant in an atomic transaction.
+            // Aggregate quantities by variant id to avoid double-check races within the order
+            var variantQuantities = order.Items?
+                .Where(i => i.ProductVariantId.HasValue)
+                .GroupBy(i => i.ProductVariantId!.Value)
+                .Select(g => new { VariantId = g.Key, Quantity = g.Sum(i => i.Quantity) })
+                .ToList() ?? new();
 
-            await _context.SaveChangesAsync();
+            // Start transaction so stock updates + order status change are atomic
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // For each variant referenced in the order, load tracked entity and decrement
+                foreach (var vq in variantQuantities)
+                {
+                    var variant = await _context.ProductVariants
+                        .FirstOrDefaultAsync(v => v.Id == vq.VariantId);
+
+                    if (variant == null)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Product variant (ID {vq.VariantId}) not found. Please review your cart.");
+                        await transaction.RollbackAsync();
+                        return View(order);
+                    }
+
+                    if (variant.StockQuantity < vq.Quantity)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Insufficient stock for variant '{variant.SKU_ExternalID ?? variant.Id.ToString()}'. Available: {variant.StockQuantity}, requested: {vq.Quantity}.");
+                        await transaction.RollbackAsync();
+                        return View(order);
+                    }
+
+                    variant.StockQuantity -= vq.Quantity;
+                    _context.ProductVariants.Update(variant);
+                }
+
+                // mark submitted now shipping provided
+                order.Status = OrderStatus.Submitted;
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError(string.Empty, "Unable to update stock because the item was modified by someone else. Please review your cart and try again.");
+                return View(order);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                ModelState.AddModelError(string.Empty, "An unexpected error occurred while submitting the order. Please try again.");
+                return View(order);
+            }
 
             TempData["SuccessMessage"] = "Shipping info saved successfully.";
 
