@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
@@ -27,7 +27,7 @@ namespace PontelloApp.Controllers
             int numberFilters = 0;
             PopulateDropDownLists();
             var products = _context.Products
-                .Where(p => p.IsActive) 
+                .Where(p => p.IsActive && !p.IsUnlisted) 
                 .Include(p => p.Category)
                 .AsNoTracking();
 
@@ -80,7 +80,7 @@ namespace PontelloApp.Controllers
                     .ThenInclude(v => v.Options)
                 .Include(p => p.Category)
                 .Include(p => p.Vendor)
-                .FirstOrDefaultAsync(p => p.ID == id && p.IsActive);
+                .FirstOrDefaultAsync(p => p.ID == id && p.IsActive && !p.IsUnlisted);
 
             if (product == null) return NotFound();
 
@@ -107,12 +107,24 @@ namespace PontelloApp.Controllers
                 return RedirectToAction("Details", new { id = productId });
             }
 
-            if (variant.StockQuantity < quantity)
+            // Treat null InventoryPolicy as Deny for safety
+            var policy = variant.InventoryPolicy ?? InventoryPolicy.Deny;
+
+            // If policy denies and stock is zero -> cannot order
+            if (policy == InventoryPolicy.Deny && variant.StockQuantity <= 0)
+            {
+                TempData["ErrorMessage"] = "Selected variant is out of stock.";
+                return RedirectToAction("Details", new { id = productId });
+            }
+
+            // If policy denies, ensure requested quantity does not exceed stock
+            if (policy == InventoryPolicy.Deny && variant.StockQuantity < quantity)
             {
                 TempData["ErrorMessage"] = $"Requested quantity ({quantity}) exceeds available stock ({variant.StockQuantity}).";
                 return RedirectToAction("Details", new { id = productId });
             }
 
+            // If policy is Continue (special order), allow ordering regardless of stock
             int dealerId = 1;
             await _orderService.AddToCartAsync(dealerId, productId, variantId, quantity);
 
