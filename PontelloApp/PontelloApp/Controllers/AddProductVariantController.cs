@@ -165,6 +165,7 @@ namespace PontelloApp.Controllers
             if (await TryUpdateModelAsync<ProductVariant>(variantToUpdate, "",
                 v => v.SKU_ExternalID,
                 v => v.UnitPrice,
+                v => v.CostPrice,
                 v => v.CompareAtPrice,
                 v => v.StockQuantity,
                 v => v.Weight,
@@ -237,6 +238,9 @@ namespace PontelloApp.Controllers
                             if (databaseValues.UnitPrice != clientValues.UnitPrice)
                                 ModelState.AddModelError("UnitPrice", "Current value: "
                                     + databaseValues.UnitPrice);
+                            if (databaseValues.CostPrice != clientValues.CostPrice)
+                                ModelState.AddModelError("CostPrice", "Current value: "
+                                    + databaseValues.CostPrice);
                             if (databaseValues.StockQuantity != clientValues.StockQuantity)
                                 ModelState.AddModelError("StockQuantity", "Current value: "
                                     + databaseValues.StockQuantity);
@@ -263,7 +267,7 @@ namespace PontelloApp.Controllers
                             }
                             ModelState.AddModelError(string.Empty, "The record you attempted to update "
                                     + "was modified by another user after you received your values. The "
-                                    + "edit operation was canceled and the current values in the database "
+                                    + "update operation was canceled and the current values in the database "
                                     + "have been displayed. If you still want to save your version of this record, click "
                                     + "the Save button again. Otherwise click the 'Back to Product List' hyperlink.");
 
