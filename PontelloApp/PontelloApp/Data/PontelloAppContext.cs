@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Models;
-using System.Numerics;
 
 namespace PontelloApp.Data
 {
@@ -48,9 +47,10 @@ namespace PontelloApp.Data
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Shipping> Shippings { get; set; }
 
-        public DbSet<Vendor> Vendors { get; set; }  
+        public DbSet<Vendor> Vendors { get; set; }
 
-
+        public DbSet<RecurringOrder> RecurringOrders { get; set; }
+        public DbSet<RecurringOrderExecutionLog> RecurringOrderExecutionLogs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Prevent Cascade Delete from Category to Product

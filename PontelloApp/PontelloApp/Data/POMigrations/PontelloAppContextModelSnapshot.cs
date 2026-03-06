@@ -61,6 +61,13 @@ namespace PontelloApp.Data.POMigrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CreatedOn")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("DealerId")
                         .HasColumnType("INTEGER");
 
@@ -76,7 +83,7 @@ namespace PontelloApp.Data.POMigrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("BLOB");
 
-                    b.Property<int>("ShippingId")
+                    b.Property<int?>("ShippingId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("Status")
@@ -87,6 +94,13 @@ namespace PontelloApp.Data.POMigrations
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -255,6 +269,69 @@ namespace PontelloApp.Data.POMigrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductVariants");
+                });
+
+            modelBuilder.Entity("PontelloApp.Models.RecurringOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("MonthlyDay")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("NextRun")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("OriginalOrderId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<TimeSpan>("TimeOfDay")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("WeeklyDay")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OriginalOrderId");
+
+                    b.ToTable("RecurringOrders");
+                });
+
+            modelBuilder.Entity("PontelloApp.Models.RecurringOrderExecutionLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("NewOrderId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RecurringOrderId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("RunAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Success")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecurringOrderId");
+
+                    b.ToTable("RecurringOrderExecutionLogs");
                 });
 
             modelBuilder.Entity("PontelloApp.Models.Shipping", b =>
@@ -455,6 +532,28 @@ namespace PontelloApp.Data.POMigrations
                         .IsRequired();
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("PontelloApp.Models.RecurringOrder", b =>
+                {
+                    b.HasOne("PontelloApp.Models.Order", "OriginalOrder")
+                        .WithMany()
+                        .HasForeignKey("OriginalOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OriginalOrder");
+                });
+
+            modelBuilder.Entity("PontelloApp.Models.RecurringOrderExecutionLog", b =>
+                {
+                    b.HasOne("PontelloApp.Models.RecurringOrder", "RecurringOrder")
+                        .WithMany()
+                        .HasForeignKey("RecurringOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RecurringOrder");
                 });
 
             modelBuilder.Entity("PontelloApp.Models.Shipping", b =>

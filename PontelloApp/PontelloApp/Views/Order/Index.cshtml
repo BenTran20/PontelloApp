@@ -194,7 +194,19 @@
                                                 <i class="bi bi-truck"></i> Shipping Info
                                             </a>
                                         }
+
+
+                                        <a class="btn btn-warning"
+                                           asp-controller="RecurringOrder"
+                                           asp-action="Create"
+                                           asp-route-orderId="@o.Id">
+                                           Recurring Order
+                                        </a>
+
+
+                                        
                                     </div>
+
                                 </td>
 
                             </tr>

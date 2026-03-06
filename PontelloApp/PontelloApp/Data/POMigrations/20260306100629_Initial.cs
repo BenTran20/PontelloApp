@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -48,8 +48,12 @@ namespace PontelloApp.Data.POMigrations
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    ShippingId = table.Column<int>(type: "INTEGER", nullable: false),
-                    RowVersion = table.Column<byte[]>(type: "BLOB", rowVersion: true, nullable: true)
+                    ShippingId = table.Column<int>(type: "INTEGER", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "BLOB", rowVersion: true, nullable: true),
+                    CreatedBy = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
+                    CreatedOn = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    UpdatedBy = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
+                    UpdatedOn = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -78,6 +82,31 @@ namespace PontelloApp.Data.POMigrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Vendors", x => x.VendorID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RecurringOrders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    OriginalOrderId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Frequency = table.Column<string>(type: "TEXT", nullable: false),
+                    TimeOfDay = table.Column<TimeSpan>(type: "TEXT", nullable: false),
+                    WeeklyDay = table.Column<int>(type: "INTEGER", nullable: true),
+                    MonthlyDay = table.Column<int>(type: "INTEGER", nullable: true),
+                    NextRun = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RecurringOrders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RecurringOrders_Orders_OriginalOrderId",
+                        column: x => x.OriginalOrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -138,6 +167,29 @@ namespace PontelloApp.Data.POMigrations
                         column: x => x.VendorID,
                         principalTable: "Vendors",
                         principalColumn: "VendorID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RecurringOrderExecutionLogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    RecurringOrderId = table.Column<int>(type: "INTEGER", nullable: false),
+                    RunAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Success = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Message = table.Column<string>(type: "TEXT", nullable: true),
+                    NewOrderId = table.Column<int>(type: "INTEGER", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RecurringOrderExecutionLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RecurringOrderExecutionLogs_RecurringOrders_RecurringOrderId",
+                        column: x => x.RecurringOrderId,
+                        principalTable: "RecurringOrders",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -275,6 +327,16 @@ namespace PontelloApp.Data.POMigrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RecurringOrderExecutionLogs_RecurringOrderId",
+                table: "RecurringOrderExecutionLogs",
+                column: "RecurringOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RecurringOrders_OriginalOrderId",
+                table: "RecurringOrders",
+                column: "OriginalOrderId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Shippings_OrderId",
                 table: "Shippings",
                 column: "OrderId",
@@ -299,16 +361,22 @@ namespace PontelloApp.Data.POMigrations
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
+                name: "RecurringOrderExecutionLogs");
+
+            migrationBuilder.DropTable(
                 name: "Shippings");
 
             migrationBuilder.DropTable(
                 name: "Variants");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "RecurringOrders");
 
             migrationBuilder.DropTable(
                 name: "ProductVariants");
+
+            migrationBuilder.DropTable(
+                name: "Orders");
 
             migrationBuilder.DropTable(
                 name: "Products");

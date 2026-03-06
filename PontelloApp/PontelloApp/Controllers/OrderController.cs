@@ -31,7 +31,7 @@ namespace PontelloApp.Controllers
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                 .Include(o => o.Shipping)
-                .Where(o => o.DealerId == dealerId && o.Status != Models.OrderStatus.Draft)
+                .Where(o => o.DealerId == dealerId)
                 .OrderByDescending(o => o.CreatedAt)
                 .AsNoTracking();
 
