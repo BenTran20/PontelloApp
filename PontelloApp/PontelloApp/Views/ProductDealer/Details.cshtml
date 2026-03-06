@@ -126,7 +126,9 @@
 
                                 @foreach (var v in Model.Variants ?? Enumerable.Empty<PontelloApp.Models.ProductVariant>())
                                 {
-                                    <option value="@v.Id" data-stock="@v.StockQuantity">
+                                    <option value="@v.Id"
+                                            data-stock="@v.StockQuantity"
+                                            data-inventory="@(v.InventoryPolicy.HasValue ? v.InventoryPolicy.Value.ToString().ToLower() : "deny")">
                                         @string.Join(" • ", v.Options.Select(o => $"{o.Name}: {o.Value}"))
                                         — @v.UnitPrice.ToString("C")
                                     </option>
@@ -137,6 +139,7 @@
                             <div class="mt-2 text-muted small" id="variantStockInfo" style="display:none;">
                                 Stock: <span id="stockQty">0</span>
                                 <span id="stockOutLabel" class="fw-semibold text-danger" style="display:none;"> (Out of stock)</span>
+                                <span id="specialOrderLabel" class="fw-semibold text-success" style="display:none;"> (Special order available)</span>
                             </div>
 
                         </div>
@@ -190,6 +193,7 @@
             const stockQtySpan = document.getElementById('stockQty');
             const stockInfo = document.getElementById('variantStockInfo');
             const stockOutLabel = document.getElementById('stockOutLabel');
+            const specialOrderLabel = document.getElementById('specialOrderLabel');
             const quantityInput = document.getElementById('quantityInput');
             const addBtn = document.getElementById('addToCartBtn');
             const quantityFeedback = document.getElementById('quantityFeedback');
@@ -205,6 +209,11 @@
                 return parseInt(opt.getAttribute('data-stock') || '0', 10);
             }
 
+            function parseInventoryPolicy(opt) {
+                if (!opt) return 'deny';
+                return (opt.getAttribute('data-inventory') || 'deny').toLowerCase();
+            }
+
             function showStock() {
                 const opt = getSelectedOption();
                 if (!opt || !opt.value) {
@@ -216,13 +225,24 @@
                 }
 
                 const stock = parseStock(opt);
+                const inventory = parseInventoryPolicy(opt);
+
                 stockQtySpan.textContent = stock;
                 stockInfo.style.display = 'block';
 
-                if (stock <= 0) {
-                    stockOutLabel.style.display = 'inline';
-                } else {
-                    stockOutLabel.style.display = 'none';
+                // reset labels
+                stockOutLabel.style.display = 'none';
+                specialOrderLabel.style.display = 'none';
+
+                if (inventory === 'deny') {
+                    if (stock <= 0) {
+                        stockOutLabel.style.display = 'inline';
+                    }
+                } else if (inventory === 'continue') {
+                    // special order: allow ordering even when stock is zero
+                    if (stock <= 0) {
+                        specialOrderLabel.style.display = 'inline';
+                    }
                 }
 
                 validateQuantity();
@@ -236,6 +256,7 @@
                 }
 
                 const stock = parseStock(opt);
+                const inventory = parseInventoryPolicy(opt);
                 const qty = Math.max(0, parseInt(quantityInput.value || '0', 10));
 
                 if (qty <= 0) {
@@ -245,18 +266,24 @@
                     return;
                 }
 
-                if (stock <= 0) {
-                    quantityFeedback.style.display = 'block';
-                    quantityFeedbackText.textContent = 'Selected variant is out of stock.';
-                    addBtn.disabled = true;
-                    return;
-                }
+                if (inventory === 'deny') {
+                    if (stock <= 0) {
+                        quantityFeedback.style.display = 'block';
+                        quantityFeedbackText.textContent = 'Selected variant is out of stock.';
+                        addBtn.disabled = true;
+                        return;
+                    }
 
-                if (qty > stock) {
-                    quantityFeedback.style.display = 'block';
-                    quantityFeedbackText.textContent = `Requested quantity (${qty}) exceeds available stock (${stock}).`;
-                    addBtn.disabled = true;
-                    return;
+                    if (qty > stock) {
+                        quantityFeedback.style.display = 'block';
+                        quantityFeedbackText.textContent = `Requested quantity (${qty}) exceeds available stock (${stock}).`;
+                        addBtn.disabled = true;
+                        return;
+                    }
+                } else if (inventory === 'continue') {
+                    // special order: allow ordering regardless of stock (including stock == 0)
+                    // still hide quantity feedback
+                    quantityFeedback.style.display = 'none';
                 }
 
                 // valid
