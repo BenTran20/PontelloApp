@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Models;
 
@@ -17,16 +17,30 @@ namespace PontelloApp.Services
         {
             var original = await _db.Orders
                 .Include(o => o.Items)
+                .Include(o => o.Shipping)
                 .FirstOrDefaultAsync(o => o.Id == r.OriginalOrderId);
 
             if (original == null) throw new Exception("Original order not found");
 
             var newOrder = new Order
             {
+                PONumber = $"PO-{DateTime.Now:yyyyMMddHHmmss}",
                 DealerId = original.DealerId,
-                Status = OrderStatus.Draft,
+                Status = OrderStatus.Submitted,
                 CreatedAt = DateTime.Now
             };
+            if (original.Shipping != null)
+            {
+                newOrder.Shipping = new Shipping
+                {
+                    FullName = original.Shipping.FullName,
+                    Address = original.Shipping.Address,
+                    Phone = original.Shipping.Phone,
+                    Email = original.Shipping.Email,
+                    BinOrEin = original.Shipping.BinOrEin
+                };
+            }
+
 
             foreach (var item in original.Items)
             {
