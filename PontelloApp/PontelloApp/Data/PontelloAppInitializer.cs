@@ -1002,7 +1002,7 @@ namespace PontelloApp.Data
                            {
                                ProductId = 23,
                                UnitPrice = 22.5m,
-                               StockQuantity = 0,
+                               StockQuantity = 4,
                                SKU_ExternalID = "3726894",
                                InventoryPolicy = InventoryPolicy.Continue,
                                Weight = 130.4078064m,
@@ -1012,10 +1012,23 @@ namespace PontelloApp.Data
                                Options = new List<Variant>
                                     {
                                         new Variant { Name = "Size", Value = "Small" },
-                                        new Variant { Name = "Color", Value = "Forest" },
+                                        new Variant { Name = "Color", Value = "Forest" }
+                                    }
+                           },
+                            new ProductVariant //23
+                           {
+                               ProductId = 23,
+                               UnitPrice = 21.5m,
+                               StockQuantity = 2,
+                               SKU_ExternalID = "3726811",
+                               InventoryPolicy = InventoryPolicy.Continue,
+                               Weight = 130.4078064m,
+                               Unit = ImperialUnits.oz,
+                               Barcode = "",
+                               Status = true,
+                               Options = new List<Variant>
+                                    {
                                         new Variant { Name = "Size", Value = "Medium" },
-                                        new Variant { Name = "Color", Value = "Forest" },
-                                        new Variant { Name = "Size", Value = "Large" },
                                         new Variant { Name = "Color", Value = "Forest" }
                                     }
                            }
