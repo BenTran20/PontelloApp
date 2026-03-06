@@ -36,6 +36,9 @@ namespace PontelloApp.Models
         [Display(Name = "Is Active")]
         public bool IsActive { get; set; }
 
+        [Display(Name = "Is Unlisted")]
+        public bool IsUnlisted { get; set; } = false;
+
         [ScaffoldColumn(false)]
         [Timestamp]
         public Byte[]? RowVersion { get; set; }//Added for concurrency
