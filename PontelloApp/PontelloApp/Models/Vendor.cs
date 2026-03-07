@@ -24,6 +24,7 @@ namespace PontelloApp.Models
 
         [Display(Name = "Email")]
         [StringLength(255)]
+        [DataType(DataType.EmailAddress)]
         [EmailAddress(ErrorMessage = "Enter a valid email address.")]
 
         public string? Email { get; set; }
@@ -66,3 +67,4 @@ namespace PontelloApp.Models
     }
 
 }
+
