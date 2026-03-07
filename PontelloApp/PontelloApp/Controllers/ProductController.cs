@@ -546,9 +546,7 @@ namespace PontelloApp.Controllers
         [HttpPost]
         public async Task<IActionResult> InsertFromCsv(IFormFile csvFile)
         {
-            string feedback = "";
-            int successCount = 0;
-            int errorCount = 0;
+            string feedback = string.Empty;
 
             if (csvFile == null || csvFile.Length == 0)
             {
@@ -564,136 +562,194 @@ namespace PontelloApp.Controllers
 
             try
             {
-                using (var memoryStream = new MemoryStream())
+                using (var package = new OfficeOpenXml.ExcelPackage())
                 {
-                    await csvFile.CopyToAsync(memoryStream);
-                    memoryStream.Position = 0;
+                    var workSheet = package.Workbook.Worksheets.Add("TempSheet");
 
-                    using (var reader = new StreamReader(memoryStream))
+                    using (var reader = new StreamReader(csvFile.OpenReadStream()))
                     {
-                        string headerLine = await reader.ReadLineAsync();
-                        if (headerLine == null)
+                        string csvText = await reader.ReadToEndAsync();
+                        var format = new ExcelTextFormat
                         {
-                            TempData["Feedback"] = "Error: CSV file is empty.<br/>";
-                            return RedirectToAction(nameof(Create));
-                        }
+                            Delimiter = ',',
+                            TextQualifier = '"'
+                        };
+                        workSheet.Cells.LoadFromText(csvText, format);
+                    }
 
-                        // Split header
-                        var headers = headerLine.Split(',');
-                        if (headers.Length < 11 || headers[0] != "Product" || headers[1] != "Handle" || headers[2] != "Vendor")
+                    var start = workSheet.Dimension.Start;
+                    var end = workSheet.Dimension.End;
+
+                    int successCount = 0;
+                    int errorCount = 0;
+
+                    // Optional: Validate headers first
+                    var headers = new[]
+                    {
+                        "Product","Handle","Vendor","Types","Tags","Description",
+                        "Status","Unlisted","Category","UnitPrice","CostPrice","ComparePrice",
+                        "Stock","SKU","Weight","Unit","Barcode","Policy","VariantStatus",
+                        "VariantName1","VariantValue1","VariantName2","VariantValue2",
+                        "VariantName3","VariantValue3"
+                    };
+
+                    bool headersValid = true;
+                    for (int col = 1; col <= headers.Length; col++)
+                    {
+                        if (!string.Equals(workSheet.Cells[1, col].Text.Trim(), headers[col - 1], StringComparison.OrdinalIgnoreCase))
                         {
-                            TempData["Feedback"] = "Error: CSV headers incorrect. Must start with Product, Handle, Vendor.<br/>";
-                            return RedirectToAction(nameof(Create));
-                        }
-
-                        int rowNumber = 1;
-                        while (!reader.EndOfStream)
-                        {
-                            rowNumber++;
-                            var line = await reader.ReadLineAsync();
-                            var values = line.Split(',');
-
-                            List<string> rowErrors = new List<string>();
-
-                            string productName = values.Length > 0 ? values[0].Trim() : "";
-                            string handle = values.Length > 1 ? values[1].Trim() : "";
-                            string vendorName = values.Length > 2 ? values[2].Trim() : "";
-                            string type = values.Length > 3 ? values[3].Trim() : "";
-                            string tag = values.Length > 4 ? values[4].Trim() : "";
-                            string description = values.Length > 5 ? values[5].Trim() : "";
-                            string statusText = values.Length > 6 ? values[6].Trim() : "";
-                            string categoryName = values.Length > 7 ? values[7].Trim() : "";
-                            string priceText = values.Length > 8 ? values[8].Trim() : "";
-                            string stockText = values.Length > 9 ? values[9].Trim() : "";
-                            string sku = values.Length > 10 ? values[10].Trim() : "";
-
-                            decimal price;
-                            int stock;
-
-                            if (string.IsNullOrEmpty(productName))
-                                rowErrors.Add("ProductName missing");
-                            if (string.IsNullOrEmpty(handle))
-                                rowErrors.Add("Handle missing");
-                            if (!decimal.TryParse(priceText, out price))
-                                rowErrors.Add("UnitPrice invalid");
-                            if (!int.TryParse(stockText, out stock))
-                                rowErrors.Add("Stock invalid");
-
-                            var vendor = await _context.Vendors
-                                .FirstOrDefaultAsync(v => v.Name.ToLower() == vendorName.ToLower());
-                            if (vendor == null)
-                                rowErrors.Add($"Vendor '{vendorName}' not found");
-
-                            var category = await _context.Categories
-                                .FirstOrDefaultAsync(c => c.Name == categoryName);
-                            if (category == null)
-                                rowErrors.Add($"Category '{categoryName}' not found");
-
-                            var duplicate = await _context.Products
-                                .FirstOrDefaultAsync(p => p.Handle == handle);
-                            if (duplicate != null)
-                                rowErrors.Add("Duplicate handle");
-
-                            bool isActive = statusText.ToLower() == "true" || statusText.ToLower() == "active";
-
-                            if (rowErrors.Count > 0)
-                            {
-                                errorCount++;
-                                feedback += $"Row {rowNumber}: {string.Join(", ", rowErrors)} <br/>";
-                                continue;
-                            }
-
-                            try
-                            {
-                                Product product = new Product
-                                {
-                                    ProductName = productName,
-                                    Handle = handle,
-                                    VendorID = vendor.VendorID,
-                                    Type = type,
-                                    Tag = tag,
-                                    Description = description,
-                                    CategoryID = category.ID,
-                                    IsActive = isActive
-                                };
-                                _context.Products.Add(product);
-                                await _context.SaveChangesAsync();
-
-                                ProductVariant variant = new ProductVariant
-                                {
-                                    ProductId = product.ID,
-                                    UnitPrice = price,
-                                    StockQuantity = stock,
-                                    SKU_ExternalID = sku,
-                                    InventoryPolicy = InventoryPolicy.Continue
-                                };
-                                _context.ProductVariants.Add(variant);
-                                await _context.SaveChangesAsync();
-
-                                successCount++;
-                            }
-                            catch (DbUpdateException dex)
-                            {
-                                errorCount++;
-                                feedback += $"Row {rowNumber}: Database error - {dex.Message}<br/>";
-                            }
-                            catch (Exception ex)
-                            {
-                                errorCount++;
-                                feedback += $"Row {rowNumber}: System error - {ex.Message}<br/>";
-                            }
+                            headersValid = false;
+                            break;
                         }
                     }
-                }
 
-                TempData["Feedback"] = $"Finished importing {successCount + errorCount} records: " +
-                                       $"{successCount} inserted, {errorCount} rejected.<br/>{feedback}";
+                    if (!headersValid)
+                    {
+                        TempData["Feedback"] = "Error: CSV headers incorrect.<br/>";
+                        return RedirectToAction(nameof(Create));
+                    }
+
+                    // Process rows
+                    for (int row = start.Row + 1; row < end.Row; row++)
+                    {
+                        List<string> rowErrors = new List<string>();
+
+                        // Read all cell values
+                        string productName = workSheet.Cells[row, 1].Text.Trim();
+                        string handle = workSheet.Cells[row, 2].Text.Trim();
+                        string vendorName = workSheet.Cells[row, 3].Text.Trim();
+                        string type = workSheet.Cells[row, 4].Text.Trim();
+                        string tag = workSheet.Cells[row, 5].Text.Trim();
+                        string description = workSheet.Cells[row, 6].Text.Trim();
+                        string statusText = workSheet.Cells[row, 7].Text.Trim();
+                        string unlistedText = workSheet.Cells[row, 8].Text.Trim();
+                        string categoryName = workSheet.Cells[row, 9].Text.Trim();
+                        string priceText = workSheet.Cells[row, 10].Text.Trim();
+                        string costPriceText = workSheet.Cells[row, 11].Text.Trim();
+                        string comparePriceText = workSheet.Cells[row, 12].Text.Trim();
+                        string stockText = workSheet.Cells[row, 13].Text.Trim();
+                        string sku = workSheet.Cells[row, 14].Text.Trim();
+                        string weightText = workSheet.Cells[row, 15].Text.Trim();
+                        string unitText = workSheet.Cells[row, 16].Text.Trim();
+                        string barcode = workSheet.Cells[row, 17].Text.Trim();
+                        string policy = workSheet.Cells[row, 18].Text.Trim();
+                        string status = workSheet.Cells[row, 19].Text.Trim();
+                        string variantName1 = workSheet.Cells[row, 20].Text.Trim();
+                        string variantValue1 = workSheet.Cells[row, 21].Text.Trim();
+                        string variantName2 = workSheet.Cells[row, 22].Text.Trim();
+                        string variantValue2 = workSheet.Cells[row, 23].Text.Trim();
+                        string variantName3 = workSheet.Cells[row, 24].Text.Trim();
+                        string variantValue3 = workSheet.Cells[row, 25].Text.Trim();
+
+                        // Parse numbers
+                        decimal.TryParse(priceText, out decimal price);
+                        decimal.TryParse(costPriceText, out decimal costPrice);
+                        decimal.TryParse(comparePriceText, out decimal comparePrice);
+                        decimal.TryParse(weightText, out decimal weight);
+                        int.TryParse(stockText, out int stock);
+
+                        // Parse unit
+                        ImperialUnits unit = unitText.ToLower() switch
+                        {
+                            "oz" => ImperialUnits.oz,
+                            "floz" or "fl oz" => ImperialUnits.floz,
+                            "lb" or "lbs" => ImperialUnits.lb,
+                            _ => ImperialUnits.oz
+                        };
+                        if (!Enum.IsDefined(typeof(ImperialUnits), unit))
+                            rowErrors.Add($"Invalid Unit '{unitText}'");
+
+                        // Validate required fields
+                        if (string.IsNullOrEmpty(productName)) rowErrors.Add("ProductName missing");
+                        if (string.IsNullOrEmpty(handle)) rowErrors.Add("Handle missing");
+                        if (!decimal.TryParse(priceText, out _)) rowErrors.Add("UnitPrice invalid");
+                        if (!int.TryParse(stockText, out _)) rowErrors.Add("Stock invalid");
+
+                        var vendor = await _context.Vendors.FirstOrDefaultAsync(v => v.Name.ToLower() == vendorName.ToLower());
+                        if (vendor == null) rowErrors.Add($"Vendor '{vendorName}' not found");
+
+                        var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == categoryName);
+                        if (category == null) rowErrors.Add($"Category '{categoryName}' not found");
+
+                        bool isActive = statusText.ToLower() == "true" || statusText.ToLower() == "active";
+                        bool isUnlisted = unlistedText.ToLower() == "true";
+
+                        if (rowErrors.Any())
+                        {
+                            errorCount++;
+                            feedback += $"Row {row}: {string.Join(", ", rowErrors)} <br/>";
+                            continue;
+                        }
+
+                        try
+                        {
+                            // Insert product
+                            Product product = await _context.Products.FirstOrDefaultAsync(p => p.Handle == handle)
+                                              ?? new Product
+                                              {
+                                                  ProductName = productName,
+                                                  Handle = handle,
+                                                  VendorID = vendor.VendorID,
+                                                  Type = type,
+                                                  Tag = tag,
+                                                  Description = description,
+                                                  CategoryID = category.ID,
+                                                  IsActive = isActive,
+                                                  IsUnlisted = isUnlisted
+                                              };
+
+                            if (product.ID == 0) _context.Products.Add(product);
+                            await _context.SaveChangesAsync();
+
+                            // Insert variant
+                            ProductVariant variant = new ProductVariant
+                            {
+                                ProductId = product.ID,
+                                UnitPrice = price,
+                                CostPrice = costPrice,
+                                CompareAtPrice = comparePrice,
+                                StockQuantity = stock,
+                                SKU_ExternalID = sku,
+                                Weight = weight,
+                                Barcode = barcode,
+                                InventoryPolicy = policy.ToLower() == "deny" ? InventoryPolicy.Deny : InventoryPolicy.Continue,
+                                Unit = unit,
+                                Status = status.ToLower() == "true" || status.ToLower() == "active"
+                            };
+
+                            _context.ProductVariants.Add(variant);
+                            await _context.SaveChangesAsync();
+
+                            // Insert variant options
+                            var options = new List<Variant>();
+                            if (!string.IsNullOrEmpty(variantName1)) options.Add(new Variant { ProductVariantId = variant.Id, Name = variantName1, Value = variantValue1 });
+                            if (!string.IsNullOrEmpty(variantName2)) options.Add(new Variant { ProductVariantId = variant.Id, Name = variantName2, Value = variantValue2 });
+                            if (!string.IsNullOrEmpty(variantName3)) options.Add(new Variant { ProductVariantId = variant.Id, Name = variantName3, Value = variantValue3 });
+
+                            if (options.Any())
+                            {
+                                _context.Variants.AddRange(options);
+                                await _context.SaveChangesAsync();
+                            }
+
+                            successCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            errorCount++;
+                            feedback += $"Row {row}: Error - {ex.Message}<br/>";
+                        }
+                    }
+
+                    feedback = $"Finished importing {successCount + errorCount} records: {successCount} inserted, {errorCount} rejected.<br/>{feedback}";
+                }
             }
             catch (Exception ex)
             {
-                TempData["Feedback"] = $"Error reading CSV file: {ex.Message}<br/>";
+                feedback = $"Error reading CSV file: {ex.Message}<br/>";
             }
 
+            TempData["Feedback"] = feedback;
             return RedirectToAction(nameof(Create));
         }
     }
