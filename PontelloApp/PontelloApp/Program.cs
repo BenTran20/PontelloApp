@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using QuestPDF.Infrastructure;
 using PontelloApp.Data;
 using PontelloApp.Services;
 using PontelloApp.Ultilities;
+using PontelloApp.ViewModels;
+using QuestPDF.Infrastructure;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +30,17 @@ builder.Services.AddHostedService<RecurringOrderBackgroundService>();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+//For email service configuration
+builder.Services.AddSingleton<IEmailConfiguration>(
+    builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>()!
+);
+
+//For the Identity System
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
+//Email with methods for production use.
+builder.Services.AddTransient<IMyEmailSender, MyEmailSender>();
 
 var app = builder.Build();
 
