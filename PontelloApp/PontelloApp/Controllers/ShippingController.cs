@@ -249,10 +249,7 @@ namespace PontelloApp.Controllers
                     {
                         string subject = $"Your Pontello Order {order.PONumber}";
                         string body = $@"
-                        <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333;"">
-                            <div style=""text-align:center; margin-bottom:20px;"">
-                                <img src=""~/Images/pontello-Imports-Logo.png""
-                            </div>
+                            <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
 
                             <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>
 
