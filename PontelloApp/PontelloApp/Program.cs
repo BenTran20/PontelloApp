@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Services;
 using PontelloApp.Ultilities;
+using PontelloApp.ViewModels;
 using QuestPDF.Infrastructure;
 
 
@@ -20,6 +21,14 @@ builder.Services.AddDbContext<PontelloAppContext>(options =>
     options.UseSqlite(connectionString));
 builder.Services.AddScoped<OrderService>();
 
+//For email service configuration
+builder.Services.AddSingleton<IEmailConfiguration>(
+    builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>()!
+);
+
+//For the Identity System
+builder.Services.AddTransient<EmailSender>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -29,17 +38,6 @@ builder.Services.AddHostedService<RecurringOrderBackgroundService>();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
-
-//For email service configuration
-//builder.Services.AddSingleton<IEmailConfiguration>(
-//    builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>()!
-//);
-
-//For the Identity System
-//builder.Services.AddTransient<IEmailSender, EmailSender>();
-
-//Email with methods for production use.
-//builder.Services.AddTransient<IMyEmailSender, MyEmailSender>();
 
 var app = builder.Build();
 
