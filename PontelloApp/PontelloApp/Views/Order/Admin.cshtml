@@ -79,7 +79,7 @@
 									}
 									@if (status == PontelloApp.Models.OrderStatus.Approved)
 									{
-										<td><a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">View</a></td>
+										<td><a asp-action="Shipped" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">View</a></td>
 									}
 									@if (status == PontelloApp.Models.OrderStatus.Rejected)
 									{
@@ -99,3 +99,4 @@
 		}
 	</div>
 </div>
+
