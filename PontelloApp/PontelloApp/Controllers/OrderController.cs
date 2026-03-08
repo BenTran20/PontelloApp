@@ -124,6 +124,21 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
+        public async Task<IActionResult> Review(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                .Include(o => o.Shipping)
+                .FirstOrDefaultAsync(o => o.Id == id);
+        
+            if (order == null) return NotFound();
+        
+            return View(order);
+        }
+
         public IActionResult ExportOrderPO(int id)
         {
             var order = _context.Orders
@@ -279,10 +294,10 @@ namespace PontelloApp.Controllers
                     .ThenInclude(i => i.ProductVariant)
                 .Include(o => o.Shipping)
                 .FirstOrDefaultAsync(o => o.Id == id &&
-                    (o.Status == OrderStatus.Submitted));
+                    (o.Status == OrderStatus.Submitted || o.Status == OrderStatus.Approved));
 
             if (order == null || order.Items == null || !order.Items.Any())
-                return RedirectToAction("Order");
+                return RedirectToAction("Action", "Order");
 
             // generate PO, keep status as Draft until shipping is provided
             order.PONumber = $"PO-{DateTime.Now:yyyyMMddHHmmss}";
@@ -293,11 +308,14 @@ namespace PontelloApp.Controllers
             if (status == "Approved")
             {
                 order.Status = OrderStatus.Approved;
-
             }
-            else if(status == "Rejected")
+            if(status == "Rejected")
             {
                 order.Status = OrderStatus.Rejected;
+            }
+            if(status == "Shipped")
+            {
+                order.Status = OrderStatus.Shipped;
             }
 
             // persist the created order (with its items and shipping placeholder)
@@ -308,6 +326,7 @@ namespace PontelloApp.Controllers
 
     }
 }
+
 
 
 
