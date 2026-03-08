@@ -280,7 +280,7 @@ namespace PontelloApp.Controllers
             {
                 new EmailAddress
                 {
-                    Name = order.Shipping?.FullName ?? "Customer",
+                    Name = order.Shipping?.FullName ?? "Dealer",
                     Address = order.Shipping?.Email ?? ""
                 }
             };
@@ -299,7 +299,7 @@ namespace PontelloApp.Controllers
 
                         await _emailSender.SendToManyAsync(msg);
 
-                        ViewData["Message"] = "Message sent to " + folksCount + " customer"
+                        ViewData["Message"] = "Message sent to " + folksCount + " dealer"
                             + ((folksCount == 1) ? "." : "s.");
                     }
                     else
@@ -310,7 +310,7 @@ namespace PontelloApp.Controllers
                 catch (Exception ex)
                 {
                     string errMsg = ex.GetBaseException().Message;
-                    ViewData["Message"] = "Error: Could not send email message to the customer.";
+                    ViewData["Message"] = "Error: Could not send email message to the dealer.";
                 }
             }
 
@@ -332,4 +332,5 @@ namespace PontelloApp.Controllers
 
     }
 }
+
 
