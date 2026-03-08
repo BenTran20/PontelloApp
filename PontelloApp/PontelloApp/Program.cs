@@ -32,15 +32,15 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddControllersWithViews();
 
 //For email service configuration
-builder.Services.AddSingleton<IEmailConfiguration>(
-    builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>()!
-);
+//builder.Services.AddSingleton<IEmailConfiguration>(
+//    builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>()!
+//);
 
 //For the Identity System
-builder.Services.AddTransient<IEmailSender, EmailSender>();
+//builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 //Email with methods for production use.
-builder.Services.AddTransient<IMyEmailSender, MyEmailSender>();
+//builder.Services.AddTransient<IMyEmailSender, MyEmailSender>();
 
 var app = builder.Build();
 
