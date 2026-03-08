@@ -164,15 +164,25 @@ namespace PontelloApp.Data
                             new Vendor { Name = "Speed Karts" },
                             new Vendor { Name = "MCP" },
                             new Vendor { Name = "PMI" },
-                            new Vendor { Name = "Ultramax" },
-                            new Vendor { Name = "RacingTech" },
-                            new Vendor { Name = "Universal Parts" },
-                            new Vendor { Name = "K1 RaceGear" },
-                            new Vendor { Name = "RLV" },
-                            new Vendor { Name = "Burris Racing" },
-                            new Vendor { Name = "AMV Wheels" },
-                            new Vendor { Name = "Vega Tires" },
-                            new Vendor { Name = "Hoosier Racing Tire" }
+                            new Vendor { Name = "Franklin Signs" },
+                            new Vendor { Name = "Uprinting" },
+                            new Vendor { Name = "John's Kart Bodies" },
+                            new Vendor { Name = "Chavous Racing Products" },
+                            new Vendor { Name = "CHAVOUS" },
+                            new Vendor { Name = "Berkebile Oil Company" },
+                            new Vendor { Name = "Twenty5 Supply" },
+                            new Vendor { Name = "Driven Racing Oil" },
+                            new Vendor { Name = "HBM Reaper Tires" },
+                            new Vendor { Name = "Van-K Wheels" },
+                            new Vendor { Name = "PRC Carbon" },
+                            new Vendor { Name = "Platinum Racing Chassis" },
+                            new Vendor { Name = "Phantom Racing Chassis" },
+                            new Vendor { Name = "Tilt Steering Wheel" },
+                            new Vendor { Name = "MiniLite" },
+                            new Vendor { Name = "NeXgen" },
+                            new Vendor { Name = "Xcel Drive Systems" },
+                            new Vendor { Name = "MEGA Mounts" },
+                            new Vendor { Name = "Accutoe Advanced" }
                         );
 
                         context.SaveChanges();
@@ -182,7 +192,7 @@ namespace PontelloApp.Data
                     if (!context.Products.Any())
                     {
                         // Vendor IDs
-                        var racingTechId = context.Vendors.First(v => v.Name == "RacingTech").VendorID;
+                        var uprintingId = context.Vendors.First(v => v.Name == "Uprinting").VendorID;
                         var chargerId = context.Vendors.First(v => v.Name == "Charger Racing Chassis").VendorID;
                         var aimId = context.Vendors.First(v => v.Name == "AiM Technology").VendorID;
                         var authenticId = context.Vendors.First(v => v.Name == "Authentic Phantom Component").VendorID;
@@ -1046,5 +1056,6 @@ namespace PontelloApp.Data
         }
     }
 }
+
 
 
