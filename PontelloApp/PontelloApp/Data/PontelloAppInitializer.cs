@@ -528,7 +528,7 @@ namespace PontelloApp.Data
                                 UnitPrice = 33.90m,
                                 StockQuantity = 20,
                                 SKU_ExternalID = "1170",
-                                VariantPrice = "56.5",
+                                CostPrice = 56.5m,
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
                                 Unit = ImperialUnits.lb,
@@ -545,7 +545,7 @@ namespace PontelloApp.Data
                                 UnitPrice = 39.55m,
                                 StockQuantity = 22,
                                 SKU_ExternalID = "1171",
-                                VariantPrice = "56.5",
+                                CostPrice = 56.5m,
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
                                 Unit = ImperialUnits.lb,
@@ -562,7 +562,7 @@ namespace PontelloApp.Data
                                 UnitPrice = 33.90m,
                                 StockQuantity = 22,
                                 SKU_ExternalID = "1182",
-                                VariantPrice = "33.9",
+                                CostPrice = 33.9m,
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
                                 Unit = ImperialUnits.lb,
@@ -579,7 +579,7 @@ namespace PontelloApp.Data
                                 UnitPrice = 39.55m,
                                 StockQuantity = 22,
                                 SKU_ExternalID = "1183",
-                                VariantPrice = "39.55",
+                                CostPrice = 39.55m,
                                 InventoryPolicy = InventoryPolicy.Deny,
                                 Weight = 453.59237m,
                                 Unit = ImperialUnits.lb,
@@ -596,7 +596,7 @@ namespace PontelloApp.Data
                                 UnitPrice = 14.3m,
                                 StockQuantity = 42,
                                 SKU_ExternalID = "1075",
-                                VariantPrice = "20.45",
+                                CostPrice = 20.45m,
                                 InventoryPolicy = InventoryPolicy.Continue,
                                 Weight = 453.59237m,
                                 Unit = ImperialUnits.lb,
@@ -613,7 +613,7 @@ namespace PontelloApp.Data
                                 UnitPrice = 14.3m,
                                 StockQuantity = 31,
                                 SKU_ExternalID = "1074",
-                                VariantPrice = "14.3",
+                                CostPrice = 14.3m,
                                 InventoryPolicy = InventoryPolicy.Continue,
                                 Weight = 453.59237m,
                                 Unit = ImperialUnits.lb,
@@ -1062,7 +1062,3 @@ namespace PontelloApp.Data
         }
     }
 }
-
-
-
-
