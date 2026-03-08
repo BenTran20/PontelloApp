@@ -212,7 +212,7 @@ namespace PontelloApp.Data
                                 IsActive = false,
                                 CategoryID = catWheelsId,
                                 Handle = "ultra-racing-wheel",
-                                VendorID = racingTechId,
+                                VendorID = chargerId,
                                 Tag = "Racing Wheel"
                             },
                             new Product //2
