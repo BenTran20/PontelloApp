@@ -4,20 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Models;
 using PontelloApp.Utilities;
-using PontelloApp.ViewModels;
 using QuestPDF.Fluent;
 
 namespace PontelloApp.Controllers
 {
     public class OrderController : Controller
     {
-        private readonly IMyEmailSender _emailSender;
         private readonly PontelloAppContext _context;
 
-        public OrderController(PontelloAppContext context, IMyEmailSender emailSender)
+        public OrderController(PontelloAppContext context)
         {
             _context = context;
-            _emailSender = emailSender;
         }
 
         // GET: /Order
@@ -244,80 +241,6 @@ namespace PontelloApp.Controllers
             return File(pdf, "application/pdf", $"Purchase Order .pdf");
         }
 
-        // GET/POST: Orders/SendEmail/5
-        public async Task<IActionResult> SendEmail(int? id, string Subject, string emailContent)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            // Load the order
-            Order? order = await _context.Orders
-                .Include(o => o.Items)
-                .Include(o => o.Shipping)
-                .FirstOrDefaultAsync(o => o.Id == id);
-
-            if (order == null)
-            {
-                return NotFound();
-            }
-
-            ViewData["id"] = id;
-            ViewData["OrderNumber"] = order.PONumber;
-            ViewData["CustomerEmail"] = order.Shipping?.Email;
-
-            if (string.IsNullOrEmpty(Subject) || string.IsNullOrEmpty(emailContent))
-            {
-                ViewData["Message"] = "You must enter both a Subject and some message Content before sending the message.";
-            }
-            else
-            {
-                int folksCount = 0;
-
-                try
-                {
-                    List<EmailAddress> folks = new()
-            {
-                new EmailAddress
-                {
-                    Name = order.Shipping?.FullName ?? "Dealer",
-                    Address = order.Shipping?.Email ?? ""
-                }
-            };
-
-                    folksCount = folks.Count;
-
-                    if (folksCount > 0)
-                    {
-                        var msg = new EmailMessage()
-                        {
-                            ToAddresses = folks,
-                            Subject = Subject,
-                            Content = "<p>" + emailContent + "</p>"
-                                      + "<p>Your order number is <strong>" + order.PONumber + "</strong>.</p>"
-                        };
-
-                        await _emailSender.SendToManyAsync(msg);
-
-                        ViewData["Message"] = "Message sent to " + folksCount + " dealer"
-                            + ((folksCount == 1) ? "." : "s.");
-                    }
-                    else
-                    {
-                        ViewData["Message"] = "Message NOT sent! No email address found for this order.";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    string errMsg = ex.GetBaseException().Message;
-                    ViewData["Message"] = "Error: Could not send email message to the dealer.";
-                }
-            }
-
-            return View(order);
-        }
-
         private SelectList OrderStatusSelectList(OrderStatus? selectedStatus)
         {
             var statusList = Enum.GetValues(typeof(OrderStatus))
@@ -333,6 +256,7 @@ namespace PontelloApp.Controllers
 
     }
 }
+
 
 
 
