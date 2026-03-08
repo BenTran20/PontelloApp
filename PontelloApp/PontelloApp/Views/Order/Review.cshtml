@@ -106,19 +106,19 @@
                         }
                     </div>
                 }
-                <form asp-action="Decision" asp-route-id="@Model.Id" method="post">
+                <form asp-action="Decision" asp-route-id="@Model.Id" method="post" class="d-flex gap-3">
 
                     <button type="submit"
                             name="status"
                             value="Approved"
-                            class="btn btn-success w-100 py-3 rounded-pill">
+                            class="btn btn-success flex-fill py-3 rounded shadow-sm fw-semibold">
                         Approve
                     </button>
 
                     <button type="submit"
                             name="status"
                             value="Rejected"
-                            class="btn btn-danger w-100 py-3 rounded-pill">
+                            class="btn btn-danger flex-fill py-3 rounded shadow-sm fw-semibold">
                         Reject
                     </button>
 
