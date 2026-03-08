@@ -108,6 +108,22 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
+        // GET: /Order/Review/5
+        public async Task<IActionResult> Review(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                .Include(o => o.Shipping)
+                .FirstOrDefaultAsync(o => o.Id == id);
+        
+            if (order == null) return NotFound();
+        
+            return View(order);
+        }
+
         public IActionResult ExportOrderPO(int id)
         {
             var order = _context.Orders
@@ -254,8 +270,45 @@ namespace PontelloApp.Controllers
             return new SelectList(statusList, "Value", "Text", selectedStatus);
         }
 
+        public async Task<IActionResult> Decision(int id, string status)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                .Include(o => o.Shipping)
+                .FirstOrDefaultAsync(o => o.Id == id &&
+                    (o.Status == OrderStatus.Submitted));
+
+            if (order == null || order.Items == null || !order.Items.Any())
+                return RedirectToAction("Order");
+
+            // generate PO, keep status as Draft until shipping is provided
+            order.PONumber = $"PO-{DateTime.Now:yyyyMMddHHmmss}";
+
+            order.CreatedAt = DateTime.Now;
+
+
+            if (status == "Approved")
+            {
+                order.Status = OrderStatus.Approved;
+
+            }
+            else if(status == "Rejected")
+            {
+                order.Status = OrderStatus.Rejected;
+            }
+
+            // persist the created order (with its items and shipping placeholder)
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Admin", "Order");
+        }
+
     }
 }
+
 
 
 
