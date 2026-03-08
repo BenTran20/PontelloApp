@@ -67,7 +67,28 @@
 											<span class="text-muted">Not provided</span>
 										}
 									</td>
-									<td><a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">View</a></td>
+									@if (status == PontelloApp.Models.OrderStatus.Progress)
+									{
+										<td><a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">View</a></td>
+
+									}
+									@if (status == PontelloApp.Models.OrderStatus.Submitted)
+									{
+										<td><a asp-action="Review" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">View</a></td>
+
+									}
+									@if (status == PontelloApp.Models.OrderStatus.Approved)
+									{
+										<td><a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">View</a></td>
+									}
+									@if (status == PontelloApp.Models.OrderStatus.Rejected)
+									{
+										<td><a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">View</a></td>
+									}
+									@if (status == PontelloApp.Models.OrderStatus.Shipped)
+									{
+										<td><a asp-action="Details" asp-route-id="@o.Id" class="btn btn-sm btn-outline-primary">View</a></td>
+									}
 								</tr>
 							}
 						}
