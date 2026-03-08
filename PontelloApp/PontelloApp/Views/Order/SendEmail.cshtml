@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Send Order Email";
+}
+
+<h1>Send Order Email</h1>
+
+<h2>Message to Dealer for Order #@ViewData["OrderNumber"]</h2>
+
+<hr />
+
+<form asp-action="SendEmail">
+    <div class="row">
+        <div class="col-md-8">
+
+            <div class="text-danger">@ViewData["Message"]</div>
+            <hr />
+
+            <input type="hidden" name="id" value="@ViewData["id"]" />
+            <input type="hidden" name="OrderNumber" value="@ViewData["OrderNumber"]" />
+            <input type="hidden" name="DealerEmail" value="@ViewData["DealerEmail"]" />
+
+            <div class="form-group mb-3">
+                <label for="Subject" class="control-label">Email Subject</label>
+                <input type="text" id="Subject" name="Subject" class="form-control" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="emailContent" class="control-label">Message Content</label>
+                <textarea id="emailContent" name="emailContent" rows="5" cols="40" class="form-control"></textarea>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Send" class="btn btn-primary" />
+            </div>
+
+        </div>
+    </div>
+</form> 
+
+<div class="mt-3">
+    <a asp-action="Details" asp-route-id="@ViewData["id"]" class="btn btn-secondary">
+        Back to Order
+    </a>
+</div>
