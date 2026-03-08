@@ -456,6 +456,17 @@ namespace PontelloApp.Data
                                 VendorID = chargerId,
                                 Tag = "charger, prodigy, prodigy cadet",
                                 Type = ""
+                            },
+                            new Product //24
+                            {
+                                ProductName = "JKB Fiberglass Seat",
+                                Description = "The JKB Fiberglass Seat provides a durable, lightweight, and performance-driven seating solution for kart racers. Designed to deliver optimal driver support and comfort, the JKB seat combines strength with ergonomic shaping for improved control and consistency on track. Its fiberglass construction offers a balance of rigidity and flexibility, making it ideal for both junior and adult karting applications. Key Features: \r\n Lightweight Fiberglass Construction: Ensures reduced overall kart weight without compromising durability.\r\nErgonomic Design: Contoured to enhance driver comfort and maintain a stable seating position under cornering loads.\r\nRace-Proven Durability: Built to withstand impacts and stress from competitive racing.\r\nHigh-Quality Finish: Smooth, clean surface ready for direct mounting or seat padding installation.\r\nAvailable Sizes: Offered in multiple sizes, including Rookie Junior, and Senior, to suit a wide range of drivers.\r\nApplication: Ideal for Charger Platinum, and Prodigy chassis karts. Recommended for both youth and adult racers seeking a professional-grade seat that balances comfort, control, and performance.\r\n",
+                                IsActive = true,
+                                CategoryID = catUncategorizedId,
+                                Handle = "fiberglass-seat",
+                                VendorID = chargerId,
+                                Tag = "Seats & Accessories",
+                                Type = "Seats & Accessories"
                             }
                         );
 
@@ -1072,8 +1083,26 @@ namespace PontelloApp.Data
                                         new Variant { Name = "Size", Value = "Medium" },
                                         new Variant { Name = "Color", Value = "Forest" }
                                     }
+                            },
+                            new ProductVariant //24
+                            {
+                                ProductId = 24,
+                                UnitPrice = 129.95m,
+                                StockQuantity = 1,
+                                SKU_ExternalID = "",
+                                CostPrice = 129.95m,
+                                CompareAtPrice = 109.99m,
+                                InventoryPolicy = InventoryPolicy.Deny,
+                                Weight = 2267.96185m,
+                                Unit = ImperialUnits.lb,
+                                Barcode = "",
+                                Status = true,
+                                Options = new List<Variant>
+                                    {
+                                        new Variant { Name = "Style", Value = "Evolution" },
+                                        new Variant { Name = "Size", Value = "Small" }
+                                    }
                             }
-
                             );
                         context.SaveChanges();
                     }
