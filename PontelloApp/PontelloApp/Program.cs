@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Services;
 using PontelloApp.Ultilities;
-using PontelloApp.ViewModels;
 using QuestPDF.Infrastructure;
 
 
