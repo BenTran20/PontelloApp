@@ -1,128 +1,184 @@
 @model PontelloApp.Models.Order
 
 @{
-    ViewData["Title"] = "Order Confirmed";
+    ViewData["Title"] = "Review Order";
 }
 
-<div class="container py-5">
-    <!-- HEADER -->
-    <div class="text-center mb-5">
-        <p class="fw-semibold">Order #: @Model.PONumber</p>
-    </div>
+<div class="container py-4">
 
-    <div class="row g-4">
-        <div class="d-flex justify-content-end mt-2">
-            <a asp-action="ExportOrderPO" asp-route-id="@Model.Id" class="btn btn-info px-3">
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Review Order</h2>
+            <div class="text-muted small">
+                PO#: <strong>@Model.PONumber</strong>
+                • Created: @Model.CreatedAt.ToString("f")
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a asp-action="ExportOrderPO"
+               asp-route-id="@Model.Id"
+               class="btn btn-outline-secondary">
                 Download PO
             </a>
         </div>
+    </div>
 
-        <!-- LEFT SIDE -->
+
+    <div class="row g-4">
+
+        <!-- LEFT SIDE : ORDER ITEMS -->
         <div class="col-lg-8">
 
-            <div class="card border-0 shadow-sm rounded-4 p-4">
-                <h5 class="fw-bold mb-4">Items in Your Order</h5>
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white fw-semibold">
+                    Order Items
+                </div>
 
-                @foreach (var item in Model.Items)
-                {
-                    <div class="row align-items-center mb-4 pb-3 border-bottom">
+                <div class="card-body p-0">
 
-                        <!-- Product Info -->
-                        <div class="col-md-8">
-                            <h6 class="fw-semibold mb-1">
-                                @item.Product?.ProductName
-                            </h6>
+                    <table class="table table-hover align-middle mb-0">
 
-                            @if (item.ProductVariant != null && item.ProductVariant.Options.Any())
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Variant</th>
+                                <th>Unit Price</th>
+                                <th>Qty</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var item in Model.Items)
                             {
-                                <small class="text-muted">
-                                    @string.Join(" • ", item.ProductVariant.Options.Select(o => $"{o.Name}: {o.Value}"))
-                                </small>
+                                <tr>
+
+                                    <td class="fw-semibold">
+                                        @item.Product?.ProductName
+                                    </td>
+
+                                    <td class="text-muted small">
+                                        @if (item.ProductVariant != null && item.ProductVariant.Options.Any())
+                                        {
+                                            @string.Join(" • ",
+                                            item.ProductVariant.Options.Select(o => $"{o.Name}: {o.Value}"))
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+
+                                    <td>$@item.UnitPrice</td>
+
+                                    <td>@item.Quantity</td>
+
+                                    <td class="text-end fw-semibold">
+                                        $@item.TotalPrice
+                                    </td>
+
+                                </tr>
                             }
 
-                            <div class="mt-2 text-muted small">
-                                Unit Price: $@item.UnitPrice
-                            </div>
-                        </div>
+                        </tbody>
 
-                        <!-- Quantity + Total -->
-                        <div class="col-md-4 text-md-end">
-                            <div>Qty: <strong>@item.Quantity</strong></div>
-                            <div class="fw-bold mt-1">
-                                $@item.TotalPrice
-                            </div>
-                        </div>
+                    </table>
 
-                    </div>
-                }
+                </div>
             </div>
 
         </div>
 
-        <!-- RIGHT SIDE -->
+
+        <!-- RIGHT SIDE : ORDER SUMMARY -->
         <div class="col-lg-4">
 
-            <div class="card border-0 shadow rounded-4 p-4 sticky-top" style="top: 100px;">
-                <h5 class="fw-bold mb-4">Order Summary</h5>
+            <div class="card shadow-sm border-0 sticky-top" style="top:100px;">
 
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Subtotal</span>
-                    <span>$@Model.Items.Sum(i => i.TotalPrice)</span>
+                <div class="card-header bg-white fw-semibold">
+                    Order Summary
                 </div>
 
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Tax (13%)</span>
-                    <span>$@Model.TaxAmount</span>
-                </div>
+                <div class="card-body">
 
-                <hr />
-
-                <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
-                    <span>Total</span>
-                    <span>$@Model.TotalAmount</span>
-                </div>
-
-                @if (Model.Shipping != null)
-                {
-                    <div class="bg-light rounded-3 p-3 mb-4">
-                        <h6 class="fw-bold mb-2">Shipping Information</h6>
-                        <small class="text-muted d-block">@Model.Shipping.FullName</small>
-                        <small class="text-muted d-block">@Model.Shipping.Address</small>
-                        <small class="text-muted d-block">Phone: @Model.Shipping.Phone</small>
-                        <small class="text-muted d-block">Email: @Model.Shipping.Email</small>
-
-                        @if (!string.IsNullOrWhiteSpace(Model.Shipping.BinOrEin))
-                        {
-                            <small class="text-muted d-block mt-1">
-                                BIN / EIN: @Model.Shipping.BinOrEin
-                            </small>
-                        }
-
-                        @if (!string.IsNullOrWhiteSpace(Model.Shipping.TrackingNumber))
-                        {
-                            <small class="text-muted d-block mt-2">
-                                Tracking: @Model.Shipping.TrackingNumber
-                            </small>
-                        }
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal</span>
+                        <span>$@Model.Items.Sum(i => i.TotalPrice)</span>
                     </div>
-                }
-                <form asp-action="Decision" asp-route-id="@Model.Id" method="post" class="d-flex gap-3">
 
-                    <button type="submit"
-                            name="status"
-                            value="Approved"
-                            class="btn btn-success flex-fill py-3 rounded shadow-sm fw-semibold">
-                        Approve
-                    </button>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax (13%)</span>
+                        <span>$@Model.TaxAmount</span>
+                    </div>
 
-                    <button type="submit"
-                            name="status"
-                            value="Rejected"
-                            class="btn btn-danger flex-fill py-3 rounded shadow-sm fw-semibold">
-                        Reject
-                    </button>
+                    <hr />
 
-                </form>
+                    <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+                        <span>Total</span>
+                        <span>$@Model.TotalAmount</span>
+                    </div>
+
+
+                    <!-- SHIPPING -->
+                    @if (Model.Shipping != null)
+                    {
+                        <div class="bg-light rounded p-3 mb-4 small">
+
+                            <div class="fw-semibold mb-2">
+                                Shipping Information
+                            </div>
+
+                            <div>@Model.Shipping.FullName</div>
+                            <div class="text-muted">@Model.Shipping.Address</div>
+                            <div class="text-muted">Phone: @Model.Shipping.Phone</div>
+                            <div class="text-muted">Email: @Model.Shipping.Email</div>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.Shipping.BinOrEin))
+                            {
+                                <div class="text-muted mt-2">
+                                    BIN / EIN: @Model.Shipping.BinOrEin
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(Model.Shipping.TrackingNumber))
+                            {
+                                <div class="text-muted mt-2">
+                                    Tracking: @Model.Shipping.TrackingNumber
+                                </div>
+                            }
+
+                        </div>
+                    }
+
+                    @if (Model.Status != OrderStatus.Shipped)
+                    {
+                        <!-- ACTIONS -->
+                        <form asp-action="Decision"
+                              asp-route-id="@Model.Id"
+                              method="post"
+                              class="d-grid gap-2">
+
+                            <button type="submit"
+                                    name="status"
+                                    value="Approved"
+                                    class="btn btn-success">
+                                Approve Order
+                            </button>
+
+                            <button type="submit"
+                                    name="status"
+                                    value="Rejected"
+                                    class="btn btn-outline-danger">
+                                Reject Order
+                            </button>
+
+                        </form>
+                    }
+                </div>
+
             </div>
 
         </div>
