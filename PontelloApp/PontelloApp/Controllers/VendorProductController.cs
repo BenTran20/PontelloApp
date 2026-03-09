@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 
 namespace PontelloApp.Controllers
 {
-    public class VendorProductController : ElephantController
+    public class VendorProductController : Controller
     {
         private readonly PontelloAppContext _context;
 
@@ -21,7 +20,6 @@ namespace PontelloApp.Controllers
             if (vendorId == null)
                 return NotFound();
 
-            // Master
             var vendor = await _context.Vendors
                 .AsNoTracking()
                 .FirstOrDefaultAsync(v => v.VendorID == vendorId);
@@ -31,7 +29,6 @@ namespace PontelloApp.Controllers
 
             ViewBag.Vendor = vendor;
 
-            // Details
             var products = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Variants)
@@ -42,8 +39,6 @@ namespace PontelloApp.Controllers
 
             return View(products);
         }
-
-
 
         // GET: VendorProducts/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -63,18 +58,16 @@ namespace PontelloApp.Controllers
             return View(vendor);
         }
 
-        // GET: VendorProducts/Add
-        public IActionResult Add()
+        // GET: VendorProducts/Create
+        public IActionResult Create()
         {
             return View();
         }
 
-        // POST: VendorProducts/Add
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: VendorProducts/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add([Bind("VendorID,Name,ContactName,Phone,Email,EIN,IsTaxExempt,IsArchived,RowVersion")] Vendor vendor)
+        public async Task<IActionResult> Create([Bind("VendorID,Name,ContactName,Phone,Email,IsArchived,RowVersion")] Vendor vendor)
         {
             if (ModelState.IsValid)
             {
@@ -102,11 +95,9 @@ namespace PontelloApp.Controllers
         }
 
         // POST: VendorProducts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("VendorID,Name,ContactName,Phone,Email,EIN,IsTaxExempt,IsArchived,RowVersion")] Vendor vendor)
+        public async Task<IActionResult> Edit(int id, [Bind("VendorID,Name,ContactName,Phone,Email,IsArchived,RowVersion")] Vendor vendor)
         {
             if (id != vendor.VendorID)
             {
@@ -136,8 +127,8 @@ namespace PontelloApp.Controllers
             return View(vendor);
         }
 
-        // GET: VendorProducts/Archive/5
-        public async Task<IActionResult> Archive(int? id)
+        // GET: VendorProducts/Delete/5
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
@@ -154,10 +145,10 @@ namespace PontelloApp.Controllers
             return View(vendor);
         }
 
-        // POST: VendorProducts/Archive/5
-        [HttpPost, ActionName("Archive")]
+        // POST: VendorProducts/Delete/5
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ArchiveConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var vendor = await _context.Vendors.FindAsync(id);
             if (vendor != null)
