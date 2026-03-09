@@ -4,7 +4,9 @@
     ViewData["Title"] = "Vendors";
 }
 
-<partial name="_BackToList" />
+<a asp-action="Index" asp-controller="Product" class="btn btn-outline-secondary btn-sm">
+    <em class="bi bi-arrow-left"></em> Back to Products
+</a>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="m-0">Vendors</h1>
@@ -25,7 +27,6 @@
             <th>Contact</th>
             <th>Email</th>
             <th>Phone</th>
-            <th>EIN</th>
             <th class="text-end">Actions</th>
         </tr>
     </thead>
@@ -37,7 +38,6 @@
                 <td>@vendor.ContactName</td>
                 <td>@vendor.Email</td>
                 <td>@vendor.Phone</td>
-                <td>@vendor.EIN</td>
                 <td class="text-end">
                     <a asp-action="Edit" asp-route-id="@vendor.VendorID"
                        class="btn btn-sm btn-primary me-1"
