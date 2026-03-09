@@ -256,6 +256,7 @@ namespace PontelloApp.Data
                                 CategoryID = catUncategorizedId,
                                 Handle = "1-2-id-kingpin-washer",
                                 VendorID = chargerId,
+                                IsUnlisted=true,
                                 Tag = "Kingpin Items, Legacy, legacy cadet, Magnum, Prodigy, prodigy cadet, spindle, Spindle Items",
                                 Type = "Spindle Items"
                             },
@@ -452,6 +453,7 @@ namespace PontelloApp.Data
                                 Description = "This t-shirt is everything you've dreamed of and more. It feels soft and lightweight, with the right amount of stretch. It\'s comfortable and flattering for both men and women. 100% combed and ring-spun cotton (heather colors contain polyester) Fabric weight: 4.2 oz (142 g/m2) Shoulder-to-shoulder taping Side-seamed The Male model is wearing a size M. He's 6.2 feet (190 cm) tall, chest circumference 37.7\" (96 cm), waist circumference 33.4\" (85 cm). The female model is wearing a size M. She\'s 5.8 feet (178 cm) tall, chest circumference 34.6\" (88 cm), waist circumference 27.16\" (69 cm), hip circumference 37.7",
                                 IsActive = true,
                                 CategoryID = catUncategorizedId,
+                                IsUnlisted = true,
                                 Handle = "2019-vintage-short-sleeve-unisex-t-shirt",
                                 VendorID = chargerId,
                                 Tag = "charger, prodigy, prodigy cadet",
