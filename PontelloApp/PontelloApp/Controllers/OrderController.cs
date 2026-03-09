@@ -116,6 +116,7 @@ namespace PontelloApp.Controllers
                     .ThenInclude(i => i.Product)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.ProductVariant)
+                    .ThenInclude( i => i.Options)
                 .Include(o => o.Shipping)
                 .FirstOrDefaultAsync(o => o.Id == id);
         
@@ -124,18 +125,19 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
-        public async Task<IActionResult> Review(int id)
+        public async Task<IActionResult> Shipped(int id)
         {
             var order = await _context.Orders
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.ProductVariant)
+                    .ThenInclude(i => i.Options)
                 .Include(o => o.Shipping)
                 .FirstOrDefaultAsync(o => o.Id == id);
-        
+
             if (order == null) return NotFound();
-        
+
             return View(order);
         }
 
