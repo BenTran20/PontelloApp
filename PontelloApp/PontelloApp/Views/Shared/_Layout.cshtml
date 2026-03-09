@@ -26,6 +26,7 @@
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
@@ -35,9 +36,6 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="ProductDealer" asp-action="Index">Product (Dealer)</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Cart" asp-action="Cart">Cart</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Order" asp-action="Index">History</a>
                         </li>
                         <li class="nav-item">
@@ -45,6 +43,14 @@
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
+
+                    <a asp-controller="Cart"
+                       asp-action="Cart"
+                       class="nav-link position-relative me-5">
+
+                        <i class="bi bi-cart3 fs-4"></i>
+
+                    </a>
                 </div>
             </div>
         </nav>
