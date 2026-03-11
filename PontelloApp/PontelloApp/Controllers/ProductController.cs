@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Numerics;
 using System.Text;
+using System.Globalization;
 
 namespace PontelloApp.Controllers
 {
@@ -172,45 +173,188 @@ namespace PontelloApp.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                if (!ModelState.IsValid)
                 {
-                    _context.Add(product);
-                    await _context.SaveChangesAsync();
-                    var returnUrl = ViewData["returnURL"]?.ToString();
-                    if (string.IsNullOrEmpty(returnUrl))
-                    {
-                        return RedirectToAction(nameof(Index));
-                    }
-
-                    TempData["Success"] = "Create new product successfully ";
-                    if (product.IsActive == true)
-                    {
-                        TempData["Status"] = "Status: Active";
-                    }
-                    else
-                    {
-                        TempData["Status"] = "Status: Archived";
-
-                    }
-                    return Redirect(returnUrl);
+                    PopulateDropDownLists(product);
+                    return View(product);
                 }
+
+                // Save product to get ID
+                _context.Add(product);
+                await _context.SaveChangesAsync();
+
+                var form = Request.Form;
+
+                // Discover variant indices by scanning posted keys like "Variants[0].UnitPrice"
+                var variantIndices = new SortedSet<int>();
+                foreach (var key in form.Keys)
+                {
+                    var m = System.Text.RegularExpressions.Regex.Match(key, @"^Variants\[(\d+)\]\.");
+                    if (m.Success && int.TryParse(m.Groups[1].Value, out int idx))
+                        variantIndices.Add(idx);
+                }
+
+                // If no variant blocks found, treat as single-product fallback
+                if (!variantIndices.Any())
+                {
+                    decimal.TryParse(form["UnitPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal unitPrice);
+                    decimal.TryParse(form["CostPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal costPrice);
+                    decimal.TryParse(form["CompareAtPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal comparePrice);
+                    int.TryParse(form["StockQuantity"], out int stock);
+                    decimal.TryParse(form["Weight"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal weight);
+                    var sku = form["SKU_ExternalID"].ToString();
+                    var barcode = form["Barcode"].ToString();
+
+                    var unit = form["Unit"].ToString()?.ToLower() switch
+                    {
+                        "lb" or "lbs" => ImperialUnits.lb,
+                        "floz" or "fl oz" => ImperialUnits.floz,
+                        _ => ImperialUnits.oz
+                    };
+
+                    var inventoryPolicy = form["InventoryPolicy"].ToString()?.ToLower() == "deny" ? InventoryPolicy.Deny : InventoryPolicy.Continue;
+                    bool status = form["Status"].ToString()?.ToLower() == "true" || form["Status"].ToString()?.ToLower() == "active";
+
+                    var singleVariant = new ProductVariant
+                    {
+                        ProductId = product.ID,
+                        UnitPrice = unitPrice,
+                        CostPrice = costPrice,
+                        CompareAtPrice = comparePrice,
+                        StockQuantity = stock,
+                        SKU_ExternalID = sku,
+                        Barcode = barcode,
+                        Weight = weight,
+                        Unit = unit,
+                        InventoryPolicy = inventoryPolicy,
+                        Status = status,
+                        Options = new List<Variant>()
+                    };
+
+                    _context.ProductVariants.Add(singleVariant);
+                    await _context.SaveChangesAsync();
+
+                    TempData["Success"] = "Product created successfully!";
+                    TempData["Status"] = product.IsActive ? "Status: Active" : "Status: Archived";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Build variants list from discovered indices
+                var parsedVariants = new List<ProductVariant>();
+                foreach (var idx in variantIndices)
+                {
+                    var prefix = $"Variants[{idx}]";
+
+                    decimal.TryParse(form[$"{prefix}.UnitPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal unitPrice);
+                    decimal.TryParse(form[$"{prefix}.CostPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal costPrice);
+                    decimal.TryParse(form[$"{prefix}.CompareAtPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal comparePrice);
+                    int.TryParse(form[$"{prefix}.StockQuantity"], out int stock);
+                    decimal.TryParse(form[$"{prefix}.Weight"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal weight);
+
+                    var sku = form[$"{prefix}.SKU_ExternalID"].ToString();
+                    var barcode = form[$"{prefix}.Barcode"].ToString();
+
+                    var unitText = form[$"{prefix}.Unit"].ToString();
+                    var unit = unitText?.ToLower() switch
+                    {
+                        "lb" or "lbs" => ImperialUnits.lb,
+                        "floz" or "fl oz" => ImperialUnits.floz,
+                        _ => ImperialUnits.oz
+                    };
+
+                    var invPolicyText = form[$"{prefix}.InventoryPolicy"].ToString();
+                    var inventoryPolicy = invPolicyText?.ToLower() == "deny" ? InventoryPolicy.Deny : InventoryPolicy.Continue;
+
+                    bool status = form[$"{prefix}.Status"].ToString()?.ToLower() == "true";
+
+                    // Collect option indices for this variant, i.e. keys like "Variants[0].Options[0].Name"
+                    var optionIndices = new SortedSet<int>();
+                    var optionsPrefixPattern = $@"^Variants\[{idx}\]\.Options\[(\d+)\]\.";
+                    foreach (var key in form.Keys)
+                    {
+                        var mo = System.Text.RegularExpressions.Regex.Match(key, optionsPrefixPattern);
+                        if (mo.Success && int.TryParse(mo.Groups[1].Value, out int oi))
+                            optionIndices.Add(oi);
+                    }
+
+                    var options = new List<Variant>();
+                    foreach (var oi in optionIndices)
+                    {
+                        var name = form[$"{prefix}.Options[{oi}].Name"].ToString();
+                        var value = form[$"{prefix}.Options[{oi}].Value"].ToString();
+                        if (!string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(value))
+                        {
+                            options.Add(new Variant { Name = name, Value = value });
+                        }
+                    }
+
+                    parsedVariants.Add(new ProductVariant
+                    {
+                        ProductId = product.ID,
+                        UnitPrice = unitPrice,
+                        CostPrice = costPrice == 0 ? (decimal?)null : costPrice,
+                        CompareAtPrice = comparePrice == 0 ? (decimal?)null : comparePrice,
+                        StockQuantity = stock,
+                        SKU_ExternalID = sku,
+                        Barcode = barcode,
+                        Weight = weight == 0 ? (decimal?)null : weight,
+                        Unit = unit,
+                        InventoryPolicy = inventoryPolicy,
+                        Status = status,
+                        Options = options
+                    });
+                }
+
+                // Validate that each variant has at least one option (same rule as ProductVariant model)
+                foreach (var variant in parsedVariants)
+                {
+                    variant.Options = variant.Options?.Where(o => !string.IsNullOrWhiteSpace(o.Name) || !string.IsNullOrWhiteSpace(o.Value)).ToList()
+                                      ?? new List<Variant>();
+
+                    if (!variant.Options.Any())
+                    {
+                        ModelState.AddModelError(string.Empty, $"Variant (SKU: {variant.SKU_ExternalID ?? "n/a"}) must include at least one option.");
+                        PopulateDropDownLists(product);
+                        return View(product);
+                    }
+                }
+
+                // Save variants then options
+                _context.ProductVariants.AddRange(parsedVariants);
+                await _context.SaveChangesAsync();
+
+                var allOptions = new List<Variant>();
+                foreach (var v in parsedVariants)
+                {
+                    foreach (var opt in v.Options)
+                        opt.ProductVariantId = v.Id;
+                    allOptions.AddRange(v.Options);
+                }
+
+                if (allOptions.Any())
+                {
+                    _context.Variants.AddRange(allOptions);
+                    await _context.SaveChangesAsync();
+                }
+
+                TempData["Success"] = "Product created successfully!";
+                TempData["Status"] = product.IsActive ? "Status: Active" : "Status: Archived";
+
+                var returnUrl = ViewData["returnURL"]?.ToString();
+                return string.IsNullOrEmpty(returnUrl) ? RedirectToAction(nameof(Index)) : Redirect(returnUrl);
             }
             catch (DbUpdateException dex)
             {
                 if (dex.InnerException != null && dex.InnerException.Message.Contains("UNIQUE"))
-                {
                     ModelState.AddModelError("", "This product already exists. Please choose a different Handle.");
-                }
                 else
-                {
-                    ModelState.AddModelError("", "Unable to create product. Try again, and if the problem persists see your system administrator.");
-                }
+                    ModelState.AddModelError("", "Unable to create product. Try again or contact admin.");
             }
-
 
             PopulateDropDownLists(product);
             return View(product);
         }
+
 
         // GET: Products/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -751,6 +895,18 @@ namespace PontelloApp.Controllers
 
             TempData["Feedback"] = feedback;
             return RedirectToAction(nameof(Create));
+        }
+
+        public IActionResult DownloadTemplate()
+        {
+            var csv = @"Product,Handle,Vendor,Types,Tags,Description,Status,Unlisted,Category,UnitPrice,CostPrice,ComparePrice,Stock,SKU,Weight,Unit,Barcode,Policy,VariantStatus,VariantName1,VariantValue1,VariantName2,VariantValue2,VariantName3,VariantValue3
+Rear Cassette,right-rear-cassette,Charger Racing Chassis,Axles & Components,Axles & Components,Rear Cassette by Charger Racing Chassis is a durable and precise rear bearing carrier assembly designed for Prodigy and Prodigy Cadet chassis models.,TRUE,FALSE,Uncategorized,20,1360.77711,100,7,1159,12,lb,3912,Continue,TRUE,2017-2021,2017-2023,,,
+Rear Cassette,right-rear-cassette,Charger Racing Chassis,Axles & Components,Axles & Components,Rear Cassette by Charger Racing Chassis is a durable and precise rear bearing carrier assembly designed for Prodigy and Prodigy Cadet chassis models.,TRUE,FALSE,Uncategorized,30,1360.77711,100,3,1160,29,lb,3910,Continue,TRUE,2017-2021,2016,,,
+";
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+
+            return File(bytes, "text/csv", "product_import_template.csv");
         }
     }
 }
