@@ -52,13 +52,7 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label asp-for="ProductName" class="form-label">Product Name <span class="text-danger">*</span></label>
-                        <input asp-for="ProductName" list="ProductNameList" class="form-control" placeholder="Enter product name" />
-                        <datalist id="ProductNameList">
-                            <option value="Multichron Stopwatch"></option>
-                            <option value="Van-K Quarter Midget Wheels - Select Series"></option>
-                            <option value="Mini Outlaw Box Stock Kart Package"></option>
-                            <option value="Steering Shaft"></option>
-                        </datalist>
+                        <input asp-for="ProductName" class="form-control" id="productname" placeholder="Enter product name" />
                         <span asp-validation-for="ProductName" class="text-danger"></span>
                     </div>
 
@@ -67,13 +61,7 @@
                             Handle <span class="text-danger">*</span>
                             <i class="bi bi-info-circle text-primary" data-bs-toggle="tooltip" title="Lowercase letters and hyphens only"></i>
                         </label>
-                        <input asp-for="Handle" list="HandleList" class="form-control" placeholder="e.g., my-product-name" />
-                        <datalist id="HandleList">
-                            <option value="multichron-stopwatch"></option>
-                            <option value="van-k-quarter-midget-wheels-select-series"></option>
-                            <option value="mini-outlaw-kart-package"></option>
-                            <option value="steering-shaft"></option>
-                        </datalist>
+                        <input asp-for="Handle" class="form-control" id="handle" placeholder="e.g., my-product-name" />
                         <span asp-validation-for="Handle" class="text-danger"></span>
                     </div>
 
@@ -90,19 +78,13 @@
 
                     <div class="mb-3">
                         <label asp-for="Type" class="form-label">Type</label>
-                        <input asp-for="Type" list="TypeList" class="form-control" placeholder="Accessories, Hardware..." />
-                        <datalist id="TypeList">
-                            <option value="Electronic Hardware"></option>
-                            <option value="Wheels"></option>
-                            <option value="Chassis Package"></option>
-                            <option value="Steering Components"></option>
-                        </datalist>
+                        <input asp-for="Type" class="form-control" id="type" placeholder="Accessories, Hardware..." />
                         <span asp-validation-for="Type" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="Tag" class="form-label">Tags</label>
-                        <input asp-for="Tag" class="form-control" placeholder="Comma separated keywords" />
+                        <input asp-for="Tag" class="form-control" id="tag" placeholder="Comma separated keywords" />
                         <span asp-validation-for="Tag" class="text-danger"></span>
                     </div>
                 </div>
@@ -110,7 +92,7 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label asp-for="Description" class="form-label">Description <span class="text-danger">*</span></label>
-                        <textarea asp-for="Description" rows="7" class="form-control" placeholder="Product description"></textarea>
+                        <textarea asp-for="Description" rows="7" class="form-control" id="description" placeholder="Product description"></textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
 
@@ -239,39 +221,39 @@
                         <div class="row g-2">
                             <div class="col-md-3">
                                 <label class="form-label small">SKU</label>
-                                <input type="text" class="form-control form-control-sm" name="Variants[__VINDEX__].SKU_ExternalID" maxlength="50" placeholder="e.g., 1150" />
+                                <input type="text" class="form-control form-control-sm" id="sku" name="Variants[__VINDEX__].SKU_ExternalID" maxlength="50" placeholder="e.g., 1150" />
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label small">Price *</label>
-                                <input type="text" class="form-control form-control-sm variant-currency currency-field" name="Variants[__VINDEX__].UnitPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
+                                <input type="text" class="form-control form-control-sm variant-currency currency-field" id="price" name="Variants[__VINDEX__].UnitPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
                             </div>
 
                             <div class="col-md-2">
                                 <label class="form-label small">Cost</label>
-                                <input type="text" class="form-control form-control-sm variant-currency currency-field" name="Variants[__VINDEX__].CostPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
+                                <input type="text" class="form-control form-control-sm variant-currency currency-field" id="cost" name="Variants[__VINDEX__].CostPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
                             </div>
 
                             <div class="col-md-2">
                                 <label class="form-label small">Compare At</label>
-                                <input type="text" class="form-control form-control-sm variant-currency currency-field" name="Variants[__VINDEX__].CompareAtPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
+                                <input type="text" class="form-control form-control-sm variant-currency currency-field" id="compareat" name="Variants[__VINDEX__].CompareAtPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
                             </div>
 
                             <div class="col-md-2">
                                 <label class="form-label small">Stock</label>
-                                <input type="number" class="form-control form-control-sm" name="Variants[__VINDEX__].StockQuantity" min="0" />
+                                <input type="number" class="form-control form-control-sm" id="stock" name="Variants[__VINDEX__].StockQuantity" min="0" />
                             </div>
                         </div>
 
                         <div class="row g-2 mt-2">
                             <div class="col-md-4">
                                 <label class="form-label small">Barcode</label>
-                                <input type="text" class="form-control form-control-sm" name="Variants[__VINDEX__].Barcode" maxlength="50" placeholder="e.g., AX1150" />
+                                <input type="text" class="form-control form-control-sm" id="barcode" name="Variants[__VINDEX__].Barcode" maxlength="50" placeholder="e.g., AX1150" />
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label small">Weight</label>
-                                <input type="text" class="form-control form-control-sm" name="Variants[__VINDEX__].Weight" placeholder="0.0000000" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,7})/)[0];" />
+                                <input type="text" class="form-control form-control-sm" id="weight" name="Variants[__VINDEX__].Weight" placeholder="0.0000000" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,7})/)[0];" />
                             </div>
 
                             <div class="col-md-4">
@@ -307,6 +289,8 @@
                 </template>
             </div>
 
+            <button type="button" onclick="fillForm()">Autofill</button>
+
             <div class="d-flex justify-content-end mt-4">
                 <a asp-action="Index" class="btn btn-outline-secondary me-2">Cancel</a>
                 <button type="submit" class="btn btn-primary">Create Product</button>
@@ -322,6 +306,25 @@
     <script>
         // Tooltips
         document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+
+     function fillForm() {
+            document.getElementById("productname").value = "Steering Shaft";
+            document.getElementById("handle").value = "steering-shaft";
+            document.getElementById("description").value =
+                      "The Steering Shaft (23\" Standard) by Charger Racing Chassis is a precision-machined steering component engineered to provide smooth, consistent steering input in competitive karting applications. Built for strength and accurate fitment, this shaft maintains proper alignment between the steering wheel and front-end linkage while withstanding repeated steering loads and vibration. Designed as a direct-fit replacement, it supports reliable steering feel and long-term serviceability. " +
+                      "Application: Used as the primary steering shaft connecting the steering wheel hub to the steering system on Charger chassis platforms. Ideal for new chassis builds, steering system repairs, or replacing worn or damaged shafts. " +
+                      "Special-order part — please allow up to 3 business days for shipment prior to dispatch. Verify length and spline compatibility before installation.";
+            document.getElementById("type").value = "Steering Components";
+            document.getElementById("tag").value = "Steering Components";
+           // document.getElementById("vendor").value = "Charger Racing Chassis";
+           document.getElementById("price").value = "49.38";
+           document.getElementById("cost").value = "45.50";
+           document.getElementById("compareat").value = "30.00";
+           document.getElementById("stock").value = "1";
+           document.getElementById("sku").value = "1081";
+           document.getElementById("barcode").value = "SS1081N";
+           document.getElementById("weight").value = "2267.96185";
+        }
 
         // CSV arrow toggle
         const csvHeader = document.querySelector('#csvToggleIcon').closest('.card-header');
@@ -473,3 +476,4 @@
 
     <script src="~/js/refreshDDL.js"></script>
 }
+
