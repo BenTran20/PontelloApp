@@ -176,7 +176,10 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Inventory Policy</label>
+                        <label class="form-label">Inventory Policy
+                            <i class="bi bi-info-circle ms-1 text-primary" data-bs-toggle="tooltip"
+                               title="Deny — Block purchases when stock is zero. Continue — Allow purchases when stock is zero (backorder)."></i>
+                        </label>
                         <select class="form-select" name="InventoryPolicy">
                             <option value="">--</option>
                             <option value="Continue">Continue</option>
@@ -269,14 +272,20 @@
                             <div class="col-md-4">
                                 <label class="form-label small">Unit</label>
                                 <select class="form-select form-select-sm" name="Variants[__VINDEX__].Unit">
-                                    <option value="oz">oz</option><option value="floz">floz</option><option value="lb">lb</option>
+                                    <option value="oz">oz</option>
+                                    <option value="floz">floz</option>
+                                    <option value="lb">lb</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label small">Inventory Policy</label>
+                                <label class="form-label small">Inventory Policy
+                                    <i class="bi bi-info-circle ms-1 text-primary" data-bs-toggle="tooltip"
+                                       title="Deny — Block purchases when stock is zero. Continue — Allow purchases when stock is zero (backorder)."></i>
+                                </label>
                                 <select class="form-select form-select-sm" name="Variants[__VINDEX__].InventoryPolicy">
                                     <option value="">--</option>
-                                    <option value="Continue">Continue</option><option value="Deny">Deny</option>
+                                    <option value="Continue">Continue</option>
+                                    <option value="Deny">Deny</option>
                                 </select>
                             </div>
                         </div>
@@ -304,177 +313,175 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        // Tooltips
-        document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
+           // Tooltips
+           document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => new bootstrap.Tooltip(el));
 
-     function fillForm() {
-            document.getElementById("productname").value = "Steering Shaft";
-            document.getElementById("handle").value = "steering-shaft";
-            document.getElementById("description").value =
-                      "The Steering Shaft (23\" Standard) by Charger Racing Chassis is a precision-machined steering component engineered to provide smooth, consistent steering input in competitive karting applications. Built for strength and accurate fitment, this shaft maintains proper alignment between the steering wheel and front-end linkage while withstanding repeated steering loads and vibration. Designed as a direct-fit replacement, it supports reliable steering feel and long-term serviceability. " +
-                      "Application: Used as the primary steering shaft connecting the steering wheel hub to the steering system on Charger chassis platforms. Ideal for new chassis builds, steering system repairs, or replacing worn or damaged shafts. " +
-                      "Special-order part — please allow up to 3 business days for shipment prior to dispatch. Verify length and spline compatibility before installation.";
-            document.getElementById("type").value = "Steering Components";
-            document.getElementById("tag").value = "Steering Components";
-           // document.getElementById("vendor").value = "Charger Racing Chassis";
-           document.getElementById("price").value = "49.38";
-           document.getElementById("cost").value = "45.50";
-           document.getElementById("compareat").value = "30.00";
-           document.getElementById("stock").value = "1";
-           document.getElementById("sku").value = "1081";
-           document.getElementById("barcode").value = "SS1081N";
-           document.getElementById("weight").value = "2267.96185";
-        }
+        function fillForm() {
+               document.getElementById("productname").value = "Steering Shaft";
+               document.getElementById("handle").value = "steering-shaft";
+               document.getElementById("description").value =
+                         "The Steering Shaft (23\" Standard) by Charger Racing Chassis is a precision-machined steering component engineered to provide smooth, consistent steering input in competitive karting applications. Built for strength and accurate fitment, this shaft maintains proper alignment between the steering wheel and front-end linkage while withstanding repeated steering loads and vibration. Designed as a direct-fit replacement, it supports reliable steering feel and long-term serviceability. " +
+                         "Application: Used as the primary steering shaft connecting the steering wheel hub to the steering system on Charger chassis platforms. Ideal for new chassis builds, steering system repairs, or replacing worn or damaged shafts. " +
+                         "Special-order part — please allow up to 3 business days for shipment prior to dispatch. Verify length and spline compatibility before installation.";
+               document.getElementById("type").value = "Steering Components";
+               document.getElementById("tag").value = "Steering Components";
+              // document.getElementById("vendor").value = "Charger Racing Chassis";
+              document.getElementById("price").value = "49.38";
+              document.getElementById("cost").value = "45.50";
+              document.getElementById("compareat").value = "30.00";
+              document.getElementById("stock").value = "1";
+              document.getElementById("sku").value = "1081";
+              document.getElementById("barcode").value = "SS1081N";
+              document.getElementById("weight").value = "2267.96185";
+           }
 
-        // CSV arrow toggle
-        const csvHeader = document.querySelector('#csvToggleIcon').closest('.card-header');
-        const csvIcon = document.getElementById('csvToggleIcon');
-        const csvCollapse = document.getElementById('csvImportBody');
-        csvHeader.addEventListener('click', () => {
-            const bsCollapse = bootstrap.Collapse.getInstance(csvCollapse) || new bootstrap.Collapse(csvCollapse, { toggle: false });
-            bsCollapse.toggle();
-        });
-        csvCollapse.addEventListener('shown.bs.collapse', () => { csvIcon.classList.replace('bi-chevron-down','bi-chevron-up'); });
-        csvCollapse.addEventListener('hidden.bs.collapse', () => { csvIcon.classList.replace('bi-chevron-up','bi-chevron-down'); });
+           // CSV arrow toggle
+           const csvHeader = document.querySelector('#csvToggleIcon').closest('.card-header');
+           const csvIcon = document.getElementById('csvToggleIcon');
+           const csvCollapse = document.getElementById('csvImportBody');
+           csvHeader.addEventListener('click', () => {
+               const bsCollapse = bootstrap.Collapse.getInstance(csvCollapse) || new bootstrap.Collapse(csvCollapse, { toggle: false });
+               bsCollapse.toggle();
+           });
+           csvCollapse.addEventListener('shown.bs.collapse', () => { csvIcon.classList.replace('bi-chevron-down','bi-chevron-up'); });
+           csvCollapse.addEventListener('hidden.bs.collapse', () => { csvIcon.classList.replace('bi-chevron-up','bi-chevron-down'); });
 
-        // Variants UI + model binding helpers
-        const hasVariants = document.getElementById('hasVariants');
-        const variantsArea = document.getElementById('variantsArea');
-        const singlePricing = document.getElementById('singlePricing');
-        const addVariantBtn = document.getElementById('addVariantBtn');
-        const variantList = document.getElementById('variantList');
-        const variantTemplate = document.getElementById('variantTemplate');
-        let variantIndex = 0;
+           // Variants UI + model binding helpers
+           const hasVariants = document.getElementById('hasVariants');
+           const variantsArea = document.getElementById('variantsArea');
+           const singlePricing = document.getElementById('singlePricing');
+           const addVariantBtn = document.getElementById('addVariantBtn');
+           const variantList = document.getElementById('variantList');
+           const variantTemplate = document.getElementById('variantTemplate');
+           let variantIndex = 0;
 
-        // disable/enable single-pricing inputs when variants are used to avoid posting duplicate fields
-        function setSinglePricingDisabled(disabled) {
-            singlePricing.querySelectorAll('input, select, textarea').forEach(el => {
-                if (disabled) el.setAttribute('disabled', 'disabled');
-                else el.removeAttribute('disabled');
-            });
-        }
+           // disable/enable single-pricing inputs when variants are used to avoid posting duplicate fields
+           function setSinglePricingDisabled(disabled) {
+               singlePricing.querySelectorAll('input, select, textarea').forEach(el => {
+                   if (disabled) el.setAttribute('disabled', 'disabled');
+                   else el.removeAttribute('disabled');
+               });
+           }
 
-        function toggleVariantUI() {
-            if (hasVariants.checked) {
-                variantsArea.style.display = '';
-                singlePricing.style.display = 'none';
-                setSinglePricingDisabled(true);
-                if (!variantList.querySelector('.variant-row')) addVariant();
-            } else {
-                variantsArea.style.display = 'none';
-                singlePricing.style.display = '';
-                setSinglePricingDisabled(false);
-                document.querySelectorAll('input[name="Variants.Index"]').forEach(i => i.remove());
-                variantList.innerHTML = '';
-                variantIndex = 0;
-            }
-        }
+           function toggleVariantUI() {
+               if (hasVariants.checked) {
+                   variantsArea.style.display = '';
+                   singlePricing.style.display = 'none';
+                   setSinglePricingDisabled(true);
+                   if (!variantList.querySelector('.variant-row')) addVariant();
+               } else {
+                   variantsArea.style.display = 'none';
+                   singlePricing.style.display = '';
+                   setSinglePricingDisabled(false);
+                   document.querySelectorAll('input[name="Variants.Index"]').forEach(i => i.remove());
+                   variantList.innerHTML = '';
+                   variantIndex = 0;
+               }
+           }
 
-        hasVariants.addEventListener('change', toggleVariantUI);
+           hasVariants.addEventListener('change', toggleVariantUI);
 
-        function addVariant() {
-            const idx = variantIndex++;
-            // hidden index for model binder
-            const indexInput = document.createElement('input');
-            indexInput.type = 'hidden';
-            indexInput.name = 'Variants.Index';
-            indexInput.value = idx;
-            variantList.appendChild(indexInput);
+           function addVariant() {
+               const idx = variantIndex++;
+               // hidden index for model binder
+               const indexInput = document.createElement('input');
+               indexInput.type = 'hidden';
+               indexInput.name = 'Variants.Index';
+               indexInput.value = idx;
+               variantList.appendChild(indexInput);
 
-            const html = variantTemplate.innerHTML.replace(/__VINDEX__/g, idx);
-            variantList.insertAdjacentHTML('beforeend', html);
+               const html = variantTemplate.innerHTML.replace(/__VINDEX__/g, idx);
+               variantList.insertAdjacentHTML('beforeend', html);
 
-            const card = variantList.querySelector(`.variant-row[data-variant-index="${idx}"]`) || variantList.lastElementChild;
-            if (!card) return;
-            card.dataset.variantIndex = idx;
-            card.dataset.optionIndex = '0';
+               const card = variantList.querySelector(`.variant-row[data-variant-index="${idx}"]`) || variantList.lastElementChild;
+               if (!card) return;
+               card.dataset.variantIndex = idx;
+               card.dataset.optionIndex = '0';
 
-            // add initial option so ProductVariant.Options isn't empty (ProductVariant requires Options)
-            addOptionRow(card);
+               // add initial option so ProductVariant.Options isn't empty (ProductVariant requires Options)
+               addOptionRow(card);
 
-            // attach formatting handlers
-            attachCurrencyHandlers(card);
+               // attach formatting handlers
+               attachCurrencyHandlers(card);
 
-            // remove button handler
-            const removeBtn = card.querySelector('.remove-variant');
-            if (removeBtn) removeBtn.addEventListener('click', () => {
-                document.querySelectorAll(`input[name="Variants.Index"][value="${idx}"]`).forEach(i => i.remove());
-                card.remove();
-            });
-        }
+               // remove button handler
+               const removeBtn = card.querySelector('.remove-variant');
+               if (removeBtn) removeBtn.addEventListener('click', () => {
+                   document.querySelectorAll(`input[name="Variants.Index"][value="${idx}"]`).forEach(i => i.remove());
+                   card.remove();
+               });
+           }
 
-        addVariantBtn && addVariantBtn.addEventListener('click', addVariant);
+           addVariantBtn && addVariantBtn.addEventListener('click', addVariant);
 
-        // delegate option add/remove
-        variantList.addEventListener('click', function (e) {
-            const card = e.target.closest('.variant-row');
-            if (!card) return;
-            if (e.target.closest('.add-option')) {
-                addOptionRow(card);
-                return;
-            }
-            if (e.target.closest('.remove-option')) {
-                e.target.closest('.option-row').remove();
-                return;
-            }
-        });
+           // delegate option add/remove
+           variantList.addEventListener('click', function (e) {
+               const card = e.target.closest('.variant-row');
+               if (!card) return;
+               if (e.target.closest('.add-option')) {
+                   addOptionRow(card);
+                   return;
+               }
+               if (e.target.closest('.remove-option')) {
+                   e.target.closest('.option-row').remove();
+                   return;
+               }
+           });
 
-        function addOptionRow(card) {
-            const vIndex = card.dataset.variantIndex;
-            let oIndex = parseInt(card.dataset.optionIndex || '0', 10);
-            const container = card.querySelector('.options-container');
+           function addOptionRow(card) {
+               const vIndex = card.dataset.variantIndex;
+               let oIndex = parseInt(card.dataset.optionIndex || '0', 10);
+               const container = card.querySelector('.options-container');
 
-            // nested Options.Index for binder
-            const idxHidden = document.createElement('input');
-            idxHidden.type = 'hidden';
-            idxHidden.name = `Variants[${vIndex}].Options.Index`;
-            idxHidden.value = oIndex;
-            container.appendChild(idxHidden);
+               // nested Options.Index for binder
+               const idxHidden = document.createElement('input');
+               idxHidden.type = 'hidden';
+               idxHidden.name = `Variants[${vIndex}].Options.Index`;
+               idxHidden.value = oIndex;
+               container.appendChild(idxHidden);
 
-            const row = document.createElement('div');
-            row.className = 'd-flex gap-2 align-items-center mb-2 option-row';
-            row.innerHTML = `
-                <input type="hidden" name="Variants[${vIndex}].Options[${oIndex}].Id" value="0" />
-                <input class="form-control form-control-sm" style="max-width:45%;" name="Variants[${vIndex}].Options[${oIndex}].Name" placeholder="Name (e.g., Size)" />
-                <input class="form-control form-control-sm" style="max-width:45%;" name="Variants[${vIndex}].Options[${oIndex}].Value" placeholder="Value (e.g., M)" />
-                <button type="button" class="btn btn-sm btn-outline-danger remove-option"><i class="bi bi-x-lg"></i></button>
-            `;
-            container.appendChild(row);
+               const row = document.createElement('div');
+               row.className = 'd-flex gap-2 align-items-center mb-2 option-row';
+               row.innerHTML = `
+                   <input class="form-control form-control-sm" style="max-width:45%;" name="Variants[${vIndex}].Options[${oIndex}].Name" placeholder="Name (e.g., Size)" />
+                   <input class="form-control form-control-sm" style="max-width:45%;" name="Variants[${vIndex}].Options[${oIndex}].Value" placeholder="Value (e.g., M)" />
+                   <button type="button" class="btn btn-sm btn-outline-danger remove-option"><i class="bi bi-x-lg"></i></button>
+               `;
+               container.appendChild(row);
 
-            card.dataset.optionIndex = (++oIndex).toString();
-        }
+               card.dataset.optionIndex = (++oIndex).toString();
+           }
 
-        // currency formatting helpers (applies to both single and variant inputs)
-        function formatCurrencyValue(raw) {
-            if (raw === null || raw === undefined) return '';
-            const cleaned = String(raw).replace(/[^\d.-]/g, '').replace(',', '.');
-            const n = parseFloat(cleaned);
-            if (isNaN(n)) return '';
-            return n.toFixed(2);
-        }
-        function onCurrencyBlur(e) {
-            const el = e.target;
-            const formatted = formatCurrencyValue(el.value);
-            if (formatted !== '') el.value = formatted;
-        }
-        function attachCurrencyHandlers(root) {
-            root = root || document;
-            root.querySelectorAll('.currency-field, .variant-currency').forEach(inp => {
-                inp.removeEventListener('blur', onCurrencyBlur);
-                inp.addEventListener('blur', onCurrencyBlur);
-            });
-        }
+           // currency formatting helpers (applies to both single and variant inputs)
+           function formatCurrencyValue(raw) {
+               if (raw === null || raw === undefined) return '';
+               const cleaned = String(raw).replace(/[^\d.-]/g, '').replace(',', '.');
+               const n = parseFloat(cleaned);
+               if (isNaN(n)) return '';
+               return n.toFixed(2);
+           }
+           function onCurrencyBlur(e) {
+               const el = e.target;
+               const formatted = formatCurrencyValue(el.value);
+               if (formatted !== '') el.value = formatted;
+           }
+           function attachCurrencyHandlers(root) {
+               root = root || document;
+               root.querySelectorAll('.currency-field, .variant-currency').forEach(inp => {
+                   inp.removeEventListener('blur', onCurrencyBlur);
+                   inp.addEventListener('blur', onCurrencyBlur);
+               });
+           }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            // if server rendered variants, set variantIndex to avoid duplicate indices (safe fallback)
-            var serverCount = @(Model?.Variants?.Count() ?? 0);
-            if (serverCount > 0) variantIndex = serverCount;
-            toggleVariantUI();
-            attachCurrencyHandlers(document);
-        });
+           document.addEventListener('DOMContentLoaded', function () {
+               // if server rendered variants, set variantIndex to avoid duplicate indices (safe fallback)
+               var serverCount = @(Model?.Variants?.Count() ?? 0);
+               if (serverCount > 0) variantIndex = serverCount;
+               toggleVariantUI();
+               attachCurrencyHandlers(document);
+           });
     </script>
 
     <script src="~/js/refreshDDL.js"></script>
 }
-
 
