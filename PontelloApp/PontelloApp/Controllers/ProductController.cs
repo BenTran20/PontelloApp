@@ -166,194 +166,159 @@ namespace PontelloApp.Controllers
             return View(product);
         }
 
-        // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ProductName,Handle,VendorID,Type,Tag,Description,IsActive,IsUnlisted,CategoryID")] Product product)
         {
+            PopulateDropDownLists(product);
+
+            if (!ModelState.IsValid)
+                return View(product);
+
+            // Check duplicate handle BEFORE saving
+            bool handleExists = await _context.Products.AnyAsync(p => p.Handle == product.Handle);
+            if (handleExists)
+            {
+                ModelState.AddModelError("Handle", "This handle already exists. Please choose another.");
+                return View(product);
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    PopulateDropDownLists(product);
-                    return View(product);
-                }
-
-                // Save product to get ID
-                _context.Add(product);
-                await _context.SaveChangesAsync();
-
                 var form = Request.Form;
 
-                // Discover variant indices by scanning posted keys like "Variants[0].UnitPrice"
+                // Detect variant indices
                 var variantIndices = new SortedSet<int>();
                 foreach (var key in form.Keys)
                 {
-                    var m = System.Text.RegularExpressions.Regex.Match(key, @"^Variants\[(\d+)\]\.");
-                    if (m.Success && int.TryParse(m.Groups[1].Value, out int idx))
+                    var match = System.Text.RegularExpressions.Regex.Match(key, @"^Variants\[(\d+)\]\.");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int idx))
                         variantIndices.Add(idx);
                 }
 
-                // If no variant blocks found, treat as single-product fallback
+                var parsedVariants = new List<ProductVariant>();
+
+                // SINGLE PRODUCT MODE
                 if (!variantIndices.Any())
                 {
-                    decimal.TryParse(form["UnitPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal unitPrice);
-                    decimal.TryParse(form["CostPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal costPrice);
-                    decimal.TryParse(form["CompareAtPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal comparePrice);
+                    decimal.TryParse(form["UnitPrice"], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal price);
+                    decimal.TryParse(form["CostPrice"], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal cost);
+                    decimal.TryParse(form["CompareAtPrice"], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal compare);
                     int.TryParse(form["StockQuantity"], out int stock);
-                    decimal.TryParse(form["Weight"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal weight);
-                    var sku = form["SKU_ExternalID"].ToString();
-                    var barcode = form["Barcode"].ToString();
+                    decimal.TryParse(form["Weight"], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal weight);
 
-                    var unit = form["Unit"].ToString()?.ToLower() switch
+                    var invPolicyStr = form["InventoryPolicy"].FirstOrDefault()?.ToLower();
+                    var inventoryPolicy = invPolicyStr == "deny" ? InventoryPolicy.Deny : InventoryPolicy.Continue;
+
+                    bool status = form["Status"].Any(v => v == "true");
+
+                    var variant = new ProductVariant
                     {
-                        "lb" or "lbs" => ImperialUnits.lb,
-                        "floz" or "fl oz" => ImperialUnits.floz,
-                        _ => ImperialUnits.oz
-                    };
-
-                    var inventoryPolicy = form["InventoryPolicy"].ToString()?.ToLower() == "deny" ? InventoryPolicy.Deny : InventoryPolicy.Continue;
-                    bool status = form["Status"].ToString()?.ToLower() == "true" || form["Status"].ToString()?.ToLower() == "active";
-
-                    var singleVariant = new ProductVariant
-                    {
-                        ProductId = product.ID,
-                        UnitPrice = unitPrice,
-                        CostPrice = costPrice,
-                        CompareAtPrice = comparePrice,
+                        UnitPrice = price,
+                        CostPrice = cost,
+                        CompareAtPrice = compare,
                         StockQuantity = stock,
-                        SKU_ExternalID = sku,
-                        Barcode = barcode,
+                        SKU_ExternalID = form["SKU_ExternalID"],
+                        Barcode = form["Barcode"],
                         Weight = weight,
-                        Unit = unit,
-                        InventoryPolicy = inventoryPolicy,
                         Status = status,
-                        Options = new List<Variant>()
+                        InventoryPolicy = inventoryPolicy,
+                        Unit = form["Unit"] == "lb" ? ImperialUnits.lb :
+                               form["Unit"] == "floz" ? ImperialUnits.floz : ImperialUnits.oz
                     };
 
-                    _context.ProductVariants.Add(singleVariant);
-                    await _context.SaveChangesAsync();
-
-                    TempData["Success"] = "Product created successfully!";
-                    TempData["Status"] = product.IsActive ? "Status: Active" : "Status: Archived";
-                    return RedirectToAction(nameof(Index));
+                    parsedVariants.Add(variant);
                 }
-
-                // Build variants list from discovered indices
-                var parsedVariants = new List<ProductVariant>();
-                foreach (var idx in variantIndices)
+                else
                 {
-                    var prefix = $"Variants[{idx}]";
-
-                    decimal.TryParse(form[$"{prefix}.UnitPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal unitPrice);
-                    decimal.TryParse(form[$"{prefix}.CostPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal costPrice);
-                    decimal.TryParse(form[$"{prefix}.CompareAtPrice"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal comparePrice);
-                    int.TryParse(form[$"{prefix}.StockQuantity"], out int stock);
-                    decimal.TryParse(form[$"{prefix}.Weight"], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal weight);
-
-                    var sku = form[$"{prefix}.SKU_ExternalID"].ToString();
-                    var barcode = form[$"{prefix}.Barcode"].ToString();
-
-                    var unitText = form[$"{prefix}.Unit"].ToString();
-                    var unit = unitText?.ToLower() switch
+                    // VARIANT MODE
+                    foreach (var idx in variantIndices)
                     {
-                        "lb" or "lbs" => ImperialUnits.lb,
-                        "floz" or "fl oz" => ImperialUnits.floz,
-                        _ => ImperialUnits.oz
-                    };
+                        var prefix = $"Variants[{idx}]";
 
-                    var invPolicyText = form[$"{prefix}.InventoryPolicy"].ToString();
-                    var inventoryPolicy = invPolicyText?.ToLower() == "deny" ? InventoryPolicy.Deny : InventoryPolicy.Continue;
+                        decimal.TryParse(form[$"{prefix}.UnitPrice"], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal price);
+                        decimal.TryParse(form[$"{prefix}.CostPrice"], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal cost);
+                        decimal.TryParse(form[$"{prefix}.CompareAtPrice"], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal compare);
+                        decimal.TryParse(form[$"{prefix}.Weight"], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal weight);
+                        int.TryParse(form[$"{prefix}.StockQuantity"], out int stock);
 
-                    bool status = form[$"{prefix}.Status"].ToString()?.ToLower() == "true";
+                        bool status = form[$"{prefix}.Status"].Any(v => v == "true");
+                        var invPolicyStr = form[$"{prefix}.InventoryPolicy"].FirstOrDefault()?.ToLower();
+                        var inventoryPolicy = invPolicyStr == "deny" ? InventoryPolicy.Deny : InventoryPolicy.Continue;
 
-                    // Collect option indices for this variant, i.e. keys like "Variants[0].Options[0].Name"
-                    var optionIndices = new SortedSet<int>();
-                    var optionsPrefixPattern = $@"^Variants\[{idx}\]\.Options\[(\d+)\]\.";
-                    foreach (var key in form.Keys)
-                    {
-                        var mo = System.Text.RegularExpressions.Regex.Match(key, optionsPrefixPattern);
-                        if (mo.Success && int.TryParse(mo.Groups[1].Value, out int oi))
-                            optionIndices.Add(oi);
-                    }
-
-                    var options = new List<Variant>();
-                    foreach (var oi in optionIndices)
-                    {
-                        var name = form[$"{prefix}.Options[{oi}].Name"].ToString();
-                        var value = form[$"{prefix}.Options[{oi}].Value"].ToString();
-                        if (!string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(value))
+                        var variant = new ProductVariant
                         {
-                            options.Add(new Variant { Name = name, Value = value });
+                            UnitPrice = price,
+                            CostPrice = cost,
+                            CompareAtPrice = compare,
+                            StockQuantity = stock,
+                            SKU_ExternalID = form[$"{prefix}.SKU_ExternalID"],
+                            Barcode = form[$"{prefix}.Barcode"],
+                            Weight = weight,
+                            Status = status,
+                            InventoryPolicy = inventoryPolicy,
+                            Unit = form[$"{prefix}.Unit"] == "lb" ? ImperialUnits.lb :
+                                   form[$"{prefix}.Unit"] == "floz" ? ImperialUnits.floz : ImperialUnits.oz,
+                            Options = new List<Variant>()
+                        };
+
+                        // Parse variant options
+                        var optionIndices = new SortedSet<int>();
+                        foreach (var key in form.Keys)
+                        {
+                            var match = System.Text.RegularExpressions.Regex.Match(key, $@"^Variants\[{idx}\]\.Options\[(\d+)\]\.");
+                            if (match.Success && int.TryParse(match.Groups[1].Value, out int o))
+                                optionIndices.Add(o);
                         }
-                    }
 
-                    parsedVariants.Add(new ProductVariant
-                    {
-                        ProductId = product.ID,
-                        UnitPrice = unitPrice,
-                        CostPrice = costPrice == 0 ? (decimal?)null : costPrice,
-                        CompareAtPrice = comparePrice == 0 ? (decimal?)null : comparePrice,
-                        StockQuantity = stock,
-                        SKU_ExternalID = sku,
-                        Barcode = barcode,
-                        Weight = weight == 0 ? (decimal?)null : weight,
-                        Unit = unit,
-                        InventoryPolicy = inventoryPolicy,
-                        Status = status,
-                        Options = options
-                    });
-                }
+                        foreach (var o in optionIndices)
+                        {
+                            var name = form[$"{prefix}.Options[{o}].Name"];
+                            var value = form[$"{prefix}.Options[{o}].Value"];
 
-                // Validate that each variant has at least one option (same rule as ProductVariant model)
-                foreach (var variant in parsedVariants)
-                {
-                    variant.Options = variant.Options?.Where(o => !string.IsNullOrWhiteSpace(o.Name) || !string.IsNullOrWhiteSpace(o.Value)).ToList()
-                                      ?? new List<Variant>();
+                            if (!string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(value))
+                                variant.Options.Add(new Variant { Name = name, Value = value });
+                        }
 
-                    if (!variant.Options.Any())
-                    {
-                        ModelState.AddModelError(string.Empty, $"Variant (SKU: {variant.SKU_ExternalID ?? "n/a"}) must include at least one option.");
-                        PopulateDropDownLists(product);
-                        return View(product);
+                        if (!variant.Options.Any())
+                        {
+                            ModelState.AddModelError("", $"Variant {variant.SKU_ExternalID ?? "(no SKU)"} must have at least one option.");
+                            return View(product);
+                        }
+
+                        parsedVariants.Add(variant);
                     }
                 }
 
-                // Save variants then options
+                // SAVE PRODUCT
+                _context.Products.Add(product);
+                await _context.SaveChangesAsync();
+
+                // SAVE VARIANTS
+                foreach (var v in parsedVariants)
+                    v.ProductId = product.ID;
+
                 _context.ProductVariants.AddRange(parsedVariants);
                 await _context.SaveChangesAsync();
 
-                var allOptions = new List<Variant>();
-                foreach (var v in parsedVariants)
-                {
-                    foreach (var opt in v.Options)
-                        opt.ProductVariantId = v.Id;
-                    allOptions.AddRange(v.Options);
-                }
-
-                if (allOptions.Any())
-                {
-                    _context.Variants.AddRange(allOptions);
-                    await _context.SaveChangesAsync();
-                }
+                await transaction.CommitAsync();
 
                 TempData["Success"] = "Product created successfully!";
                 TempData["Status"] = product.IsActive ? "Status: Active" : "Status: Archived";
 
-                var returnUrl = ViewData["returnURL"]?.ToString();
-                return string.IsNullOrEmpty(returnUrl) ? RedirectToAction(nameof(Index)) : Redirect(returnUrl);
+                return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateException dex)
+            catch (Exception ex)
             {
-                if (dex.InnerException != null && dex.InnerException.Message.Contains("UNIQUE"))
-                    ModelState.AddModelError("", "This product already exists. Please choose a different Handle.");
-                else
-                    ModelState.AddModelError("", "Unable to create product. Try again or contact admin.");
+                await transaction.RollbackAsync();
+                ModelState.AddModelError("", "Unexpected error: " + ex.Message);
+                return View(product);
             }
-
-            PopulateDropDownLists(product);
-            return View(product);
         }
+
+
 
 
         // GET: Products/Edit/5
