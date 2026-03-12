@@ -135,34 +135,34 @@
                 <div class="row g-2">
                     <div class="col-md-3">
                         <label class="form-label">Price</label>
-                        <input type="text" class="form-control currency-field" name="UnitPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
+                        <input type="text" class="form-control currency-field" id="price" name="UnitPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Cost</label>
-                        <input type="text" class="form-control currency-field" name="CostPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
+                        <input type="text" class="form-control currency-field" id="cost" name="CostPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Compare At</label>
-                        <input type="text" class="form-control currency-field" name="CompareAtPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
+                        <input type="text" class="form-control currency-field" id="compareat" name="CompareAtPrice" placeholder="0.00" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,2})/)[0];" />
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Stock</label>
-                        <input type="number" class="form-control" name="StockQuantity" placeholder="0" min="0" />
+                        <input type="number" class="form-control" id="stock" name="StockQuantity" placeholder="0" min="0" />
                     </div>
                 </div>
 
                 <div class="row g-2 mt-2">
                     <div class="col-md-4">
                         <label class="form-label">SKU</label>
-                        <input type="text" class="form-control" name="SKU_ExternalID" maxlength="50" placeholder="e.g., 1150" />
+                        <input type="text" class="form-control" id="sku" name="SKU_ExternalID" maxlength="50" placeholder="e.g., 1150" />
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Barcode</label>
-                        <input type="text" class="form-control" name="Barcode" maxlength="50" placeholder="e.g., AX1150" />
+                        <input type="text" class="form-control" id="barcode" name="Barcode" maxlength="50" placeholder="e.g., AX1150" />
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Weight</label>
-                        <input type="text" class="form-control" name="Weight" placeholder="0.0000000" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,7})/)[0];" />
+                        <input type="text" class="form-control" id="weight" name="Weight" placeholder="0.0000000" inputmode="decimal" oninput="this.value=this.value.match(/^\d*(\.?\d{0,7})/)[0];" />
                     </div>
                 </div>
 
@@ -476,4 +476,5 @@
 
     <script src="~/js/refreshDDL.js"></script>
 }
+
 
