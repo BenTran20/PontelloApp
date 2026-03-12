@@ -719,7 +719,7 @@ namespace PontelloApp.Controllers
                     }
 
                     // Process rows
-                    for (int row = start.Row + 1; row < end.Row; row++)
+                    for (int row = start.Row + 1; row <= end.Row; row++)
                     {
                         List<string> rowErrors = new List<string>();
 
@@ -777,7 +777,9 @@ namespace PontelloApp.Controllers
                         var vendor = await _context.Vendors.FirstOrDefaultAsync(v => v.Name.ToLower() == vendorName.ToLower());
                         if (vendor == null) rowErrors.Add($"Vendor '{vendorName}' not found");
 
-                        var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == categoryName);
+                        //matches every time
+                        var category = await _context.Categories
+                            .FirstOrDefaultAsync(c => c.Name.ToLower() == categoryName.ToLower());
                         if (category == null) rowErrors.Add($"Category '{categoryName}' not found");
 
                         bool isActive = statusText.ToLower() == "true" || statusText.ToLower() == "active";
@@ -793,22 +795,48 @@ namespace PontelloApp.Controllers
                         try
                         {
                             // Insert product
-                            Product product = await _context.Products.FirstOrDefaultAsync(p => p.Handle == handle)
-                                              ?? new Product
-                                              {
-                                                  ProductName = productName,
-                                                  Handle = handle,
-                                                  VendorID = vendor.VendorID,
-                                                  Type = type,
-                                                  Tag = tag,
-                                                  Description = description,
-                                                  CategoryID = category.ID,
-                                                  IsActive = isActive,
-                                                  IsUnlisted = isUnlisted
-                                              };
-
-                            if (product.ID == 0) _context.Products.Add(product);
+                            // Check if product with the same handle already exists
+                            Product product = await _context.Products.FirstOrDefaultAsync(p => p.Handle == handle);
+                            if (product == null)
+                            {
+                                product = new Product
+                                {
+                                    ProductName = productName,
+                                    Handle = handle,
+                                    VendorID = vendor.VendorID,
+                                    Type = type,
+                                    Tag = tag,
+                                    Description = description,
+                                    CategoryID = category.ID,
+                                    IsActive = isActive,
+                                    IsUnlisted = isUnlisted
+                                };
+                                _context.Products.Add(product);
+                            }
+                            // If product exists, update its details (except handle which is unique)
+                            else
+                            {
+                                product.ProductName = productName;
+                                product.VendorID = vendor.VendorID;
+                                product.Type = type;
+                                product.Tag = tag;
+                                product.Description = description;
+                                product.CategoryID = category.ID;
+                                product.IsActive = isActive;
+                                product.IsUnlisted = isUnlisted;
+                            }
                             await _context.SaveChangesAsync();
+
+                            // Check if the SKU already exists to prevent duplicate variant imports
+                            var existingVariant = await _context.ProductVariants
+                                .FirstOrDefaultAsync(v => v.SKU_ExternalID == sku);
+
+                            if (existingVariant != null)
+                            {
+                                errorCount++;
+                                feedback += $"Row {row}: SKU '{sku}' already exists.<br/>";
+                                continue;
+                            }
 
                             // Insert variant
                             ProductVariant variant = new ProductVariant
@@ -875,3 +903,4 @@ Rear Cassette,right-rear-cassette,Charger Racing Chassis,Axles & Components,Axle
         }
     }
 }
+
