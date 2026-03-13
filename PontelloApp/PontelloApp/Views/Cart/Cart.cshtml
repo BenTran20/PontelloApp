@@ -1,4 +1,4 @@
-﻿@model PontelloApp.Models.Order
+@model PontelloApp.Models.Order
 
 @{
     ViewData["Title"] = "Your Cart";
@@ -92,7 +92,7 @@
                                           class="mt-2">
                                         <input type="hidden" name="itemId" value="@item.Id" />
                                         <button type="submit" class="btn btn-sm text-muted">
-                                            ✕
+                                            <i class="bi bi-trash"></i> 
                                         </button>
                                     </form>
                                 </div>
@@ -102,6 +102,12 @@
                     </div>
                 }
 
+                <!-- Continue Shopping Button -->
+                <a asp-controller="ProductDealer" asp-action="Index"
+                   class="btn btn-outline-dark"
+                   style="text-decoration: none;">
+                    Continue Shopping
+                </a>
             </div>
 
             <!-- RIGHT SIDE - SUMMARY -->
@@ -123,7 +129,7 @@
                     </div>
 
                     <div class="d-flex justify-content-between mb-3">
-                        <span>Sales Tax:</span>
+                        <span>Tax (13%): </span>
                         <span>$@tax</span>
                     </div>
 
