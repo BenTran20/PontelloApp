@@ -30,6 +30,8 @@ namespace PontelloApp.Models
         public int? ShippingId { get; set; }
         public Shipping? Shipping { get; set; }
 
+        public string? RejectReason { get; set; }
+
         [Timestamp]
         public byte[]? RowVersion { get; set; }
     }
