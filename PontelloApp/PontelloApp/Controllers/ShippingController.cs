@@ -157,7 +157,8 @@ namespace PontelloApp.Controllers
 
                     decimal subtotalCalc = items.Sum(i => i.Total);
                     decimal taxCalc = order.TaxAmount;
-                    decimal grandTotal = order.TotalAmount;
+                    decimal shippingCost = order.Shipping?.ShippingCost ?? 0m;
+                    decimal grandTotal = Math.Round(subtotalCalc + taxCalc + shippingCost, 2);
 
                     pdfBytes = Document.Create(container =>
                     {
@@ -187,6 +188,12 @@ namespace PontelloApp.Controllers
                                 col.Item().Text(order.Shipping?.Address ?? "N/A");
                                 col.Item().Text(order.Shipping?.Email ?? "");
                                 col.Item().Text(order.Shipping?.Phone ?? "");
+
+                                if (!string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin))
+                                    col.Item().Text($"BIN: {order.Shipping.BinOrEin}");
+
+                                if (!string.IsNullOrWhiteSpace(order.Shipping?.TrackingNumber))
+                                    col.Item().Text($"Tracking #: {order.Shipping.TrackingNumber}");
 
                                 col.Item().PaddingVertical(10);
 
@@ -229,6 +236,16 @@ namespace PontelloApp.Controllers
                                         r.RelativeItem().AlignRight().Text("Tax:");
                                         r.ConstantItem(100).AlignRight().Text("$" + taxCalc.ToString("0.00"));
                                     });
+
+                                    if (shippingCost > 0)
+                                    {
+                                        c.Item().Row(r =>
+                                        {
+                                            r.RelativeItem().AlignRight().Text("Shipping:");
+                                            r.ConstantItem(100).AlignRight().Text("$" + shippingCost.ToString("0.00"));
+                                        });
+                                    }
+
                                     c.Item().Row(r =>
                                     {
                                         r.RelativeItem().AlignRight().Text("Total:").Bold();
