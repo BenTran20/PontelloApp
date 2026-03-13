@@ -120,9 +120,17 @@
                                     id="variantSelect"
                                     required>
 
+                                @{
+                                    var variants = Model.Variants?.ToList() ?? new List<PontelloApp.Models.ProductVariant>();
+                                    var hasMultiple = variants.Count > 1;
+                                }
+
+                                @if (hasMultiple)
+                                {
                                 <option value="">
                                     Select a variant
                                 </option>
+                                }
 
                                 @foreach (var v in Model.Variants ?? Enumerable.Empty<PontelloApp.Models.ProductVariant>())
                                 {
