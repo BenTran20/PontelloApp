@@ -35,6 +35,9 @@ namespace PontelloApp.Controllers
             ViewData["Filtering"] = "btn-outline-secondary";
             int numberFilters = 0;
 
+            ViewData["SearchString"] = SearchString;
+            ViewData["CategoryID"] = CategoryID;
+
             PopulateDropDownLists();
 
             var products = _context.Products
@@ -54,6 +57,7 @@ namespace PontelloApp.Controllers
                 numberFilters++;
 
             }
+
             //Add if include price range filter
             //if (MaxPrice.HasValue)
             //{
@@ -574,7 +578,7 @@ namespace PontelloApp.Controllers
             }
         }
 
-        public IActionResult DownloadPontello()
+        public IActionResult DownloadPontello(string? search, int? categoryID, string? actionButton, string sortDirection, string sortField)
         {
             var productVariants = _context.ProductVariants
                 .Include(pv => pv.Product)
@@ -588,6 +592,49 @@ namespace PontelloApp.Controllers
 
             if (!productVariants.Any())
                 return NotFound("No data.");
+
+            //CSV filtered results
+            if (!String.IsNullOrEmpty(search))
+            {
+                productVariants = productVariants.Where(p => p.Product.ProductName.ToUpper().Contains(search.ToUpper()))
+                    .ToList();
+
+            }
+            if (categoryID.HasValue)
+            {
+                productVariants = productVariants.Where(p => p.Product.CategoryID == categoryID)
+                    .ToList();
+            }
+
+            if (sortField == "A-Z")
+            {
+                if (sortDirection == "asc")
+                {
+                    productVariants = productVariants
+                        .OrderBy(p => p.Product.ProductName.ToUpper()).ToList();
+                }
+            }
+            else if (sortField == "Z-A")
+            {
+                if (sortDirection == "asc")
+                {
+                    productVariants = productVariants
+                        .OrderByDescending(p => p.Product.ProductName.ToUpper()).ToList();
+                }
+            }
+            else
+            {
+                if (sortDirection == "asc")
+                {
+                    productVariants = productVariants
+                        .OrderBy(p => p.Product.ProductName.ToUpper()).ToList();
+                }
+                else
+                {
+                    productVariants = productVariants
+                        .OrderByDescending(p => p.Product.ProductName.ToUpper()).ToList();
+                }
+            }
 
             var sb = new StringBuilder();
 
