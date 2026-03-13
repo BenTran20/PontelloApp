@@ -130,7 +130,7 @@ namespace PontelloApp.Controllers
 
             TempData["SuccessMessage"] = "Product added to cart successfully!";
 
-            return RedirectToAction("Details", "ProductDealer", new { id = productId });
+            return RedirectToAction("Cart", "Cart", new { id = productId });
         }
 
         private void PopulateDropDownLists(Product? product = null)
