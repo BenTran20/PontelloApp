@@ -805,15 +805,25 @@ namespace PontelloApp.Controllers
                         int.TryParse(stockText, out int stock);
 
                         // Parse unit
-                        ImperialUnits unit = unitText.ToLower() switch
+                        ImperialUnits unit;
+                        switch (unitText.ToLower())
                         {
-                            "oz" => ImperialUnits.oz,
-                            "floz" or "fl oz" => ImperialUnits.floz,
-                            "lb" or "lbs" => ImperialUnits.lb,
-                            _ => ImperialUnits.oz
-                        };
-                        if (!Enum.IsDefined(typeof(ImperialUnits), unit))
-                            rowErrors.Add($"Invalid Unit '{unitText}'");
+                            case "oz":
+                                unit = ImperialUnits.oz;
+                                break;
+                            case "floz":
+                            case "fl oz":
+                                unit = ImperialUnits.floz;
+                                break;
+                            case "lb":
+                            case "lbs":
+                                unit = ImperialUnits.lb;
+                                break;
+                            default:
+                                rowErrors.Add($"Invalid Unit '{unitText}'");
+                                unit = ImperialUnits.oz;
+                                break;
+                        }
 
                         // Validate required fields
                         if (string.IsNullOrEmpty(productName)) rowErrors.Add("ProductName missing");
