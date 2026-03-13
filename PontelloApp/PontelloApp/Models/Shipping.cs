@@ -27,6 +27,8 @@ namespace PontelloApp.Models
 
         public string? TrackingNumber { get; set; }
 
+        public decimal ShippingCost { get; set; }
+
         // navigation
         public int OrderId { get; set; }
         public Order? Order { get; set; }
