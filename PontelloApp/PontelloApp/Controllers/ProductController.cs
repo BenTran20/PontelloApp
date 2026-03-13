@@ -36,7 +36,7 @@ namespace PontelloApp.Controllers
             int numberFilters = 0;
 
             ViewData["SearchString"] = SearchString;
-            ViewData["CategoryID"] = CategoryID;
+            ViewData["SelectCategoryID"] = CategoryID;
 
             PopulateDropDownLists();
 
@@ -578,7 +578,7 @@ namespace PontelloApp.Controllers
             }
         }
 
-        public IActionResult DownloadPontello(string? search, int? categoryID, string? actionButton, string sortDirection, string sortField)
+        public IActionResult DownloadPontello(string? search, int? categoryID, string sortDirection, string sortField)
         {
             var productVariants = _context.ProductVariants
                 .Include(pv => pv.Product)
