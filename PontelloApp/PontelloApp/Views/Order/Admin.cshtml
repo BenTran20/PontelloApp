@@ -114,31 +114,35 @@
                                                         Review
                                                     </a>
                                                 }
+
                                                 @if (status == PontelloApp.Models.OrderStatus.Progress)
                                                 {
-                                                    <a asp-action="Review" asp-route-id="@o.Id"
+                                                    <a asp-action="Progress" asp-route-id="@o.Id"
                                                        class="btn btn-sm btn-outline-primary">
                                                         View
                                                     </a>
                                                 }
+
                                                 @if (status == PontelloApp.Models.OrderStatus.Approved)
                                                 {
-                                                    <a asp-action="Shipped" asp-route-id="@o.Id"
+                                                    <a asp-action="Approved" asp-route-id="@o.Id"
                                                        class="btn btn-sm btn-outline-success">
                                                         View
                                                     </a>
                                                 }
+
                                                 @if (status == PontelloApp.Models.OrderStatus.Rejected)
                                                 {
-                                                    <a asp-action="Review" asp-route-id="@o.Id"
-                                                       class="btn btn-sm btn-outline-primary">
+                                                    <a asp-action="Rejected" asp-route-id="@o.Id"
+                                                       class="btn btn-sm btn-outline-danger">
                                                         View
                                                     </a>
                                                 }
+
                                                 @if (status == PontelloApp.Models.OrderStatus.Shipped)
                                                 {
-                                                    <a asp-action="Review" asp-route-id="@o.Id"
-                                                       class="btn btn-sm btn-outline-primary">
+                                                    <a asp-action="Shipped" asp-route-id="@o.Id"
+                                                       class="btn btn-sm btn-outline-secondary">
                                                         View
                                                     </a>
                                                 }
