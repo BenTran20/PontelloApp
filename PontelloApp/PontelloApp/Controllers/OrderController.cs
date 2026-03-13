@@ -125,19 +125,43 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
-        public async Task<IActionResult> Shipped(int id)
+        private async Task<Order?> GetOrder(int id)
         {
-            var order = await _context.Orders
+            return await _context.Orders
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.ProductVariant)
-                    .ThenInclude(i => i.Options)
+                    .ThenInclude(v => v.Options)
                 .Include(o => o.Shipping)
                 .FirstOrDefaultAsync(o => o.Id == id);
+        }
 
+        public async Task<IActionResult> Progress(int id)
+        {
+            var order = await GetOrder(id);
             if (order == null) return NotFound();
+            return View(order);
+        }
 
+        public async Task<IActionResult> Approved(int id)
+        {
+            var order = await GetOrder(id);
+            if (order == null) return NotFound();
+            return View(order);
+        }
+
+        public async Task<IActionResult> Rejected(int id)
+        {
+            var order = await GetOrder(id);
+            if (order == null) return NotFound();
+            return View(order);
+        }
+
+        public async Task<IActionResult> Shipped(int id)
+        {
+            var order = await GetOrder(id);
+            if (order == null) return NotFound();
             return View(order);
         }
 
@@ -311,14 +335,6 @@ namespace PontelloApp.Controllers
             {
                 order.Status = OrderStatus.Approved;
             }
-            if(status == "Rejected")
-            {
-                order.Status = OrderStatus.Rejected;
-            }
-            if(status == "Shipped")
-            {
-                order.Status = OrderStatus.Shipped;
-            }
 
             // persist the created order (with its items and shipping placeholder)
             await _context.SaveChangesAsync();
@@ -326,6 +342,46 @@ namespace PontelloApp.Controllers
             return RedirectToAction("Admin", "Order");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ShipOrder(int id, string TrackingNumber, decimal ShippingCost)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Shipping)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+                return NotFound();
+
+            if (order.Shipping == null)
+                order.Shipping = new Shipping();
+
+            order.Shipping.TrackingNumber = TrackingNumber;
+            order.Shipping.ShippingCost = ShippingCost;
+
+            order.Status = OrderStatus.Shipped;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Admin");
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> RejectOrder(int id, string reason)
+        {
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+                return NotFound();
+
+            order.Status = OrderStatus.Rejected;
+            order.RejectReason = reason;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Admin");
+        }
     }
 }
 
