@@ -186,7 +186,8 @@ namespace PontelloApp.Controllers
 
             decimal subtotal = items.Sum(i => i.Total);
             decimal tax = order.TaxAmount;
-            decimal grandTotal = order.TotalAmount;
+            decimal shippingCost = order.Shipping?.ShippingCost ?? 0m;
+            decimal grandTotal = order.TotalAmount; // order.TotalAmount should include shipping if saved
 
             byte[] pdf = Document.Create(container =>
             {
@@ -227,6 +228,9 @@ namespace PontelloApp.Controllers
 
                                 if (!string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin))
                                     c.Item().Text($"BIN: {order.Shipping.BinOrEin}");
+
+                                if (!string.IsNullOrWhiteSpace(order.Shipping?.TrackingNumber))
+                                    c.Item().Text($"Tracking #: {order.Shipping.TrackingNumber}");
                             });
                         });
 
@@ -276,6 +280,15 @@ namespace PontelloApp.Controllers
                                 r.RelativeItem().AlignRight().Text("Tax:");
                                 r.ConstantItem(100).AlignRight().Text("$" + tax.ToString("0.00"));
                             });
+
+                            if (shippingCost > 0)
+                            {
+                                c.Item().Row(r =>
+                                {
+                                    r.RelativeItem().AlignRight().Text("Shipping:");
+                                    r.ConstantItem(100).AlignRight().Text("$" + shippingCost.ToString("0.00"));
+                                });
+                            }
 
                             c.Item().Row(r =>
                             {
@@ -347,6 +360,7 @@ namespace PontelloApp.Controllers
         {
             var order = await _context.Orders
                 .Include(o => o.Shipping)
+                .Include(o => o.Items)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (order == null)
@@ -357,8 +371,18 @@ namespace PontelloApp.Controllers
 
             order.Shipping.TrackingNumber = TrackingNumber;
             order.Shipping.ShippingCost = ShippingCost;
+            order.TotalAmount += ShippingCost; // Add shipping cost to total
 
             order.Status = OrderStatus.Shipped;
+
+            // Recalculate totals including shipping
+            var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
+
+            // Keep existing tax amount (tax already calculated when shipping was first saved). If you need to recalc,
+            // you can adopt the same BIN/EIN logic used elsewhere. Here we preserve order.TaxAmount.
+            var tax = order.TaxAmount;
+
+            order.TotalAmount = Math.Round(subtotal + tax + (order.Shipping?.ShippingCost ?? 0m), 2);
 
             await _context.SaveChangesAsync();
 
