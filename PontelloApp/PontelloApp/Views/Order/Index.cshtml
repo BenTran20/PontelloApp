@@ -195,16 +195,16 @@
                                             </a>
                                         }
 
-
-                                        <a class="btn btn-warning"
-                                           asp-controller="RecurringOrder"
-                                           asp-action="Create"
-                                           asp-route-orderId="@o.Id">
-                                           Recurring Order
-                                        </a>
-
-
-                                        
+                                        @if (o.Status != OrderStatus.Progress)
+                                        {
+                                            <a class="btn btn-warning"
+                                               asp-controller="RecurringOrder"
+                                               asp-action="Create"
+                                               asp-route-orderId="@o.Id">
+                                                Recurring Order
+                                            </a>
+                                        }
+                                       
                                     </div>
 
                                 </td>
