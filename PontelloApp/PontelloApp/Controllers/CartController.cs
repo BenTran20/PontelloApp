@@ -100,9 +100,16 @@ namespace PontelloApp.Controllers
 
             var shipping = new Shipping
             {
-                Address = string.Empty,
+                FullName = string.Empty,
+                StreetAddress = string.Empty,
+                City = string.Empty,
+                Province = string.Empty,
+                PostalCode = string.Empty,
+                Country = string.Empty,
                 Phone = string.Empty,
                 Email = string.Empty,
+                BinOrEin = string.Empty,
+                ShippingCost = 0m,
                 OrderId = order.Id
             };
 
