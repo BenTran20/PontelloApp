@@ -79,6 +79,14 @@
                         </div>
                     </div>
 
+                    <!--Taxable-->
+                    <div class="row mb-2">
+                        <div class="col-4 text-muted">Tax Status</div>
+                        <div class="col-8">
+                            @(Model.IsTaxable ? "Taxable" : "Non-Taxable")
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-4 text-muted">Type</div>
                         <div class="col-8">@Model.Type</div>
