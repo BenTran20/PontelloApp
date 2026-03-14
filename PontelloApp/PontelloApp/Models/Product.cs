@@ -39,6 +39,9 @@ namespace PontelloApp.Models
         [Display(Name = "Is Unlisted")]
         public bool IsUnlisted { get; set; } = false;
 
+        [Display(Name = "Is Taxable")]
+        public bool IsTaxable { get; set; } = true;
+
         [ScaffoldColumn(false)]
         [Timestamp]
         public Byte[]? RowVersion { get; set; }//Added for concurrency
