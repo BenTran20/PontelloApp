@@ -39,7 +39,7 @@ namespace PontelloApp.Controllers
         // POST: Shipping/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int orderId, string fullName, string address, string phone, string email, string? binOrEin)
+        public async Task<IActionResult> Create(int orderId, [Bind("FullName,Email,Phone,BinOrEin,StreetAddress,City,Province,PostalCode,Country,DeliveryNotes")] Shipping shipping)
         {
             var order = await _context.Orders
                 .Include(o => o.Items)
@@ -50,30 +50,27 @@ namespace PontelloApp.Controllers
             if (order == null)
                 return RedirectToAction("Cart", "Cart");
 
-            if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(address) || string.IsNullOrWhiteSpace(phone) || string.IsNullOrWhiteSpace(email))
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError(string.Empty, "Please fill all required shipping fields.");
                 return View(order);
             }
 
             if (order.Shipping == null)
             {
-                order.Shipping = new Shipping
-                {
-                    FullName = fullName,
-                    Address = address,
-                    Phone = phone,
-                    Email = email,
-                    BinOrEin = string.IsNullOrWhiteSpace(binOrEin) ? null : binOrEin
-                };
+                order.Shipping = shipping;
             }
             else
             {
-                order.Shipping.FullName = fullName;
-                order.Shipping.Address = address;
-                order.Shipping.Phone = phone;
-                order.Shipping.Email = email;
-                order.Shipping.BinOrEin = string.IsNullOrWhiteSpace(binOrEin) ? null : binOrEin;
+                order.Shipping.FullName = shipping.FullName;
+                order.Shipping.Email = shipping.Email;
+                order.Shipping.Phone = shipping.Phone;
+                order.Shipping.BinOrEin = shipping.BinOrEin;
+                order.Shipping.StreetAddress = shipping.StreetAddress;
+                order.Shipping.City = shipping.City;
+                order.Shipping.Province = shipping.Province;
+                order.Shipping.PostalCode = shipping.PostalCode;
+                order.Shipping.Country = shipping.Country;
+                order.Shipping.DeliveryNotes = shipping.DeliveryNotes;
             }
 
             // Recalculate tax and total on the order immediately so the saved order reflects exemption
@@ -184,16 +181,17 @@ namespace PontelloApp.Controllers
                             page.Content().PaddingVertical(15).Column(col =>
                             {
                                 col.Item().Text("Ship To").Bold();
-                                col.Item().Text(order.Shipping?.FullName ?? "");
-                                col.Item().Text(order.Shipping?.Address ?? "N/A");
+                                col.Item().Text(order.Shipping?.FullName);
+
+                                col.Item().Text($"{order.Shipping?.FullAddress}");
                                 col.Item().Text(order.Shipping?.Email ?? "");
                                 col.Item().Text(order.Shipping?.Phone ?? "");
 
-                                if (!string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin))
-                                    col.Item().Text($"BIN: {order.Shipping.BinOrEin}");
-
                                 if (!string.IsNullOrWhiteSpace(order.Shipping?.TrackingNumber))
                                     col.Item().Text($"Tracking #: {order.Shipping.TrackingNumber}");
+                                if (!string.IsNullOrWhiteSpace(order.Shipping?.DeliveryNotes))
+                                    col.Item().Text($"Notes: {order.Shipping?.DeliveryNotes}");
+
 
                                 col.Item().PaddingVertical(10);
 
