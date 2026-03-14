@@ -222,7 +222,7 @@ namespace PontelloApp.Controllers
                             {
                                 c.Item().Text("Ship To").Bold();
                                 c.Item().Text(order.Shipping?.FullName ?? "");
-                                c.Item().Text(order.Shipping?.Address ?? "N/A");
+                                c.Item().Text(order.Shipping?.FullAddress ?? "N/A");
                                 c.Item().Text(order.Shipping?.Email ?? "");
                                 c.Item().Text(order.Shipping?.Phone ?? "");
 
