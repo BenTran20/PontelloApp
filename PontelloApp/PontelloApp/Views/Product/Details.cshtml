@@ -75,6 +75,20 @@
                         }
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <small class="text-muted text-uppercase">Tax Status</small>
+                    <div>
+                        @if (Model.IsTaxable)
+                        {
+                            <span class="badge bg-success">Taxable</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Non-Taxable</span>
+                        }
+                    </div>
+                </div>
+                
 
             </div>
 
