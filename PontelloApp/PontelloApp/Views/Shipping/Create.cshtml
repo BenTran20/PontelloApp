@@ -120,15 +120,6 @@
                     <span>Total</span>
                     <span>$@total</span>
                 </div>
-
-                @if (Model.Shipping != null)
-                {
-                    <hr />
-                    <div>
-                        <h6 class="fw-bold">Shipping To:</h6>
-                        <small>@Model.Shipping.FullAddress ?? Model.Shipping.Address</small>
-                    </div>
-                }
             </div>
         </div>
     </div>
