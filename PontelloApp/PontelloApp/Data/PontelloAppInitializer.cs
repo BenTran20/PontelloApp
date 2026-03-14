@@ -96,6 +96,17 @@ namespace PontelloApp.Data
                             context.Database.Migrate(); //Apply all migrations
                         }
                     }
+
+                    // IsTaxable column was added after the initial release, so we need to add it if it doesn't exist
+                    try
+                    {
+                        context.Database.ExecuteSqlRaw(
+                            @"ALTER TABLE Products ADD COLUMN IsTaxable INTEGER NOT NULL DEFAULT 1;");
+                    }
+                    catch
+                    {
+                        // Ignore if the column already exists
+                    }
                 }
                 catch (Exception ex)
                 {
