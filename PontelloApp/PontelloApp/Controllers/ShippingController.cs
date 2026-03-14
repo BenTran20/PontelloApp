@@ -26,6 +26,10 @@ namespace PontelloApp.Controllers
         {
             var order = await _context.Orders
                 .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                        .ThenInclude(pv => pv.Product)
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
                 .Include(o => o.Shipping)
                 .FirstOrDefaultAsync(o => o.Id == orderId && (o.Status == OrderStatus.Draft
                 || o.Status == OrderStatus.Progress || o.Status == OrderStatus.Submitted));
@@ -43,6 +47,10 @@ namespace PontelloApp.Controllers
         {
             var order = await _context.Orders
                 .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                        .ThenInclude(pv => pv.Product)
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
                 .Include(o => o.Shipping)
                 .FirstOrDefaultAsync(o => o.Id == orderId && (o.Status == OrderStatus.Draft ||
                    o.Status == OrderStatus.Progress || o.Status == OrderStatus.Submitted));
@@ -75,15 +83,22 @@ namespace PontelloApp.Controllers
 
             // Recalculate tax and total on the order immediately so the saved order reflects exemption
             var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
+            
+            var taxableSubtotal = order.Items?
+                .Where(i => i.ProductVariant != null &&
+                            i.ProductVariant.Product != null &&
+                            i.ProductVariant.Product.IsTaxable)
+                .Sum(i => i.TotalPrice) ?? 0m;
+            
             if (!string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin))
             {
                 order.TaxAmount = 0m;
             }
             else
             {
-                order.TaxAmount = Math.Round(subtotal * 0.13m, 2);
+                order.TaxAmount = Math.Round(taxableSubtotal * 0.13m, 2);
             }
-
+            
             order.TotalAmount = Math.Round(subtotal + order.TaxAmount, 2);
 
             // We will mark submitted now that shipping is provided.
