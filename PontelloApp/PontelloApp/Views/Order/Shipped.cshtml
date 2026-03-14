@@ -6,7 +6,7 @@
 
 <div class="container py-4">
 
-    
+    ```
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
 
@@ -27,12 +27,106 @@
 
     </div>
 
-    <!-- STATUS ALERT -->
-    <div class="alert alert-primary">
+
+    <!-- STATUS -->
+    <div class="alert alert-primary mb-4">
         This order has been shipped.
     </div>
 
 
+    <!-- SHIPPING + SHIPMENT -->
+    @if (Model.Shipping != null)
+    {
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-header bg-white fw-semibold">
+                Shipping 
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-4">
+
+                    <!-- SHIPPING INFO -->
+                    <div class="col-md-6 border-md-end">
+
+                        <div class="fw-semibold">
+                            @Model.Shipping.FullName
+                        </div>
+
+                        <div class="text-muted mt-1">
+                            @Model.Shipping.FullAddress
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Shipping.BinOrEin))
+                        {
+                            <div class="text-muted mt-2">
+                                BIN / EIN: @Model.Shipping.BinOrEin
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Shipping.DeliveryNotes))
+                        {
+                            <div class="mt-3">
+
+                                <div class="fw-semibold small">
+                                    Delivery Instructions
+                                </div>
+
+                                <div class="text-muted">
+                                    @Model.Shipping.DeliveryNotes
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+
+
+                    <!-- SHIPMENT DETAILS -->
+                    <div class="col-md-6">
+
+                        @if (!string.IsNullOrEmpty(Model.Shipping.TrackingNumber))
+                        {
+                            <div class="mb-3">
+
+                                <div class="text-muted small">
+                                    Tracking Number
+                                </div>
+
+                                <div class="fw-semibold">
+                                    @Model.Shipping.TrackingNumber
+                                </div>
+
+                            </div>
+                        }
+
+                        @if (Model.Shipping?.ShippingCost != null)
+                        {
+                            <div>
+
+                                <div class="text-muted small">
+                                    Shipping Cost
+                                </div>
+
+                                <div class="fw-semibold">
+                                    $@Model.Shipping.ShippingCost?.ToString("F2")
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ITEMS + SUMMARY -->
     <div class="row g-4">
 
         <!-- ORDER ITEMS -->
@@ -78,7 +172,7 @@
                                                                         }
                                         else
                                         {
-                                            <span class="text-muted">—</span>
+                                            <span>—</span>
                                         }
 
                                     </td>
@@ -105,11 +199,10 @@
         </div>
 
 
-        <!-- SIDEBAR -->
+        <!-- ORDER SUMMARY -->
         <div class="col-lg-4">
 
-            <!-- ORDER SUMMARY -->
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card shadow-sm border-0">
 
                 <div class="card-header bg-white fw-semibold">
                     Order Summary
@@ -133,90 +226,6 @@
                         <span>Total</span>
                         <span>$@Model.TotalAmount</span>
                     </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- SHIPPING INFORMATION -->
-            @if (Model.Shipping != null)
-            {
-                <div class="card shadow-sm border-0 mb-4">
-
-                    <div class="card-header bg-white fw-semibold">
-                        Shipping Information
-                    </div>
-
-                    <div class="card-body small">
-
-                        <div class="fw-semibold">
-                            @Model.Shipping.FullName
-                        </div>
-
-                        <div class="text-muted">
-                            @Model.Shipping.Address
-                        </div>
-
-                        <div class="text-muted mt-2">
-                            Phone: @Model.Shipping.Phone
-                        </div>
-
-                        <div class="text-muted">
-                            Email: @Model.Shipping.Email
-                        </div>
-
-                        @if (!string.IsNullOrWhiteSpace(Model.Shipping.BinOrEin))
-                        {
-                            <div class="text-muted mt-2">
-                                BIN / EIN: @Model.Shipping.BinOrEin
-                            </div>
-                        }
-
-                    </div>
-
-                </div>
-            }
-
-
-            <!-- SHIPMENT DETAILS -->
-            <div class="card shadow-sm border-0 sticky-top" style="top:100px;">
-
-                <div class="card-header bg-white fw-semibold">
-                    Shipment Details
-                </div>
-
-                <div class="card-body">
-
-                    @if (!string.IsNullOrEmpty(Model.Shipping?.TrackingNumber))
-                    {
-                        <div class="mb-3">
-
-                            <div class="text-muted small">
-                                Tracking Number
-                            </div>
-
-                            <div class="fw-semibold">
-                                @Model.Shipping.TrackingNumber
-                            </div>
-
-                        </div>
-                    }
-
-                    @if (Model.Shipping?.ShippingCost != null)
-                    {
-                        <div>
-
-                            <div class="text-muted small">
-                                Shipping Cost
-                            </div>
-
-                            <div class="fw-semibold">
-                                $@Model.Shipping.ShippingCost.ToString("F2")
-                            </div>
-
-                        </div>
-                    }
 
                 </div>
 
