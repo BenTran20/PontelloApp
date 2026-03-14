@@ -36,7 +36,8 @@ namespace PontelloApp.Controllers
 
             // Filter by search
             if (!string.IsNullOrEmpty(SearchString))
-                products = products.Where(p => p.ProductName.ToUpper().Contains(SearchString.ToUpper()));
+                products = products.Where(p => p.ProductName.ToUpper().Contains(SearchString.ToUpper())
+                 || p.Handle.ToUpper().Contains(SearchString.ToUpper()));
 
             // Filter by category
             if (CategoryID.HasValue)
