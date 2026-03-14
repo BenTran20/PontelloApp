@@ -1,4 +1,4 @@
-﻿@model PontelloApp.Models.Order
+@model PontelloApp.Models.Order
 
 @{
     ViewData["Title"] = "Rejected Order";
@@ -106,7 +106,7 @@
                     <div class="card-header bg-white fw-semibold">Shipping Information</div>
                     <div class="card-body small">
                         <div class="fw-semibold">@Model.Shipping.FullName</div>
-                        <div class="text-muted">@Model.Shipping.Address</div>
+                        <div class="text-muted">@Model.Shipping.FullAddress</div>
                         <div class="text-muted mt-2">Phone: @Model.Shipping.Phone</div>
                         <div class="text-muted">Email: @Model.Shipping.Email</div>
                         @if (!string.IsNullOrWhiteSpace(Model.Shipping.BinOrEin))
