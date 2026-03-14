@@ -27,8 +27,11 @@ namespace PontelloApp.Controllers
             int numberFilters = 0;
             PopulateDropDownLists();
             var products = _context.Products
-                .Where(p => p.IsActive && !p.IsUnlisted) 
+                .Include(p => p.Variants)
+                    .ThenInclude(v => v.Options)
                 .Include(p => p.Category)
+                .Include(p => p.Vendor)
+                .Where(p => p.IsActive && !p.IsUnlisted) 
                 .AsNoTracking();
 
             // Filter by search
