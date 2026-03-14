@@ -46,11 +46,9 @@ namespace PontelloApp.Controllers
                 .Include(p => p.Category)
                 .AsNoTracking();
 
-            if (!String.IsNullOrEmpty(SearchString))
-            {
-                products = products.Where(p => p.ProductName.ToUpper().Contains(SearchString.ToUpper()));
-
-            }
+            if (!string.IsNullOrEmpty(SearchString))
+                products = products.Where(p => p.ProductName.ToUpper().Contains(SearchString.ToUpper())
+                 || p.Handle.ToUpper().Contains(SearchString.ToUpper()));
             if (CategoryID.HasValue)
             {
                 products = products.Where(p => p.CategoryID == CategoryID);
