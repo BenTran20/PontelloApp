@@ -34,7 +34,11 @@ namespace PontelloApp.Services
                 newOrder.Shipping = new Shipping
                 {
                     FullName = original.Shipping.FullName,
-                    Address = original.Shipping.Address,
+                    StreetAddress = original.Shipping.StreetAddress,
+                    City=original.Shipping.City,
+                    Province = original.Shipping.Province,
+                    Country = original.Shipping.Country,
+                    PostalCode = original.Shipping.PostalCode,
                     Phone = original.Shipping.Phone,
                     Email = original.Shipping.Email,
                     BinOrEin = original.Shipping.BinOrEin
