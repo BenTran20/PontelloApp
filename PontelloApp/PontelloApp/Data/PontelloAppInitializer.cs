@@ -1119,6 +1119,224 @@ namespace PontelloApp.Data
                             );
                         context.SaveChanges();
                     }
+                    
+                // -------- Seed Sample (Progress) Orders --------
+                if (!context.Orders.Any())
+                {
+                    context.Orders.AddRange(
+                       new Order //1
+                       //product 1
+                       {
+                           PONumber = "PO-20260313145742",
+                           DealerId = 2,
+                           TotalAmount = 225.97m,
+                           Status = OrderStatus.Progress,
+                           Shipping = new Shipping { FullName = "Alex Brown", /*Address = "20 Spring Drive", Phone = "289-387-3874",*/ Email = "alexbrown@gmail.com" },
+                           TaxAmount = 1.13m,
+                           Items = new List<OrderItem>
+                           {
+                               new OrderItem
+                           {
+                                ProductId = 1,
+                                ProductVariantId = 1,
+                                Quantity = 2,
+                                UnitPrice = 99.99m,
+                           }
+                         }
+                       },
+
+                        new Order //2
+                        //product 2
+                        {
+                            PONumber = "PO-20260313145740",
+                            DealerId = 1,
+                            TotalAmount = 10.79m,
+                            Status = OrderStatus.Progress,
+                            Shipping = new Shipping { FullName = "Liam Woods", Address = "19 River Rd"/*, Phone = "905-938-6984", Email = "liamwoods@outlook.com"*/ },
+                            TaxAmount = 1.13m,
+                            Items = new List<OrderItem>
+                           {
+                               new OrderItem
+                           {
+                                ProductId = 2,
+                                ProductVariantId = 2,
+                                Quantity = 1,
+                                UnitPrice = 39.55m,
+                           }
+                         }
+                        },
+
+                       // -------- Seed Sample (Submitted) Orders --------
+                       new Order //3 
+                       //product 22
+                       {
+                           PONumber = "PO-20260313145735",
+                           DealerId = 4,
+                           TotalAmount = 1.01m,
+                           Status = OrderStatus.Submitted,
+                           Shipping = new Shipping { FullName = "Ally Smith ", Address = "25 Sunset Way", Phone = "289-456-7810", Email = "allysmith@gmail.com" },
+                           TaxAmount = 1.13m,
+                           Items = new List<OrderItem>
+                           {
+                               new OrderItem
+                           {
+                                ProductId = 22,
+                                ProductVariantId = 22,
+                                Quantity = 1,
+                                UnitPrice = 0.90m,
+                           }
+                         }
+
+                       },
+                        new Order //4
+                        //product 3
+                        {
+                            PONumber = "PO-20260313145730",
+                            DealerId = 3,
+                            TotalAmount = 16.15m,
+                            Status = OrderStatus.Submitted,
+                            Shipping = new Shipping { FullName = "Ella Jones", Address = "345 Stone Road", Phone = "289-749-2345", Email = "ellajones@gmail.com" },
+                            TaxAmount = 1.13m,
+                            Items = new List<OrderItem>
+                           {
+                               new OrderItem
+                           {
+                                ProductId = 3,
+                                ProductVariantId = 3,
+                                Quantity = 1,
+                                UnitPrice = 14.30m,
+                           }
+                         }
+                        },
+
+                        // -------- Seed Sample (Approved) Orders --------
+                        //product 4
+                        new Order //5
+                        {
+                            PONumber = "PO-20260313145725",
+                            DealerId = 6,
+                            TotalAmount = 42.13m,
+                            Status = OrderStatus.Approved,
+                            Shipping = new Shipping { FullName = "Emma Smith", Address = "365 Velvet Rd", Phone = "289-365-8374", Email = "emmasmith@hotmail.com" },
+                            TaxAmount = 1.13m,
+                            Items = new List<OrderItem>
+                           {
+                               new OrderItem
+                           {
+                                ProductId = 4,
+                                ProductVariantId = 4,
+                                Quantity = 1,
+                                UnitPrice = 37.29m,
+                           }
+                         }
+                        },
+                        //product 5
+                        new Order //6
+                        {
+                            PONumber = "PO-20260313145720",
+                            DealerId = 5,
+                            TotalAmount = 5.22m,
+                            Status = OrderStatus.Approved,
+                            Shipping = new Shipping { FullName = "Lucas Jones", Address = "47 Merrit Ave", Phone = "905-397-4836", Email = "lucasjones@gmail.com" },
+                            TaxAmount = 1.13m,
+                            Items = new List<OrderItem>
+                           {
+                               new OrderItem
+                           {
+                                ProductId = 5,
+                                ProductVariantId = 5,
+                                Quantity = 6,
+                                UnitPrice = 0.77m,
+                           }
+                         }
+                        },
+
+                         // -------- Seed Sample (Rejected) Orders --------
+                         //product 6
+                         new Order //7
+                         {
+                             PONumber = "PO-20260313145715",
+                             DealerId = 8,
+                             //TotalAmount = 0m,
+                             Status = OrderStatus.Rejected,
+                             Shipping = new Shipping { FullName = "Jimmy White"/*, Address = "", Phone = "", Email = "" */},
+                             //TaxAmount = 1.13m,
+                             Items = new List<OrderItem>
+                           {
+                               new OrderItem
+                           {
+                                ProductId = 6,
+                                ProductVariantId = 6,
+                                Quantity = 1,
+                                UnitPrice = 79.1m,
+                           }
+                         }
+                         },
+                         //product 7
+                         new Order //8
+                         {
+                             PONumber = "PO-20260313145710",
+                             DealerId = 7,
+                             //TotalAmount = 0m,
+                             Status = OrderStatus.Rejected,
+                             Shipping = new Shipping { FullName = "Ava Smith"/*, Address = "", Phone = "", Email = "" */},
+                             TaxAmount = 1.13m,
+                             Items = new List<OrderItem>
+                           {
+                               new OrderItem
+                           {
+                                ProductId = 7,
+                                ProductVariantId = 7,
+                                Quantity = 1,
+                                UnitPrice = 13.56m,
+                           }
+                         }
+                         },
+
+                         // -------- Seed Sample (Shipped) Orders --------
+                         //product 8
+                         new Order //9
+                         {
+                             PONumber = "PO-20260313145770",
+                             DealerId = 10,
+                             TotalAmount = 36.06m,
+                             Status = OrderStatus.Shipped,
+                             Shipping = new Shipping { FullName = "Tony Smith", Address = "100 Parkside Way", Phone = "905-394-3875", Email = "tonysmith@outlook.com" },
+                             TaxAmount = 1.13m,
+                             Items = new List<OrderItem>
+                           {
+                               new OrderItem
+                           {
+                                ProductId = 8,
+                                ProductVariantId = 8,
+                                Quantity = 1,
+                                UnitPrice = 31.92m,
+                           }
+                         }
+                         },
+                         //product 9
+                         new Order //10
+                         {
+                             PONumber = "PO-20260313145760",
+                             DealerId = 9,
+                             TotalAmount = 228.82m,
+                             Status = OrderStatus.Shipped,
+                             Shipping = new Shipping { FullName = "Sam Jones", Address = "85 Autumn Ave", Phone = "905-274-2874", Email = "samjones@hotmail.com" },
+                             TaxAmount = 1.13m,
+                             Items = new List<OrderItem>
+                           {
+                               new OrderItem
+                           {
+                                ProductId = 9,
+                                ProductVariantId = 9,
+                                Quantity = 1,
+                                UnitPrice = 202.50m,
+                           }
+                         }
+                         }
+                       );
+                    context.SaveChanges();
+                    }
                 }
                 catch (Exception ex)
                 {
