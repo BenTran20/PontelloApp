@@ -1,71 +1,63 @@
-﻿@model IEnumerable<PontelloApp.Models.RecurringOrder>
+﻿@model List<PontelloApp.Models.RecurringOrder>
 
-@{
-    ViewData["Title"] = "Index";
-}
+<div class="container mt-4">
+    <a asp-controller="Order" asp-action="Index"
+       asp-route-id="@ViewBag.OrderId"
+       class="btn btn-outline-secondary btn-sm">
+        Back to Order
+    </a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Recurring Schedule</h4>
+    </div>
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.OriginalOrder)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Frequency)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TimeOfDay)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.WeeklyDay)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.MonthlyDay)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.NextRun)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsActive)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.OriginalOrder.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Frequency)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TimeOfDay)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.WeeklyDay)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.MonthlyDay)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.NextRun)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsActive)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    @if (!Model.Any())
+    {
+        <p class="text-muted">No recurring schedule found for this order.</p>
+    }
+    else
+    {
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Frequency</th>
+                    <th>Next Run</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Frequency</td>
+                        <td>@item.NextRun.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Paused</span>
+                            }
+                        </td>
+                        <td>
+                            <form method="post"
+                                  asp-controller="RecurringOrder"
+                                  asp-action="ToggleActive"
+                                  asp-route-id="@item.Id"
+                                  asp-route-orderId="@item.OriginalOrderId"
+                                  class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit"
+                                        class="btn btn-sm @(item.IsActive ? "btn-outline-warning" : "btn-outline-success")">
+                                    @(item.IsActive ? "Pause" : "Resume")
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

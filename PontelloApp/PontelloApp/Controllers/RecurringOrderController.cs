@@ -16,10 +16,14 @@ namespace PontelloApp.Controllers
         }
 
         // GET: RecurringOrder
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int orderId)
         {
-            var pontelloAppContext = _context.RecurringOrders.Include(r => r.OriginalOrder);
-            return View(await pontelloAppContext.ToListAsync());
+            var model = await _context.RecurringOrders
+                .Where(r => r.OriginalOrderId == orderId)
+                .ToListAsync();
+
+            ViewBag.OrderId = orderId;
+            return View(model);
         }
 
         // GET: RecurringOrder/Details/5
@@ -66,7 +70,7 @@ namespace PontelloApp.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            model.NextRun = CalculateNextRun(model); 
+            model.NextRun = CalculateNextRun(model);
             _context.Add(model);
             await _context.SaveChangesAsync();
 
@@ -163,13 +167,12 @@ namespace PontelloApp.Controllers
         }
 
         // Tracking
-        public async Task<IActionResult> Tracking(int orderId)
+        public async Task<IActionResult> Tracking()
         {
             var model = await _context.RecurringOrders
-                .Where(r => r.OriginalOrderId == orderId)
+                .Include(r => r.OriginalOrder)
                 .ToListAsync();
 
-            ViewBag.OrderId = orderId;
             return View(model);
         }
 

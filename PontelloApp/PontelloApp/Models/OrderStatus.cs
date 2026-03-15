@@ -7,6 +7,6 @@ namespace PontelloApp.Models
         Submitted,
         Approved,
         Rejected,
-        Shipped
+        Shipped,
     }
 }

@@ -89,7 +89,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    PontelloAppInitializer.Initialize(serviceProvider: services, DeleteDatabase: true,
+    PontelloAppInitializer.Initialize(serviceProvider: services, DeleteDatabase: false,
         UseMigrations: true, SeedSampleData: true);
 
 }

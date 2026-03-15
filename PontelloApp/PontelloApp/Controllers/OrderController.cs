@@ -32,7 +32,6 @@ namespace PontelloApp.Controllers
                 .ThenInclude(i => i.Product)
                 .Include(o => o.Shipping)
                 .Where(o => o.DealerId == dealerId)
-                .Where(o => !o.IsRecurringGenerated)
                 .OrderByDescending(o => o.CreatedAt)
                 .AsNoTracking();
 
@@ -77,7 +76,6 @@ namespace PontelloApp.Controllers
             return View(pagedData);
 
 
-            return View(orders);
         }
 
         // GET: Admin management view for orders
@@ -85,10 +83,17 @@ namespace PontelloApp.Controllers
         {
             var orders = await _context.Orders
                 .Include(o => o.Items)
-                    .ThenInclude(i => i.Product)
+                .ThenInclude(i => i.Product)
                 .Include(o => o.Shipping)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
+
+            var pendingSchedules = await _context.RecurringOrders
+                .Include(r => r.OriginalOrder)
+                .Where(r => r.IsActive && r.NextRun > DateTime.Now)
+                .ToListAsync();
+
+            ViewBag.PendingSchedules = pendingSchedules;
 
             return View(orders);
         }
@@ -117,12 +122,12 @@ namespace PontelloApp.Controllers
                     .ThenInclude(i => i.Product)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.ProductVariant)
-                    .ThenInclude( i => i.Options)
+                    .ThenInclude(i => i.Options)
                 .Include(o => o.Shipping)
                 .FirstOrDefaultAsync(o => o.Id == id);
-        
+
             if (order == null) return NotFound();
-        
+
             return View(order);
         }
 
@@ -165,7 +170,12 @@ namespace PontelloApp.Controllers
             if (order == null) return NotFound();
             return View(order);
         }
-
+        public async Task<IActionResult> Recurring(int id)
+        {
+            var order = await GetOrder(id);
+            if (order == null) return NotFound();
+            return View(order);
+        }
         public IActionResult ExportOrderPO(int id)
         {
             var order = _context.Orders

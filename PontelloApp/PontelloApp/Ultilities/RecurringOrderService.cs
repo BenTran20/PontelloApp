@@ -28,7 +28,8 @@ namespace PontelloApp.Services
                 DealerId = original.DealerId,
                 CreatedAt = DateTime.Now,
                 IsRecurringGenerated = true,
-                Status = OrderStatus.Submitted
+                Status = OrderStatus.Submitted,
+                TaxAmount = original.TaxAmount
             };
             if (original.Shipping != null)
             {
@@ -36,7 +37,7 @@ namespace PontelloApp.Services
                 {
                     FullName = original.Shipping.FullName,
                     StreetAddress = original.Shipping.StreetAddress,
-                    City=original.Shipping.City,
+                    City = original.Shipping.City,
                     Province = original.Shipping.Province,
                     Country = original.Shipping.Country,
                     PostalCode = original.Shipping.PostalCode,
@@ -58,7 +59,9 @@ namespace PontelloApp.Services
                 });
             }
 
-            newOrder.TotalAmount = newOrder.Items.Sum(x => x.TotalPrice);
+            var subtotal = newOrder.Items.Sum(x => x.TotalPrice);
+            newOrder.TaxAmount = original.TaxAmount;
+            newOrder.TotalAmount = Math.Round(subtotal + original.TaxAmount, 2);
 
             _db.Orders.Add(newOrder);
             await _db.SaveChangesAsync();

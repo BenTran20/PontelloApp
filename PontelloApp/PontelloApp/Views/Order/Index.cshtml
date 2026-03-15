@@ -155,6 +155,10 @@
                                     <span class="badge @badge">
                                         @o.Status
                                     </span>
+                                    @if (o.IsRecurringGenerated)
+                                    {
+                                        <span class="badge bg-info ms-1">Auto</span>
+                                    }
                                 </td>
 
                                 <!-- EMAIL -->
@@ -169,57 +173,52 @@
                                             No shipping info
                                         </span>
                                     }
+
                                 </td>
 
                                 <!-- ACTIONS -->
                                 <td class="text-end">
-
-
-                                    <div class="btn-group btn-group-sm">
-
-                                        <!-- VIEW -->
-                                        <a asp-action="Details"
-                                           asp-route-id="@o.Id"
-                                           class="btn btn-outline-secondary">
-                                            <i class="bi bi-eye"></i> View
-                                        </a>
-
-                                        <!-- SHIPPING -->
+                                    <div class="d-flex justify-content-end gap-1">
+                                        
                                         @if (o.Status == OrderStatus.Progress)
                                         {
                                             <a asp-controller="Shipping"
                                                asp-action="Create"
                                                asp-route-orderId="@o.Id"
-                                               class="btn btn-outline-primary">
-                                                <i class="bi bi-truck"></i> Shipping Info
+                                               class="btn btn-sm btn-primary"
+                                               data-bs-toggle="tooltip" data-bs-placement="top">
+                                                Info
                                             </a>
                                         }
 
-
-                                        <a class="btn btn-outline-warning"
-                                           asp-controller="RecurringOrder"
-                                           asp-action="Create"
-                                           asp-route-orderId="@o.Id">
-                                           Recurring
-                                       </a>
+                                        <a asp-action="Details"
+                                           asp-route-id="@o.Id"
+                                           class="btn btn-sm btn-secondary"
+                                           data-bs-toggle="tooltip" data-bs-placement="top">
+                                            View
+                                        </a>
 
                                         <a asp-controller="RecurringOrder"
-                                           asp-action="Tracking"
+                                           asp-action="Create"
                                            asp-route-orderId="@o.Id"
-                                           class="btn btn-outline-primary">
-                                           Schedule
+                                           class="btn btn-sm btn-info text-white"
+                                           data-bs-toggle="tooltip" data-bs-placement="top">
+                                            Recurring
                                         </a>
-                                        
+
+                                        <a asp-controller="RecurringOrder"
+                                           asp-action="Index"
+                                           asp-route-orderId="@o.Id"
+                                           class="btn btn-sm btn-warning text-white"
+                                           data-bs-toggle="tooltip" data-bs-placement="top">
+                                            Schedule
+                                        </a>
                                     </div>
-
                                 </td>
-
                             </tr>
                         }
                     }
-
                 </tbody>
-
             </table>
 
         </div>

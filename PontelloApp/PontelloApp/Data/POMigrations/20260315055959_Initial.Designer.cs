@@ -11,7 +11,7 @@ using PontelloApp.Data;
 namespace PontelloApp.Data.POMigrations
 {
     [DbContext(typeof(PontelloAppContext))]
-    [Migration("20260315005927_Initial")]
+    [Migration("20260315055959_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
