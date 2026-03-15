@@ -47,6 +47,7 @@ namespace PontelloApp.Data.POMigrations
                     TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    IsRecurringGenerated = table.Column<bool>(type: "INTEGER", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     ShippingId = table.Column<int>(type: "INTEGER", nullable: true),
                     RowVersion = table.Column<byte[]>(type: "BLOB", rowVersion: true, nullable: true),
@@ -115,6 +116,7 @@ namespace PontelloApp.Data.POMigrations
                 {
                     ID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    FullName = table.Column<string>(type: "TEXT", nullable: false),
                     Address = table.Column<string>(type: "TEXT", nullable: false),
                     Phone = table.Column<string>(type: "TEXT", nullable: false),
                     Email = table.Column<string>(type: "TEXT", nullable: false),
@@ -206,7 +208,7 @@ namespace PontelloApp.Data.POMigrations
                     Weight = table.Column<decimal>(type: "decimal(17,7)", nullable: true),
                     Unit = table.Column<int>(type: "INTEGER", nullable: false),
                     Barcode = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    InventoryPolicy = table.Column<int>(type: "INTEGER", nullable: false),
+                    InventoryPolicy = table.Column<int>(type: "INTEGER", nullable: true),
                     Status = table.Column<bool>(type: "INTEGER", nullable: false),
                     ProductId = table.Column<int>(type: "INTEGER", nullable: false),
                     RowVersion = table.Column<byte[]>(type: "BLOB", rowVersion: true, nullable: true),

@@ -162,10 +162,36 @@ namespace PontelloApp.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // Tracking
+        public async Task<IActionResult> Tracking(int orderId)
+        {
+            var model = await _context.RecurringOrders
+                .Where(r => r.OriginalOrderId == orderId)
+                .ToListAsync();
+
+            ViewBag.OrderId = orderId;
+            return View(model);
+        }
+
+        // Active
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleActive(int id, int orderId)
+        {
+            var r = await _context.RecurringOrders.FindAsync(id);
+            if (r == null) return NotFound();
+
+            r.IsActive = !r.IsActive;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Tracking", new { orderId });
+        }
+
         private bool RecurringOrderExists(int id)
         {
             return _context.RecurringOrders.Any(e => e.Id == id);
         }
+
 
 
         private DateTime CalculateNextRun(RecurringOrder r)

@@ -10,7 +10,12 @@
 }
 
 <div class="container py-5">
-	<h2 class="fw-bold mb-4">Order Management</h2>
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h2 class="fw-bold mb-0">Order Management</h2>
+		<a href="/hangfire" target="_blank" class="btn btn-gray">
+			<i class="bi bi-speedometer2"></i> Job Dashboard
+		</a>
+	</div>
 
 	<ul class="nav nav-tabs" id="orderTabs" role="tablist">
 		@foreach (var status in statuses)

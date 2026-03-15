@@ -11,7 +11,7 @@ using PontelloApp.Data;
 namespace PontelloApp.Data.POMigrations
 {
     [DbContext(typeof(PontelloAppContext))]
-    [Migration("20260306100629_Initial")]
+    [Migration("20260314235809_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -72,6 +72,9 @@ namespace PontelloApp.Data.POMigrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("DealerId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsRecurringGenerated")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("PONumber")
@@ -230,7 +233,7 @@ namespace PontelloApp.Data.POMigrations
                     b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("InventoryPolicy")
+                    b.Property<int?>("InventoryPolicy")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("ProductId")
@@ -351,6 +354,10 @@ namespace PontelloApp.Data.POMigrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

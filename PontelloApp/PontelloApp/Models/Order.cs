@@ -21,6 +21,7 @@ namespace PontelloApp.Models
 
         [Required]
         public OrderStatus Status { get; set; } = OrderStatus.Draft;
+        public bool IsRecurringGenerated { get; set; } = false;
 
         public ICollection<OrderItem>? Items { get; set; } = new HashSet<OrderItem>();
 

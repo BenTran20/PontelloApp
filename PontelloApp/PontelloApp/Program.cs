@@ -1,9 +1,10 @@
+﻿using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using QuestPDF.Infrastructure;
 using PontelloApp.Data;
 using PontelloApp.Services;
 using PontelloApp.Ultilities;
+using QuestPDF.Infrastructure;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,10 +24,19 @@ builder.Services.AddScoped<OrderService>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddScoped<RecurringOrderService>();
-builder.Services.AddHostedService<RecurringOrderBackgroundService>();
+
+builder.Services.AddHangfire(config => config
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseInMemoryStorage());
+
+builder.Services.AddScoped<RecurringOrderProcessorJob>();
+
+builder.Services.AddHangfireServer();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -58,12 +68,19 @@ app.MapControllerRoute(
 app.MapRazorPages()
    .WithStaticAssets();
 
+app.UseHangfireDashboard("/hangfire");
+
+RecurringJob.AddOrUpdate<RecurringOrderProcessorJob>(
+    "check-recurring-orders",
+    job => job.RunAsync(),
+    "* * * * *");
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
     PontelloAppInitializer.Initialize(serviceProvider: services, DeleteDatabase: true,
-        UseMigrations: false, SeedSampleData: false);
+        UseMigrations: true, SeedSampleData: true);
 
 }
 

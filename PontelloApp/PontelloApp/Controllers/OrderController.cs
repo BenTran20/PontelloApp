@@ -20,7 +20,7 @@ namespace PontelloApp.Controllers
         // GET: /Order
         public async Task<IActionResult> Index(string? SearchString, int? OrderStatusID, OrderStatus? Status, DateTime? FromDate, DateTime? ToDate, int? page, int? pageSizeID, string? actionButton)
         {
-            int dealerId =1; // TODO: replace with current dealer/user
+            int dealerId = 1; // TODO: replace with current dealer/user
 
             ViewData["Filtering"] = "btn-outline-secondary";
             int numberFilters = 0;
@@ -29,9 +29,10 @@ namespace PontelloApp.Controllers
 
             var orders = _context.Orders
                 .Include(o => o.Items)
-                    .ThenInclude(i => i.Product)
+                .ThenInclude(i => i.Product)
                 .Include(o => o.Shipping)
                 .Where(o => o.DealerId == dealerId)
+                .Where(o => !o.IsRecurringGenerated)
                 .OrderByDescending(o => o.CreatedAt)
                 .AsNoTracking();
 

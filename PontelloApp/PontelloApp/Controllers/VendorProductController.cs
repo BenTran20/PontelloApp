@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
@@ -15,7 +16,7 @@ namespace PontelloApp.Controllers
             _context = context;
         }
 
-        // GET: VendorProducts
+        // GET: /VendorProduct?vendorId=5
         public async Task<IActionResult> Index(int? vendorId)
         {
             if (vendorId == null)
@@ -43,135 +44,184 @@ namespace PontelloApp.Controllers
             return View(products);
         }
 
-
-
-        // GET: VendorProducts/Details/5
-        public async Task<IActionResult> Details(int? id)
+        // GET: /VendorProduct/Add?vendorId=5
+        public async Task<IActionResult> Add(int? vendorId, string? vendorName)
         {
-            if (id == null)
+            if (!vendorId.HasValue)
             {
-                return NotFound();
+                return Redirect(ViewData["returnURL"]?.ToString() ?? "/");
             }
 
             var vendor = await _context.Vendors
-                .FirstOrDefaultAsync(m => m.VendorID == id);
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.VendorID == vendorId.Value);
             if (vendor == null)
-            {
                 return NotFound();
-            }
 
-            return View(vendor);
+            ViewData["VendorName"] = vendorName ?? vendor.Name;
+
+            var model = new Product
+            {
+                VendorID = vendorId.Value,
+                IsActive = true
+            };
+
+            PopulateDropDownLists();
+            return View(model);
         }
 
-        // GET: VendorProducts/Add
-        public IActionResult Add()
-        {
-            return View();
-        }
-
-        // POST: VendorProducts/Add
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: /VendorProduct/Add
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add([Bind("VendorID,Name,ContactName,Phone,Email,EIN,IsTaxExempt,IsArchived,RowVersion")] Vendor vendor)
+        public async Task<IActionResult> Add(
+            [Bind("ProductName,Handle,VendorID,Type,Tag,Description,IsActive,CategoryID")] Product product,
+            string? vendorName)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _context.Add(vendor);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (ModelState.IsValid)
+                {
+                    _context.Add(product);
+                    await _context.SaveChangesAsync();
+                    return Redirect(ViewData["returnURL"]?.ToString() ?? "/");
+                }
             }
-            return View(vendor);
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError("",
+                    "Unable to save changes. Try again, and if the problem persists see your system administrator.");
+            }
+
+            PopulateDropDownLists(product);
+            ViewData["VendorName"] = vendorName;
+            return View(product);
         }
 
-        // GET: VendorProducts/Edit/5
+        // GET: /VendorProduct/Edit/10
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
+            if (id == null || _context.Products == null)
                 return NotFound();
-            }
 
-            var vendor = await _context.Vendors.FindAsync(id);
-            if (vendor == null)
-            {
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Vendor)
+                .Include(p => p.Variants)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.ID == id);
+
+            if (product == null)
                 return NotFound();
-            }
-            return View(vendor);
+
+            // Đổ dropdowns
+            PopulateDropDownLists(product);
+            return View(product);
         }
 
-        // POST: VendorProducts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: /VendorProduct/Edit/10
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("VendorID,Name,ContactName,Phone,Email,EIN,IsTaxExempt,IsArchived,RowVersion")] Vendor vendor)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id != vendor.VendorID)
-            {
-                return NotFound();
-            }
+            var productToUpdate = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Vendor)
+                .Include(p => p.Variants)
+                .FirstOrDefaultAsync(p => p.ID == id);
 
-            if (ModelState.IsValid)
+            if (productToUpdate == null)
+                return NotFound();
+
+            if (await TryUpdateModelAsync<Product>(
+                    productToUpdate, "",
+                    p => p.ProductName, p => p.Handle, p => p.VendorID,
+                    p => p.Type, p => p.Tag, p => p.Description,
+                    p => p.IsActive, p => p.CategoryID))
             {
                 try
                 {
-                    _context.Update(vendor);
+                    _context.Update(productToUpdate);
                     await _context.SaveChangesAsync();
+                    return Redirect(ViewData["returnURL"]?.ToString() ?? "/");
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!VendorExists(vendor.VendorID))
-                    {
+                    if (!ProductExists(productToUpdate.ID))
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
-                return RedirectToAction(nameof(Index));
+                catch (DbUpdateException)
+                {
+                    ModelState.AddModelError("",
+                        "Unable to save changes. Try again, and if the problem persists see your system administrator.");
+                }
             }
-            return View(vendor);
-        }
 
-        // GET: VendorProducts/Archive/5
+            PopulateDropDownLists(productToUpdate);
+            return View(productToUpdate);
+        }
+        // GET: /VendorProduct/Remove/10
         public async Task<IActionResult> Archive(int? id)
         {
-            if (id == null)
-            {
+            if (id == null || _context.Products == null)
                 return NotFound();
-            }
 
-            var vendor = await _context.Vendors
-                .FirstOrDefaultAsync(m => m.VendorID == id);
-            if (vendor == null)
-            {
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Vendor)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.ID == id);
+
+            if (product == null)
                 return NotFound();
-            }
 
-            return View(vendor);
+            return View(product);
         }
 
-        // POST: VendorProducts/Archive/5
+        // POST: /VendorProduct/Archive/10
         [HttpPost, ActionName("Archive")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ArchiveConfirmed(int id)
         {
-            var vendor = await _context.Vendors.FindAsync(id);
-            if (vendor != null)
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.Vendor)
+                .FirstOrDefaultAsync(p => p.ID == id);
+
+            if (product == null)
+                return NotFound();
+
+            try
             {
-                _context.Vendors.Remove(vendor);
+                product.IsActive = false; await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
+                return Redirect(ViewData["returnURL"]?.ToString() ?? "/");
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("",
+                    "Unable to save changes. Try again, and if the problem persists see your system administrator.");
             }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return View(product);
+        }
+        private SelectList CategorySelectList(int? id)
+        {
+            var query = from c in _context.Categories
+                        orderby c.Name
+                        select c;
+            return new SelectList(query, "CategoryID", "CategoryName", id);
         }
 
-        private bool VendorExists(int id)
+        private void PopulateDropDownLists(Product? product = null)
         {
-            return _context.Vendors.Any(e => e.VendorID == id);
+            ViewData["CategoryID"] = CategorySelectList(product?.CategoryID);
+        }
+
+        private bool ProductExists(int id)
+        {
+            return _context.Products.Any(p => p.ID == id);
         }
     }
 }

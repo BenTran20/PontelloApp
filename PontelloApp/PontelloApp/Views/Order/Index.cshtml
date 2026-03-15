@@ -196,14 +196,19 @@
                                         }
 
 
-                                        <a class="btn btn-warning"
+                                        <a class="btn btn-outline-warning"
                                            asp-controller="RecurringOrder"
                                            asp-action="Create"
                                            asp-route-orderId="@o.Id">
-                                           Recurring Order
+                                           Recurring
+                                       </a>
+
+                                        <a asp-controller="RecurringOrder"
+                                           asp-action="Tracking"
+                                           asp-route-orderId="@o.Id"
+                                           class="btn btn-outline-primary">
+                                           Schedule
                                         </a>
-
-
                                         
                                     </div>
 

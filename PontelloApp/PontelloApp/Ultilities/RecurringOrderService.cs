@@ -25,7 +25,8 @@ namespace PontelloApp.Services
             {
                 DealerId = original.DealerId,
                 Status = OrderStatus.Draft,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
+                IsRecurringGenerated = true
             };
 
             foreach (var item in original.Items)

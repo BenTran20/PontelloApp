@@ -10,6 +10,7 @@
     <form asp-action="Edit" asp-route-id="@Model.VendorID" method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
         <input type="hidden" asp-for="RowVersion" />
+        <input type="hidden" asp-for="VendorID" />
 
         <div class="row">
             <div class="col-md-6">
