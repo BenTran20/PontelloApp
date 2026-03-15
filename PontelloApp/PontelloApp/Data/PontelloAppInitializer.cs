@@ -1132,7 +1132,7 @@ namespace PontelloApp.Data
                                DealerId = 2,
                                TotalAmount = 225.97m,
                                Status = OrderStatus.Progress,
-                               Shipping = new Shipping { FullName = "Alex Brown", /*Address = "20 Spring Drive", Phone = "289-387-3874",*/ Email = "alexbrown@gmail.com" },
+                               Shipping = new Shipping { FullName = "Alex Brown", /*StreetAddress = "20 Spring Drive", Phone = "289-387-3874",*/ Email = "alexbrown@gmail.com" },
                                TaxAmount = 1.13m,
                                Items = new List<OrderItem>
                                {
@@ -1153,7 +1153,7 @@ namespace PontelloApp.Data
                                 DealerId = 1,
                                 TotalAmount = 10.79m,
                                 Status = OrderStatus.Progress,
-                                Shipping = new Shipping { FullName = "Liam Woods", Address = "19 River Rd"/*, Phone = "905-938-6984", Email = "liamwoods@outlook.com"*/ },
+                                Shipping = new Shipping { FullName = "Liam Woods", StreetAddress = "19 River Rd"/*, Phone = "905-938-6984", Email = "liamwoods@outlook.com"*/ },
                                 TaxAmount = 1.13m,
                                 Items = new List<OrderItem>
                                {
@@ -1175,7 +1175,7 @@ namespace PontelloApp.Data
                                DealerId = 4,
                                TotalAmount = 1.01m,
                                Status = OrderStatus.Submitted,
-                               Shipping = new Shipping { FullName = "Ally Smith ", Address = "25 Sunset Way", Phone = "289-456-7810", Email = "allysmith@gmail.com" },
+                               Shipping = new Shipping { FullName = "Ally Smith ", StreetAddress = "25 Sunset Way", Phone = "289-456-7810", Email = "allysmith@gmail.com" },
                                TaxAmount = 1.13m,
                                Items = new List<OrderItem>
                                {
@@ -1196,7 +1196,7 @@ namespace PontelloApp.Data
                                 DealerId = 3,
                                 TotalAmount = 16.15m,
                                 Status = OrderStatus.Submitted,
-                                Shipping = new Shipping { FullName = "Ella Jones", Address = "345 Stone Road", Phone = "289-749-2345", Email = "ellajones@gmail.com" },
+                                Shipping = new Shipping { FullName = "Ella Jones", StreetAddress = "345 Stone Road", Phone = "289-749-2345", Email = "ellajones@gmail.com" },
                                 TaxAmount = 1.13m,
                                 Items = new List<OrderItem>
                                {
@@ -1218,7 +1218,7 @@ namespace PontelloApp.Data
                                 DealerId = 6,
                                 TotalAmount = 42.13m,
                                 Status = OrderStatus.Approved,
-                                Shipping = new Shipping { FullName = "Emma Smith", Address = "365 Velvet Rd", Phone = "289-365-8374", Email = "emmasmith@hotmail.com" },
+                                Shipping = new Shipping { FullName = "Emma Smith", StreetAddress = "365 Velvet Rd", Phone = "289-365-8374", Email = "emmasmith@hotmail.com" },
                                 TaxAmount = 1.13m,
                                 Items = new List<OrderItem>
                                {
@@ -1238,7 +1238,7 @@ namespace PontelloApp.Data
                                 DealerId = 5,
                                 TotalAmount = 5.22m,
                                 Status = OrderStatus.Approved,
-                                Shipping = new Shipping { FullName = "Lucas Jones", Address = "47 Merrit Ave", Phone = "905-397-4836", Email = "lucasjones@gmail.com" },
+                                Shipping = new Shipping { FullName = "Lucas Jones", StreetAddress = "47 Merrit Ave", Phone = "905-397-4836", Email = "lucasjones@gmail.com" },
                                 TaxAmount = 1.13m,
                                 Items = new List<OrderItem>
                                {
@@ -1260,7 +1260,7 @@ namespace PontelloApp.Data
                                  DealerId = 8,
                                  //TotalAmount = 0m,
                                  Status = OrderStatus.Rejected,
-                                 Shipping = new Shipping { FullName = "Jimmy White"/*, Address = "", Phone = "", Email = "" */},
+                                 Shipping = new Shipping { FullName = "Jimmy White"/*, StreetAddress = "", Phone = "", Email = "" */},
                                  //TaxAmount = 1.13m,
                                  Items = new List<OrderItem>
                                {
@@ -1280,7 +1280,7 @@ namespace PontelloApp.Data
                                  DealerId = 7,
                                  //TotalAmount = 0m,
                                  Status = OrderStatus.Rejected,
-                                 Shipping = new Shipping { FullName = "Ava Smith"/*, Address = "", Phone = "", Email = "" */},
+                                 Shipping = new Shipping { FullName = "Ava Smith"/*, StreetAddress = "", Phone = "", Email = "" */},
                                  TaxAmount = 1.13m,
                                  Items = new List<OrderItem>
                                {
@@ -1302,7 +1302,7 @@ namespace PontelloApp.Data
                                  DealerId = 10,
                                  TotalAmount = 36.06m,
                                  Status = OrderStatus.Shipped,
-                                 Shipping = new Shipping { FullName = "Tony Smith", Address = "100 Parkside Way", Phone = "905-394-3875", Email = "tonysmith@outlook.com" },
+                                 Shipping = new Shipping { FullName = "Tony Smith", StreetAddress = "100 Parkside Way", Phone = "905-394-3875", Email = "tonysmith@outlook.com" },
                                  TaxAmount = 1.13m,
                                  Items = new List<OrderItem>
                                {
@@ -1322,7 +1322,7 @@ namespace PontelloApp.Data
                                  DealerId = 9,
                                  TotalAmount = 228.82m,
                                  Status = OrderStatus.Shipped,
-                                 Shipping = new Shipping { FullName = "Sam Jones", Address = "85 Autumn Ave", Phone = "905-274-2874", Email = "samjones@hotmail.com" },
+                                 Shipping = new Shipping { FullName = "Sam Jones", StreetAddress = "85 Autumn Ave", Phone = "905-274-2874", Email = "samjones@hotmail.com" },
                                  TaxAmount = 1.13m,
                                  Items = new List<OrderItem>
                                {
