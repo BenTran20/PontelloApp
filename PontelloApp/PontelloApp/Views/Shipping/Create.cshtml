@@ -30,17 +30,17 @@
                 <h5 class="fw-bold mb-3">Dealer Information</h5>
 
                 <div class="mb-3">
-                    <label class="form-label">Contact Name</label>
+                    <label class="form-label">Contact Name <span class="text-danger">*</span></label>
                     <input type="text" name="FullName" class="form-control" value="@Model.Shipping?.FullName" required />
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Email</label>
+                        <label class="form-label">Email <span class="text-danger">*</span></label>
                         <input type="email" name="Email" class="form-control" value="@Model.Shipping?.Email" required />
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Phone</label>
+                        <label class="form-label">Phone <span class="text-danger">*</span></label>
                         <input type="text" name="Phone" class="form-control" value="@Model.Shipping?.Phone" required />
                     </div>
                 </div>
@@ -59,28 +59,28 @@
                 <h5 class="fw-bold mb-3">Shipping Address</h5>
 
                 <div class="mb-3">
-                    <label class="form-label">Street Address</label>
+                    <label class="form-label">Street Address <span class="text-danger">*</span></label>
                     <input type="text" name="StreetAddress" class="form-control" value="@Model.Shipping?.StreetAddress" required />
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">City</label>
+                        <label class="form-label">City <span class="text-danger">*</span></label>
                         <input type="text" name="City" class="form-control" value="@Model.Shipping?.City" required />
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Province</label>
+                        <label class="form-label">Province <span class="text-danger">*</span></label>
                         <input type="text" name="Province" class="form-control" value="@Model.Shipping?.Province" required />
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Postal Code</label>
+                        <label class="form-label">Postal Code <span class="text-danger">*</span></label>
                         <input type="text" name="PostalCode" class="form-control" value="@Model.Shipping?.PostalCode" required />
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Country</label>
+                        <label class="form-label">Country <span class="text-danger">*</span></label>
                         <input type="text" name="Country" class="form-control" value="@(Model.Shipping?.Country ?? "Canada")" />
                     </div>
                 </div>
