@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 
 namespace PontelloApp.Controllers
 {
-    public class VendorProductController : ElephantController
+    public class VendorProductController : Controller
     {
         private readonly PontelloAppContext _context;
 
@@ -22,7 +22,6 @@ namespace PontelloApp.Controllers
             if (vendorId == null)
                 return NotFound();
 
-            // Master
             var vendor = await _context.Vendors
                 .AsNoTracking()
                 .FirstOrDefaultAsync(v => v.VendorID == vendorId);
@@ -32,7 +31,6 @@ namespace PontelloApp.Controllers
 
             ViewBag.Vendor = vendor;
 
-            // Details
             var products = await _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.Variants)
@@ -182,7 +180,7 @@ namespace PontelloApp.Controllers
         // POST: /VendorProduct/Archive/10
         [HttpPost, ActionName("Archive")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ArchiveConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Products
                 .Include(p => p.Category)

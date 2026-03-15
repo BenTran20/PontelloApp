@@ -14,21 +14,6 @@
 
             <dt class="col-sm-3">Phone</dt>
             <dd class="col-sm-9">@Model.Phone</dd>
-
-            <dt class="col-sm-3">EIN</dt>
-            <dd class="col-sm-9">@Model.EIN</dd>
-
-            <dt class="col-sm-3">Tax Exempt</dt>
-            <dd class="col-sm-9">
-                @if (Model.IsTaxExempt)
-                {
-                    <span class="badge bg-success">Yes</span>
-                }
-                else
-                {
-                    <span class="badge bg-secondary">No</span>
-                }
-            </dd>
         </dl>
     </div>
 </div>

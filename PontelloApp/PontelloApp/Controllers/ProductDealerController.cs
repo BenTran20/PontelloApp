@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
@@ -27,13 +27,17 @@ namespace PontelloApp.Controllers
             int numberFilters = 0;
             PopulateDropDownLists();
             var products = _context.Products
-                .Where(p => p.IsActive) 
+                .Include(p => p.Variants)
+                    .ThenInclude(v => v.Options)
                 .Include(p => p.Category)
+                .Include(p => p.Vendor)
+                .Where(p => p.IsActive && !p.IsUnlisted) 
                 .AsNoTracking();
 
             // Filter by search
             if (!string.IsNullOrEmpty(SearchString))
-                products = products.Where(p => p.ProductName.ToUpper().Contains(SearchString.ToUpper()));
+                products = products.Where(p => p.ProductName.ToUpper().Contains(SearchString.ToUpper())
+                 || p.Handle.ToUpper().Contains(SearchString.ToUpper()));
 
             // Filter by category
             if (CategoryID.HasValue)
@@ -79,7 +83,8 @@ namespace PontelloApp.Controllers
                 .Include(p => p.Variants)
                     .ThenInclude(v => v.Options)
                 .Include(p => p.Category)
-                .FirstOrDefaultAsync(p => p.ID == id && p.IsActive);
+                .Include(p => p.Vendor)
+                .FirstOrDefaultAsync(p => p.ID == id && p.IsActive && !p.IsUnlisted);
 
             if (product == null) return NotFound();
 
@@ -89,12 +94,47 @@ namespace PontelloApp.Controllers
         [HttpPost]
         public async Task<IActionResult> AddToCart(int productId, int variantId, int quantity)
         {
+            // Basic server-side validation
+            if (quantity <= 0)
+            {
+                TempData["ErrorMessage"] = "Quantity must be at least 1.";
+                return RedirectToAction("Details", new { id = productId });
+            }
+
+            var variant = await _context.ProductVariants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.Id == variantId);
+
+            if (variant == null)
+            {
+                TempData["ErrorMessage"] = "Selected product variant not found.";
+                return RedirectToAction("Details", new { id = productId });
+            }
+
+            // Treat null InventoryPolicy as Deny for safety
+            var policy = variant.InventoryPolicy ?? InventoryPolicy.Deny;
+
+            // If policy denies and stock is zero -> cannot order
+            if (policy == InventoryPolicy.Deny && variant.StockQuantity <= 0)
+            {
+                TempData["ErrorMessage"] = "Selected variant is out of stock.";
+                return RedirectToAction("Details", new { id = productId });
+            }
+
+            // If policy denies, ensure requested quantity does not exceed stock
+            if (policy == InventoryPolicy.Deny && variant.StockQuantity < quantity)
+            {
+                TempData["ErrorMessage"] = $"Requested quantity ({quantity}) exceeds available stock ({variant.StockQuantity}).";
+                return RedirectToAction("Details", new { id = productId });
+            }
+
+            // If policy is Continue (special order), allow ordering regardless of stock
             int dealerId = 1;
             await _orderService.AddToCartAsync(dealerId, productId, variantId, quantity);
 
             TempData["SuccessMessage"] = "Product added to cart successfully!";
 
-            return RedirectToAction("Details", "ProductDealer", new { id = productId });
+            return RedirectToAction("Cart", "Cart", new { id = productId });
         }
 
         private void PopulateDropDownLists(Product? product = null)

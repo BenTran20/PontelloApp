@@ -4,3 +4,4 @@ Add-Migration -Context PontelloAppContext -o Data\POMigrations Initial
 
 Update-Database -Context PontelloAppContext 
 
+Install-Package MailKit

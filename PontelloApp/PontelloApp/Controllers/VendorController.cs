@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Custom_Controllers;
@@ -58,7 +58,7 @@ namespace PontelloApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("VendorID,Name,ContactName,Phone,Email,EIN,IsTaxExempt,IsArchived,RowVersion")] Vendor vendor)
+        public async Task<IActionResult> Create([Bind("VendorID,Name,ContactName,Phone,Email,IsArchived,RowVersion")] Vendor vendor)
         {
             try
             {
@@ -67,12 +67,11 @@ namespace PontelloApp.Controllers
                     _context.Add(vendor);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));
-                    //return Redirect(ViewData["returnURL"]?.ToString() ?? "/");
                 }
             }
 
             catch (DbUpdateException dex)
-                {
+            {
                 if (dex.GetBaseException().Message.Contains("UNIQUE constraint failed"))
                 {
                     ModelState.AddModelError("Name", "Unable to save changes. " +
@@ -101,7 +100,6 @@ namespace PontelloApp.Controllers
                 return BadRequest(errorMessage);
             }
 
-
             return View(vendor);
         }
 
@@ -126,7 +124,7 @@ namespace PontelloApp.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("VendorID,Name,ContactName,Phone,Email,EIN,IsTaxExempt,IsArchived,RowVersion")] Vendor vendor)
+        public async Task<IActionResult> Edit(int id, [Bind("VendorID,Name,ContactName,Phone,Email,IsArchived,RowVersion")] Vendor vendor)
         {
             if (id != vendor.VendorID)
             {

@@ -49,23 +49,6 @@
                             @(string.IsNullOrEmpty(Model.Phone) ? "—" : Model.Phone)
                         </dd>
 
-                        <dt class="col-sm-4">EIN</dt>
-                        <dd class="col-sm-8">
-                            @(string.IsNullOrEmpty(Model.EIN) ? "—" : Model.EIN)
-                        </dd>
-
-                        <dt class="col-sm-4">Tax Exempt</dt>
-                        <dd class="col-sm-8">
-                            @if (Model.IsTaxExempt)
-                            {
-                                <span class="badge bg-success">Yes</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">No</span>
-                            }
-                        </dd>
-
                         <dt class="col-sm-4">Status</dt>
                         <dd class="col-sm-8">
                             <span class="badge bg-success">Active</span>

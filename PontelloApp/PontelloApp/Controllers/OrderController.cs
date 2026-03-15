@@ -109,6 +109,63 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
+        // GET: /Order/Review/5
+        public async Task<IActionResult> Review(int id)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                    .ThenInclude( i => i.Options)
+                .Include(o => o.Shipping)
+                .FirstOrDefaultAsync(o => o.Id == id);
+        
+            if (order == null) return NotFound();
+        
+            return View(order);
+        }
+
+        private async Task<Order?> GetOrder(int id)
+        {
+            return await _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                    .ThenInclude(v => v.Options)
+                .Include(o => o.Shipping)
+                .FirstOrDefaultAsync(o => o.Id == id);
+        }
+
+        public async Task<IActionResult> Progress(int id)
+        {
+            var order = await GetOrder(id);
+            if (order == null) return NotFound();
+            return View(order);
+        }
+
+        public async Task<IActionResult> Approved(int id)
+        {
+            var order = await GetOrder(id);
+            if (order == null) return NotFound();
+            return View(order);
+        }
+
+        public async Task<IActionResult> Rejected(int id)
+        {
+            var order = await GetOrder(id);
+            if (order == null) return NotFound();
+            return View(order);
+        }
+
+        public async Task<IActionResult> Shipped(int id)
+        {
+            var order = await GetOrder(id);
+            if (order == null) return NotFound();
+            return View(order);
+        }
+
         public IActionResult ExportOrderPO(int id)
         {
             var order = _context.Orders
@@ -130,7 +187,8 @@ namespace PontelloApp.Controllers
 
             decimal subtotal = items.Sum(i => i.Total);
             decimal tax = order.TaxAmount;
-            decimal grandTotal = order.TotalAmount;
+            decimal shippingCost = order.Shipping?.ShippingCost ?? 0m;
+            decimal grandTotal = order.TotalAmount; // order.TotalAmount should include shipping if saved
 
             byte[] pdf = Document.Create(container =>
             {
@@ -165,12 +223,15 @@ namespace PontelloApp.Controllers
                             {
                                 c.Item().Text("Ship To").Bold();
                                 c.Item().Text(order.Shipping?.FullName ?? "");
-                                c.Item().Text(order.Shipping?.Address ?? "N/A");
+                                c.Item().Text(order.Shipping?.FullAddress ?? "N/A");
                                 c.Item().Text(order.Shipping?.Email ?? "");
                                 c.Item().Text(order.Shipping?.Phone ?? "");
 
                                 if (!string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin))
                                     c.Item().Text($"BIN: {order.Shipping.BinOrEin}");
+
+                                if (!string.IsNullOrWhiteSpace(order.Shipping?.TrackingNumber))
+                                    c.Item().Text($"Tracking #: {order.Shipping.TrackingNumber}");
                             });
                         });
 
@@ -221,6 +282,15 @@ namespace PontelloApp.Controllers
                                 r.ConstantItem(100).AlignRight().Text("$" + tax.ToString("0.00"));
                             });
 
+                            if (shippingCost > 0)
+                            {
+                                c.Item().Row(r =>
+                                {
+                                    r.RelativeItem().AlignRight().Text("Shipping:");
+                                    r.ConstantItem(100).AlignRight().Text("$" + shippingCost.ToString("0.00"));
+                                });
+                            }
+
                             c.Item().Row(r =>
                             {
                                 r.RelativeItem().AlignRight().Text("Total:").Bold();
@@ -255,5 +325,93 @@ namespace PontelloApp.Controllers
             return new SelectList(statusList, "Value", "Text", selectedStatus);
         }
 
+        public async Task<IActionResult> Decision(int id, string status)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.ProductVariant)
+                .Include(o => o.Shipping)
+                .FirstOrDefaultAsync(o => o.Id == id &&
+                    (o.Status == OrderStatus.Submitted || o.Status == OrderStatus.Approved));
+
+            if (order == null || order.Items == null || !order.Items.Any())
+                return RedirectToAction("Action", "Order");
+
+            // generate PO, keep status as Draft until shipping is provided
+            order.PONumber = $"PO-{DateTime.Now:yyyyMMddHHmmss}";
+
+            order.CreatedAt = DateTime.Now;
+
+
+            if (status == "Approved")
+            {
+                order.Status = OrderStatus.Approved;
+            }
+
+            // persist the created order (with its items and shipping placeholder)
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Admin", "Order");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ShipOrder(int id, string TrackingNumber, decimal ShippingCost)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Shipping)
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+                return NotFound();
+
+            if (order.Shipping == null)
+                order.Shipping = new Shipping();
+
+            order.Shipping.TrackingNumber = TrackingNumber;
+            order.Shipping.ShippingCost = ShippingCost;
+            order.TotalAmount += ShippingCost; // Add shipping cost to total
+
+            order.Status = OrderStatus.Shipped;
+
+            // Recalculate totals including shipping
+            var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
+
+            // Keep existing tax amount (tax already calculated when shipping was first saved). If you need to recalc,
+            // you can adopt the same BIN/EIN logic used elsewhere. Here we preserve order.TaxAmount.
+            var tax = order.TaxAmount;
+
+            order.TotalAmount = Math.Round(subtotal + tax + (order.Shipping?.ShippingCost ?? 0m), 2);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Admin");
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> RejectOrder(int id, string reason)
+        {
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (order == null)
+                return NotFound();
+
+            order.Status = OrderStatus.Rejected;
+            order.RejectReason = reason;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Admin");
+        }
     }
 }
+
+
+
+
+
+

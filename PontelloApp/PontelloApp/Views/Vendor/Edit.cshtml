@@ -51,21 +51,6 @@
                     <span asp-validation-for="Phone" class="text-danger"></span>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="EIN" class="form-label">
-                        EIN
-                        <i class="bi bi-info-circle text-primary"
-                           data-bs-toggle="tooltip"
-                           title="Employer Identification Number (required if tax-exempt)."></i>
-                    </label>
-                    <input asp-for="EIN" class="form-control" placeholder="XX-XXXXXXX" />
-                    <span asp-validation-for="EIN" class="text-danger"></span>
-                </div>
-
-                <div class="form-check mb-3">
-                    <input class="form-check-input" asp-for="IsTaxExempt" />
-                    <label class="form-check-label" asp-for="IsTaxExempt"></label>
-                </div>
 
                 <div class="text-center mt-4">
                     <button type="submit" class="btn btn-gray">Save Changes</button>

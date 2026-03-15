@@ -11,7 +11,7 @@ using PontelloApp.Data;
 namespace PontelloApp.Data.POMigrations
 {
     [DbContext(typeof(PontelloAppContext))]
-    [Migration("20260314235809_Initial")]
+    [Migration("20260315005927_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -79,6 +79,9 @@ namespace PontelloApp.Data.POMigrations
 
                     b.Property<string>("PONumber")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RejectReason")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("RevisionNumber")
@@ -173,6 +176,12 @@ namespace PontelloApp.Data.POMigrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsTaxable")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsUnlisted")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("ProductName")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -224,6 +233,9 @@ namespace PontelloApp.Data.POMigrations
                         .HasColumnType("TEXT");
 
                     b.Property<decimal?>("CompareAtPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("CostPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CreatedBy")
@@ -346,11 +358,18 @@ namespace PontelloApp.Data.POMigrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Address")
+                    b.Property<string>("BinOrEin")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("City")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("BinOrEin")
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DeliveryNotes")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
@@ -365,6 +384,21 @@ namespace PontelloApp.Data.POMigrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Province")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("ShippingCost")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StreetAddress")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -436,18 +470,11 @@ namespace PontelloApp.Data.POMigrations
                     b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("EIN")
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Email")
                         .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsArchived")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsTaxExempt")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")

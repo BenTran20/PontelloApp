@@ -7,12 +7,23 @@ namespace PontelloApp.Models
     {
         public int ID { get; set; }
 
+        public string? FullAddress
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(StreetAddress) &&
+                    string.IsNullOrWhiteSpace(City) &&
+                    string.IsNullOrWhiteSpace(Province) &&
+                    string.IsNullOrWhiteSpace(PostalCode))
+                    return ""; 
+
+                return $"{StreetAddress}, {City}, {Province} {PostalCode}";
+            }
+        }
+
         [Required]
         [Display(Name = "Full Name")]
         public string FullName { get; set; } = string.Empty;
-
-        [Required]
-        public string Address { get; set; } = string.Empty;
 
         [Required]
         public string Phone { get; set; } = string.Empty;
@@ -26,6 +37,33 @@ namespace PontelloApp.Models
         public string? BinOrEin { get; set; }
 
         public string? TrackingNumber { get; set; }
+
+        [Display(Name = "Shipping Cost")]
+        public decimal? ShippingCost { get; set; }
+
+        // Optional delivery notes
+        [Display(Name = "Delivery Instructions")]
+        public string? DeliveryNotes { get; set; }
+
+        //Address
+        [Required]
+        [Display(Name = "Street Address")]
+        public string StreetAddress { get; set; }
+
+        [Required]
+        public string City { get; set; }
+
+        [Required]
+
+        public string Province { get; set; }
+
+        [Display(Name = "Postal Code")]
+        [Required]
+        public string PostalCode { get; set; }
+
+        [Required]
+        public string Country { get; set; } = "Canada";
+
 
         // navigation
         public int OrderId { get; set; }

@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace PontelloApp.Models
 {
 
-    public class Vendor : Auditable, IValidatableObject
+    public class Vendor : Auditable
     {
         [Key]
         public int VendorID { get; set; }
@@ -24,45 +24,16 @@ namespace PontelloApp.Models
 
         [Display(Name = "Email")]
         [StringLength(255)]
+        [DataType(DataType.EmailAddress)]
         [EmailAddress(ErrorMessage = "Enter a valid email address.")]
-
         public string? Email { get; set; }
-
-        [Display(Name = "EIN")]
-        [StringLength(50)]
-        public string? EIN { get; set; }
-
-        [Display(Name = "Is Tax Exempt")]
-        public bool IsTaxExempt { get; set; } = false;
-
 
         public bool IsArchived { get; set; } = false;
 
         [Timestamp]
         public byte[]? RowVersion { get; set; }
         public ICollection<Product>? Products { get; set; } = new HashSet<Product>();
-
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            // Rule 1: If IsTaxExempt = true, EIN is required
-            if (IsTaxExempt && string.IsNullOrWhiteSpace(EIN))
-            {
-                yield return new ValidationResult(
-                    "EIN is required when the vendor is tax exempt.",
-                    new[] { nameof(EIN) });
-            }
-
-            // Rule 2: If EIN is provided, we can auto force IsTaxExempt or just warn
-            if (!string.IsNullOrWhiteSpace(EIN) && !IsTaxExempt)
-            {
-                yield return new ValidationResult(
-                    "Vendor has an EIN but Is Tax Exempt is not checked. " +
-                    "Mark the vendor as tax exempt or remove the EIN.",
-                    new[] { nameof(IsTaxExempt), nameof(EIN) });
-            }
-        }
-
     }
 
 }
+

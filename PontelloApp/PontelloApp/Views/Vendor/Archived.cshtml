@@ -22,8 +22,6 @@ else
                 <th>Contact</th>
                 <th>Email</th>
                 <th>Phone</th>
-                <th>EIN</th>
-                <th>Tax Exempt</th>
                 <th class="text-end">Actions</th>
             </tr>
         </thead>
@@ -36,17 +34,6 @@ else
                     <td>@(string.IsNullOrEmpty(v.ContactName) ? "—" : v.ContactName)</td>
                     <td>@(string.IsNullOrEmpty(v.Email) ? "—" : v.Email)</td>
                     <td>@(string.IsNullOrEmpty(v.Phone) ? "—" : v.Phone)</td>
-                    <td>@(string.IsNullOrEmpty(v.EIN) ? "—" : v.EIN)</td>
-                    <td>
-                        @if (v.IsTaxExempt)
-                        {
-                            <span class="badge bg-success">Yes</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">No</span>
-                        }
-                    </td>
 
                     <td class="text-end">
                         <form asp-action="Unarchive" asp-route-id="@v.VendorID" method="post" >

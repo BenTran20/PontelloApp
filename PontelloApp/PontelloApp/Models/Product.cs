@@ -30,10 +30,17 @@ namespace PontelloApp.Models
         [StringLength(100, ErrorMessage = "Tag cannot be more than 100 characters long.")]
         public string? Tag { get; set; }
 
-        [Required(ErrorMessage = "Product Name is required.")]
+        [Required(ErrorMessage = "Product Description is required.")]
         public string Description { get; set; }
 
+        [Display(Name = "Is Active")]
         public bool IsActive { get; set; }
+
+        [Display(Name = "Is Unlisted")]
+        public bool IsUnlisted { get; set; } = false;
+
+        [Display(Name = "Is Taxable")]
+        public bool IsTaxable { get; set; } = true;
 
         [ScaffoldColumn(false)]
         [Timestamp]

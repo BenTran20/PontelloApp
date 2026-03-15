@@ -1,9 +1,11 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Services;
 using PontelloApp.Ultilities;
+using PontelloApp.ViewModels;
 using QuestPDF.Infrastructure;
 
 
@@ -20,6 +22,14 @@ builder.Services.AddDbContext<PontelloAppContext>(options =>
     options.UseSqlite(connectionString));
 builder.Services.AddScoped<OrderService>();
 
+//For email service configuration
+builder.Services.AddSingleton<IEmailConfiguration>(
+    builder.Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>()!
+);
+
+//For the Identity System
+builder.Services.AddTransient<EmailSender>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

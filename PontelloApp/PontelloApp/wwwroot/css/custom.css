@@ -71,6 +71,10 @@ h1, h2, h3, h4, h5 {
         text-decoration: none;
     }
 
+.btn-outline-primary {
+    color: #4A5159;
+}
+
 .btn-outline-secondary:hover {
     text-decoration:none;
 }
