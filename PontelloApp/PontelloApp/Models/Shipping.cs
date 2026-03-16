@@ -21,14 +21,17 @@ namespace PontelloApp.Models
             }
         }
 
-        [Required]
+        [Required(ErrorMessage = "Full Name is required.")]
         [Display(Name = "Full Name")]
         public string FullName { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Phone number is required.")]
+        [RegularExpression(@"^[2-9]\d{2}[2-9]\d{6}$", ErrorMessage = "Enter a valid 10-digit phone number.")]
+        [DataType(DataType.PhoneNumber)]
+        [StringLength(10)]
         public string Phone { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Email is required.")]
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; } = string.Empty;
 
@@ -46,22 +49,21 @@ namespace PontelloApp.Models
         public string? DeliveryNotes { get; set; }
 
         //Address
-        [Required]
+        [Required(ErrorMessage = "Street Address is required.")]
         [Display(Name = "Street Address")]
         public string StreetAddress { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "City is required.")]
         public string City { get; set; }
 
-        [Required]
-
+        [Required(ErrorMessage = "Province is required.")]
         public string Province { get; set; }
 
         [Display(Name = "Postal Code")]
-        [Required]
+        [Required(ErrorMessage = "Postal Code is required.")]
         public string PostalCode { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Country is required.")]
         public string Country { get; set; } = "Canada";
 
 
