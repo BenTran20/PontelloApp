@@ -118,48 +118,203 @@ namespace PontelloApp.Data
                 #region Seed Required Data - Pontello
                 try
                 {
-                    // -------- Seed Categories --------
                     if (!context.Categories.Any())
                     {
-                        context.Categories.AddRange(
-                            new Category { Name = "Uncategorized" },
-                            new Category { Name = "Steering" },
-                            new Category { Name = "Chassis" },
-                            new Category { Name = "Hardware" },
-                            new Category { Name = "Wheels" },
-                            new Category { Name = "Accessories" },
-                            new Category { Name = "Vehicles & Parts" }
-                        );
+                        // -------- Top-level Categories --------
+                        var uncategorized = new Category { Name = "Uncategorized" };
+                        var vehiclesAndParts = new Category { Name = "Vehicles & Parts" };
+                        var hardware = new Category { Name = "Hardware" };
+                        var apparel = new Category { Name = "Apparel" };
+                        var other = new Category { Name = "Other" };
+
+                        context.Categories.AddRange(uncategorized, vehiclesAndParts, hardware, apparel, other);
                         context.SaveChanges();
 
-                        var catHardwareId = context.Categories.First(c => c.Name == "Hardware").ID;
-                        var catVehiclesPartsId = context.Categories.First(c => c.Name == "Vehicles & Parts").ID;
+                        // -------- Vehicles & Parts --------
+                        var vehiclePartsAccessories = new Category
+                        {
+                            Name = "Vehicle Parts & Accessories",
+                            ParentCategoryID = vehiclesAndParts.ID
+                        };
+                        var vehicleStorageCargo = new Category
+                        {
+                            Name = "Vehicle Storage & Cargo",
+                            ParentCategoryID = vehiclesAndParts.ID
+                        };
+                        var vehicleMaintenanceDecor = new Category
+                        {
+                            Name = "Vehicle Maintenance, Care & Decor",
+                            ParentCategoryID = vehiclesAndParts.ID
+                        };
+                        var vehicleTowing = new Category
+                        {
+                            Name = "Vehicle Towing",
+                            ParentCategoryID = vehiclesAndParts.ID
+                        };
+                        var vehicleDecor = new Category
+                        {
+                            Name = "Vehicle Decor",
+                            ParentCategoryID = vehiclesAndParts.ID
+                        };
 
-                        context.Categories.AddRange(
-                            new Category { Name = "Fasteners", ParentCategoryID = catHardwareId },
-                            new Category { Name = "Components", ParentCategoryID = catHardwareId },
-                            new Category { Name = "Vehicle Parts & Accessories", ParentCategoryID = catVehiclesPartsId }
-                        );
+                        context.Categories.AddRange(vehiclePartsAccessories, vehicleStorageCargo, vehicleMaintenanceDecor, vehicleTowing, vehicleDecor);
                         context.SaveChanges();
 
-                        var catVehiclePartsAccessoriesId =
-                            context.Categories.First(c => c.Name == "Vehicle Parts & Accessories").ID;
-
-                        context.Categories.Add(
-                            new Category
-                            {
-                                Name = "Motor Vehicle Parts",
-                                ParentCategoryID = catVehiclePartsAccessoriesId
-                            });
+                        // -------- Vehicle Parts & Accessories Subcategories --------
+                        var motorVehicleParts = new Category
+                        {
+                            Name = "Motor Vehicle Parts",
+                            ParentCategoryID = vehiclePartsAccessories.ID
+                        };
+                        context.Categories.Add(motorVehicleParts);
                         context.SaveChanges();
 
-                        var catMotorVehiclePartsId =
-                            context.Categories.First(c => c.Name == "Motor Vehicle Parts").ID;
+                        // Motor Vehicle Parts → Suspension, Controls, Sensors & Gauges
+                        var motorVehicleSuspension = new Category
+                        {
+                            Name = "Motor Vehicle Suspension Parts",
+                            ParentCategoryID = motorVehicleParts.ID
+                        };
+                        var motorVehicleControls = new Category
+                        {
+                            Name = "Motor Vehicle Controls",
+                            ParentCategoryID = motorVehicleParts.ID
+                        };
+                        var motorVehicleSensors = new Category
+                        {
+                            Name = "Motor Vehicle Sensors & Gauges",
+                            ParentCategoryID = motorVehicleParts.ID
+                        };
+                        context.Categories.AddRange(motorVehicleSuspension, motorVehicleControls, motorVehicleSensors);
+                        context.SaveChanges();
+
+                        // Motor Vehicle Controls → Steering Racks, Wheels, Columns
+                        context.Categories.AddRange(
+                            new Category { Name = "Steering Racks", ParentCategoryID = motorVehicleControls.ID },
+                            new Category { Name = "Steering Wheels", ParentCategoryID = motorVehicleControls.ID },
+                            new Category { Name = "Steering Columns", ParentCategoryID = motorVehicleControls.ID }
+                        );
+
+                        // Motor Vehicle Frame & Body Parts
+                        var motorVehicleFrameBody = new Category
+                        {
+                            Name = "Motor Vehicle Frame & Body Parts",
+                            ParentCategoryID = motorVehicleParts.ID
+                        };
+                        context.Categories.Add(motorVehicleFrameBody);
+                        context.SaveChanges();
+                        context.Categories.Add(new Category { Name = "Bumpers", ParentCategoryID = motorVehicleFrameBody.ID });
+
+                        // Motor Vehicle Transmission & Drivetrain
+                        var motorVehicleDrivetrain = new Category
+                        {
+                            Name = "Motor Vehicle Transmission & Drivetrain Parts",
+                            ParentCategoryID = motorVehicleParts.ID
+                        };
+                        context.Categories.Add(motorVehicleDrivetrain);
+                        context.SaveChanges();
+                        context.Categories.AddRange(
+                            new Category { Name = "Flywheels", ParentCategoryID = motorVehicleDrivetrain.ID },
+                            new Category { Name = "Axles", ParentCategoryID = motorVehicleDrivetrain.ID }
+                        );
+
+                        // Motor Vehicle Wheel Systems
+                        var motorVehicleWheelSystem = new Category
+                        {
+                            Name = "Motor Vehicle Wheel Systems",
+                            ParentCategoryID = motorVehicleParts.ID
+                        };
+                        context.Categories.Add(motorVehicleWheelSystem);
+                        context.SaveChanges();
+                        var motorVehicleTires = new Category
+                        {
+                            Name = "Motor Vehicle Tires",
+                            ParentCategoryID = motorVehicleWheelSystem.ID
+                        };
+                        var motorVehicleRims = new Category
+                        {
+                            Name = "Motor Vehicle Rims & Wheels",
+                            ParentCategoryID = motorVehicleWheelSystem.ID
+                        };
+                        context.Categories.AddRange(motorVehicleTires, motorVehicleRims);
+                        context.SaveChanges();
+
+                        context.Categories.Add(new Category
+                        {
+                            Name = "Off-Road and All-Terrain Vehicle Tires",
+                            ParentCategoryID = motorVehicleTires.ID
+                        });
+                        context.Categories.Add(new Category
+                        {
+                            Name = "Off-Road and All-Terrain Vehicle Rims & Wheels",
+                            ParentCategoryID = motorVehicleRims.ID
+                        });
+
+                        // -------- Vehicle Storage & Cargo --------
+                        context.Categories.AddRange(
+                            new Category { Name = "Motor Vehicle Carrying Racks", ParentCategoryID = vehicleStorageCargo.ID },
+                            new Category { Name = "Vehicle Cargo Racks", ParentCategoryID = vehicleStorageCargo.ID }
+                        );
+
+                        // -------- Vehicle Maintenance / Fluids --------
+                        var vehicleFluids = new Category { Name = "Vehicle Fluids", ParentCategoryID = vehicleMaintenanceDecor.ID };
+                        context.Categories.Add(vehicleFluids);
+                        context.SaveChanges();
+                        context.Categories.AddRange(
+                            new Category { Name = "Vehicle Motor Oil", ParentCategoryID = vehicleFluids.ID },
+                            new Category { Name = "Vehicle Brake Fluid", ParentCategoryID = vehicleFluids.ID },
+                            new Category { Name = "Vehicle Greases", ParentCategoryID = vehicleFluids.ID },
+                            new Category { Name = "Vehicle Power Steering Fluid", ParentCategoryID = vehicleFluids.ID },
+                            new Category { Name = "Vehicle Performance Additives", ParentCategoryID = vehicleFluids.ID },
+                            new Category { Name = "Vehicle Engine Degreasers", ParentCategoryID = vehicleFluids.ID },
+                            new Category { Name = "Vehicle Fuel System Cleaners", ParentCategoryID = vehicleFluids.ID },
+                            new Category { Name = "Carburetor Cleaners", ParentCategoryID = vehicleFluids.ID },
+                            new Category { Name = "Fuel Injector Cleaners", ParentCategoryID = vehicleFluids.ID }
+                        );
 
                         context.Categories.AddRange(
-                            new Category { Name = "Bumpers", ParentCategoryID = catMotorVehiclePartsId },
-                            new Category { Name = "Steering Racks", ParentCategoryID = catMotorVehiclePartsId }
+                            new Category { Name = "Synthetic Motor Oil", ParentCategoryID = vehicleFluids.ID },
+                            new Category { Name = "Conventional Motor Oil", ParentCategoryID = vehicleFluids.ID },
+                            new Category { Name = "Semi-Synthetic Motor Oil", ParentCategoryID = vehicleFluids.ID }
                         );
+
+                        // -------- Vehicle Towing --------
+                        context.Categories.Add(new Category { Name = "Hitch Mounts", ParentCategoryID = vehicleTowing.ID });
+
+                        // -------- Vehicle Decor --------
+                        context.Categories.Add(new Category { Name = "Vehicle Decals", ParentCategoryID = vehicleDecor.ID });
+
+                        // -------- Hardware --------
+                        var hardwareFasteners = new Category { Name = "Hardware Fasteners", ParentCategoryID = hardware.ID };
+                        var hardwareAccessories = new Category { Name = "Hardware Accessories", ParentCategoryID = hardware.ID };
+                        context.Categories.AddRange(hardwareFasteners, hardwareAccessories);
+                        context.SaveChanges();
+                        context.Categories.AddRange(
+                            new Category { Name = "Nuts & Bolts", ParentCategoryID = hardwareFasteners.ID },
+                            new Category { Name = "Casters", ParentCategoryID = hardwareFasteners.ID },
+                            new Category { Name = "Lubricants > Oil", ParentCategoryID = hardwareAccessories.ID }
+                        );
+
+                        // -------- Apparel --------
+                        var clothingAccessories = new Category { Name = "Clothing Accessories", ParentCategoryID = apparel.ID };
+                        context.Categories.Add(clothingAccessories);
+                        context.SaveChanges();
+                        context.Categories.AddRange(
+                            new Category { Name = "Hats", ParentCategoryID = clothingAccessories.ID },
+                            new Category { Name = "Trucker Hats", ParentCategoryID = clothingAccessories.ID },
+                            new Category { Name = "Beanies", ParentCategoryID = clothingAccessories.ID }
+                        );
+
+                        // -------- Other --------
+                        var cameras = new Category { Name = "Cameras & Optics", ParentCategoryID = other.ID };
+                        context.Categories.Add(cameras);
+                        context.SaveChanges();
+                        var camerasSub = new Category { Name = "Cameras", ParentCategoryID = cameras.ID };
+                        context.Categories.Add(camerasSub);
+                        context.SaveChanges();
+                        context.Categories.Add(new Category { Name = "Video Cameras", ParentCategoryID = camerasSub.ID });
+                        context.Categories.Add(new Category { Name = "Media > Product Manuals", ParentCategoryID = other.ID });
+
                         context.SaveChanges();
                     }
 
@@ -209,8 +364,6 @@ namespace PontelloApp.Data
                         var authenticId = context.Vendors.First(v => v.Name == "Authentic Phantom Component").VendorID;
 
                         // Category IDs
-                        var catWheelsId = context.Categories.First(c => c.Name == "Wheels").ID;
-                        var catComponentsId = context.Categories.First(c => c.Name == "Components").ID;
                         var catUncategorizedId = context.Categories.First(c => c.Name == "Uncategorized").ID;
                         var catBumpersId = context.Categories.First(c => c.Name == "Bumpers").ID;
                         var catMotorPartsId = context.Categories.First(c => c.Name == "Motor Vehicle Parts").ID;
@@ -221,7 +374,7 @@ namespace PontelloApp.Data
                                 ProductName = "Ultra Racing Wheel",
                                 Description = "High-performance racing wheel suitable for kart and small vehicles.",
                                 IsActive = false,
-                                CategoryID = catWheelsId,
+                                CategoryID = catMotorPartsId,
                                 Handle = "ultra-racing-wheel",
                                 VendorID = chargerId,
                                 Tag = "Racing Wheel"
@@ -231,7 +384,7 @@ namespace PontelloApp.Data
                                 ProductName = "Pedals",
                                 Description = "The Pedals from Charger Racing Chassis is a durable, race-ready replacement designed for precise control and consistent feel on the track. Featuring a strong, lightweight construction and a smooth actuation profile, this pedal is built to withstand the demands of competitive karting while maintaining reliable performance season after season. Perfect for new builds, maintenance, or replacing worn components, these pedals install easily on compatible Charger chassis models and provides the responsiveness drivers expect. Application: Ideal for use on Charger Racing Chassis karts requiring a replacement or upgrade to accommodate drivers needs. Install as specified for throttle control systems to restore smooth, predictable driver input.",
                                 IsActive = true,
-                                CategoryID = catComponentsId,
+                                CategoryID = catMotorPartsId,
                                 Handle = "pedals",
                                 VendorID = chargerId,
                                 Tag = "Throttle & Brake Controls",
@@ -1125,64 +1278,22 @@ namespace PontelloApp.Data
                     if (!context.Orders.Any())
                     {
                         context.Orders.AddRange(
-                           new Order //1
-                                     //product 1
-                           {
-                               PONumber = "PO-20260313145742",
-                               DealerId = 2,
-                               TotalAmount = 225.97m,
-                               Status = OrderStatus.Progress,
-                               Shipping = new Shipping { FullName = "Alex Brown", /*StreetAddress = "20 Spring Drive", Phone = "289-387-3874",*/ Email = "alexbrown@gmail.com" },
-                               TaxAmount = 1.13m,
-                               Items = new List<OrderItem>
-                               {
-                               new OrderItem
-                           {
-                                ProductId = 1,
-                                ProductVariantId = 1,
-                                Quantity = 2,
-                                UnitPrice = 99.99m,
-                           }
-                             }
-                           },
-
-                            new Order //2
-                                      //product 2
-                            {
-                                PONumber = "PO-20260313145740",
-                                DealerId = 1,
-                                TotalAmount = 10.79m,
-                                Status = OrderStatus.Progress,
-                                Shipping = new Shipping { FullName = "Liam Woods", StreetAddress = "19 River Rd"/*, Phone = "905-938-6984", Email = "liamwoods@outlook.com"*/ },
-                                TaxAmount = 1.13m,
-                                Items = new List<OrderItem>
-                               {
-                               new OrderItem
-                           {
-                                ProductId = 2,
-                                ProductVariantId = 2,
-                                Quantity = 1,
-                                UnitPrice = 39.55m,
-                           }
-                             }
-                            },
-
                            // -------- Seed Sample (Submitted) Orders --------
                            new Order //3 
                                      //product 22
                            {
                                PONumber = "PO-20260313145735",
-                               DealerId = 4,
+                               DealerId = 1,
                                TotalAmount = 1.01m,
                                Status = OrderStatus.Submitted,
-                               Shipping = new Shipping { FullName = "Ally Smith ", StreetAddress = "25 Sunset Way", Phone = "289-456-7810", Email = "allysmith@gmail.com" },
+                               Shipping = new Shipping { FullName = "Ally Smith ", StreetAddress = "25 Sunset Way", City="Niagara Falls", Country="Canada", PostalCode="L2J 1N1", Province="Ontario", Phone = "289-456-7810", Email = "allysmith@gmail.com" },
                                TaxAmount = 1.13m,
                                Items = new List<OrderItem>
                                {
                                new OrderItem
                            {
-                                ProductId = 22,
-                                ProductVariantId = 22,
+                                ProductId = 2,
+                                ProductVariantId = 5,
                                 Quantity = 1,
                                 UnitPrice = 0.90m,
                            }
@@ -1192,18 +1303,18 @@ namespace PontelloApp.Data
                             new Order //4
                                       //product 3
                             {
-                                PONumber = "PO-20260313145730",
-                                DealerId = 3,
+                                PONumber = "PO-20260203145730",
+                                DealerId = 1,
                                 TotalAmount = 16.15m,
                                 Status = OrderStatus.Submitted,
-                                Shipping = new Shipping { FullName = "Ella Jones", StreetAddress = "345 Stone Road", Phone = "289-749-2345", Email = "ellajones@gmail.com" },
+                                Shipping = new Shipping { FullName = "Ella Jones", StreetAddress = "345 Stone Road", City = "Welland", Country = "Canada", PostalCode = "L9N 1H2", Province = "Ontario", Phone = "289-749-2345", Email = "ellajones@gmail.com" },
                                 TaxAmount = 1.13m,
                                 Items = new List<OrderItem>
                                {
                                new OrderItem
                            {
                                 ProductId = 3,
-                                ProductVariantId = 3,
+                                ProductVariantId = 9,
                                 Quantity = 1,
                                 UnitPrice = 14.30m,
                            }
@@ -1214,18 +1325,18 @@ namespace PontelloApp.Data
                             //product 4
                             new Order //5
                             {
-                                PONumber = "PO-20260313145725",
-                                DealerId = 6,
+                                PONumber = "PO-20260113145725",
+                                DealerId = 1,
                                 TotalAmount = 42.13m,
                                 Status = OrderStatus.Approved,
-                                Shipping = new Shipping { FullName = "Emma Smith", StreetAddress = "365 Velvet Rd", Phone = "289-365-8374", Email = "emmasmith@hotmail.com" },
+                                Shipping = new Shipping { FullName = "Emma Smith", StreetAddress = "365 Velvet Rd", City = "Niagara Falls", Country = "Canada", PostalCode = "L2C 3N8", Province = "Ontario", Phone = "289-365-8374", Email = "emmasmith@hotmail.com" },
                                 TaxAmount = 1.13m,
                                 Items = new List<OrderItem>
                                {
                                new OrderItem
                            {
                                 ProductId = 4,
-                                ProductVariantId = 4,
+                                ProductVariantId = 11,
                                 Quantity = 1,
                                 UnitPrice = 37.29m,
                            }
@@ -1235,17 +1346,17 @@ namespace PontelloApp.Data
                             new Order //6
                             {
                                 PONumber = "PO-20260313145720",
-                                DealerId = 5,
+                                DealerId = 1,
                                 TotalAmount = 5.22m,
                                 Status = OrderStatus.Approved,
-                                Shipping = new Shipping { FullName = "Lucas Jones", StreetAddress = "47 Merrit Ave", Phone = "905-397-4836", Email = "lucasjones@gmail.com" },
+                                Shipping = new Shipping { FullName = "Lucas Jones", StreetAddress = "47 Merrit Ave", City = "St Catharines", Country = "Canada", PostalCode = "L1J 9I3", Province = "Ontario", Phone = "905-397-4836", Email = "lucasjones@gmail.com" },
                                 TaxAmount = 1.13m,
                                 Items = new List<OrderItem>
                                {
                                new OrderItem
                            {
                                 ProductId = 5,
-                                ProductVariantId = 5,
+                                ProductVariantId = 12,
                                 Quantity = 6,
                                 UnitPrice = 0.77m,
                            }
@@ -1257,17 +1368,17 @@ namespace PontelloApp.Data
                              new Order //7
                              {
                                  PONumber = "PO-20260313145715",
-                                 DealerId = 8,
-                                 //TotalAmount = 0m,
+                                 DealerId = 1,
+                                 TotalAmount = 80.23m,
                                  Status = OrderStatus.Rejected,
-                                 Shipping = new Shipping { FullName = "Jimmy White"/*, StreetAddress = "", Phone = "", Email = "" */},
-                                 //TaxAmount = 1.13m,
+                                 Shipping = new Shipping { FullName = "Jimmy White", StreetAddress="291 Portrage Road",  City = "Thorold", Country = "Canada", PostalCode = "L2J 2C2", Province = "Ontario", Email="jimmy@gmail.com", Phone="9313239239" },
+                                 TaxAmount = 1.13m,
                                  Items = new List<OrderItem>
                                {
                                new OrderItem
                            {
                                 ProductId = 6,
-                                ProductVariantId = 6,
+                                ProductVariantId = 15,
                                 Quantity = 1,
                                 UnitPrice = 79.1m,
                            }
@@ -1277,17 +1388,17 @@ namespace PontelloApp.Data
                              new Order //8
                              {
                                  PONumber = "PO-20260313145710",
-                                 DealerId = 7,
-                                 //TotalAmount = 0m,
+                                 DealerId = 1,
+                                 TotalAmount = 14.69m,
                                  Status = OrderStatus.Rejected,
-                                 Shipping = new Shipping { FullName = "Ava Smith"/*, StreetAddress = "", Phone = "", Email = "" */},
+                                 Shipping = new Shipping { FullName = "Ava Smith", StreetAddress="632 Oneil street", City = "Niagara Falls", Country = "Canada", PostalCode = "L1J 8K1", Province = "Ontario", Email="smith@gmail.com", Phone="9053193204"},
                                  TaxAmount = 1.13m,
                                  Items = new List<OrderItem>
                                {
                                new OrderItem
                            {
                                 ProductId = 7,
-                                ProductVariantId = 7,
+                                ProductVariantId = 18,
                                 Quantity = 1,
                                 UnitPrice = 13.56m,
                            }
@@ -1299,17 +1410,17 @@ namespace PontelloApp.Data
                              new Order //9
                              {
                                  PONumber = "PO-20260313145770",
-                                 DealerId = 10,
+                                 DealerId = 1,
                                  TotalAmount = 36.06m,
                                  Status = OrderStatus.Shipped,
-                                 Shipping = new Shipping { FullName = "Tony Smith", StreetAddress = "100 Parkside Way", Phone = "905-394-3875", Email = "tonysmith@outlook.com" },
+                                 Shipping = new Shipping { FullName = "Tony Smith", StreetAddress = "100 Parkside Way", City = "Welland", Country = "Canada", PostalCode = "L3J 2L9", Province = "Ontario", Phone = "905-394-3875", Email = "tonysmith@outlook.com" },
                                  TaxAmount = 1.13m,
                                  Items = new List<OrderItem>
                                {
                                new OrderItem
                            {
                                 ProductId = 8,
-                                ProductVariantId = 8,
+                                ProductVariantId = 19,
                                 Quantity = 1,
                                 UnitPrice = 31.92m,
                            }
@@ -1319,17 +1430,17 @@ namespace PontelloApp.Data
                              new Order //10
                              {
                                  PONumber = "PO-20260313145760",
-                                 DealerId = 9,
+                                 DealerId = 1,
                                  TotalAmount = 228.82m,
                                  Status = OrderStatus.Shipped,
-                                 Shipping = new Shipping { FullName = "Sam Jones", StreetAddress = "85 Autumn Ave", Phone = "905-274-2874", Email = "samjones@hotmail.com" },
+                                 Shipping = new Shipping { FullName = "Sam Jones", StreetAddress = "85 Autumn Ave", City = "London", Country = "Canada", PostalCode = "L1K 4M1", Province = "Ontario", Phone = "905-274-2874", Email = "samjones@hotmail.com" },
                                  TaxAmount = 1.13m,
                                  Items = new List<OrderItem>
                                {
                                new OrderItem
                            {
                                 ProductId = 9,
-                                ProductVariantId = 9,
+                                ProductVariantId = 20,
                                 Quantity = 1,
                                 UnitPrice = 202.50m,
                            }
