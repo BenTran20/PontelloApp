@@ -478,13 +478,21 @@
                });
            }
 
-           document.addEventListener('DOMContentLoaded', function () {
-               // if server rendered variants, set variantIndex to avoid duplicate indices (safe fallback)
-               var serverCount = @(Model?.Variants?.Count() ?? 0);
-               if (serverCount > 0) variantIndex = serverCount;
-               toggleVariantUI();
-               attachCurrencyHandlers(document);
-           });
+        document.addEventListener('DOMContentLoaded', function () {
+
+            var serverCount = @(Model?.Variants?.Count() ?? 0);
+            if (serverCount > 0) variantIndex = serverCount;
+            toggleVariantUI();
+            attachCurrencyHandlers(document);
+
+            var feedback = '@TempData["Feedback"]';
+            if (feedback && feedback.trim() !== '') {
+                var csvCollapse = new bootstrap.Collapse(document.getElementById('csvImportBody'), {
+                    toggle: true
+                });
+            }
+        });
+
     </script>
 
     <script src="~/js/refreshDDL.js"></script>
