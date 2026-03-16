@@ -73,7 +73,7 @@ namespace PontelloApp.Controllers
 
             var pagedData = await PaginatedList<Order>.CreateAsync(orders, page ?? 1, pageSize);
 
-            return View(pagedData);
+            return View(await orders.ToListAsync());
 
 
         }
