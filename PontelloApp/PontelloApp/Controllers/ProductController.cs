@@ -766,7 +766,7 @@ namespace PontelloApp.Controllers
                     }
 
                     // Process rows
-                    for (int row = start.Row + 1; row <= end.Row; row++)
+                    for (int row = start.Row + 1; row < end.Row; row++)
                     {
                         List<string> rowErrors = new List<string>();
 
