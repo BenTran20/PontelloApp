@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 using PontelloApp.Ultilities;
@@ -8,7 +9,7 @@ using PontelloApp.Utilities;
 
 namespace PontelloApp.Controllers
 {
-    public class ProductDealerController : Controller
+    public class ProductDealerController : ElephantController
     {
         private readonly PontelloAppContext _context;
         private readonly OrderService _orderService;
@@ -65,7 +66,7 @@ namespace PontelloApp.Controllers
             ViewData["sortField"] = sortField;
             ViewData["sortDirection"] = sortDirection;
 
-            int pageSize = PageSizeHelper.SetPageSize(HttpContext, pageSizeID, "ProductDealer");
+            int pageSize = PageSizeHelper.SetPageSize(HttpContext, pageSizeID, ControllerName());
             ViewData["pageSizeID"] = PageSizeHelper.PageSizeList(pageSize);
 
             ViewData["TotalItems"] = await products.CountAsync();
