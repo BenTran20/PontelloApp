@@ -1,6 +1,8 @@
 ﻿@model PontelloApp.Models.RecurringOrder
 
-<form asp-action="Create" method="post">
+<form asp-action="RecurrMessage"
+      asp-route-id="@Model.OriginalOrderId"
+      method="post">
 
     <input type="hidden" asp-for="OriginalOrderId" />
 
