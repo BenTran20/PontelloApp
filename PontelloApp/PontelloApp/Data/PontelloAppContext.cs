@@ -51,6 +51,7 @@ namespace PontelloApp.Data
 
         public DbSet<RecurringOrder> RecurringOrders { get; set; }
         public DbSet<RecurringOrderExecutionLog> RecurringOrderExecutionLogs { get; set; }
+        public DbSet<ScheduledEmail> ScheduledEmails { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Prevent Cascade Delete from Category to Product
