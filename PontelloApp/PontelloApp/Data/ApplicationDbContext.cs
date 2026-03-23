@@ -9,5 +9,6 @@ namespace PontelloApp.Data
             : base(options)
         {
         }
+        public DbSet<ScheduledEmail> ScheduledEmails { get; set; }
     }
 }
