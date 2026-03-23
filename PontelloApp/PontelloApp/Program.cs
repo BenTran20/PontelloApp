@@ -42,6 +42,10 @@ builder.Services.AddHangfire(config => config
 
 builder.Services.AddScoped<RecurringOrderProcessorJob>();
 
+builder.Services.AddHostedService<EmailSchedulerService>();
+builder.Services.AddDbContext<ApplicationDbContext>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
 builder.Services.AddHangfireServer();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
