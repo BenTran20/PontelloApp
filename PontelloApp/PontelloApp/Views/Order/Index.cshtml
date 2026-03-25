@@ -120,12 +120,12 @@
                         {
                             string badge = o.Status switch
                             {
-                                OrderStatus.Draft => "bg-secondary",
-                                OrderStatus.Submitted => "bg-warning text-dark",
-                                OrderStatus.Approved => "bg-success",
-                                OrderStatus.Rejected => "bg-danger",
-                                OrderStatus.Shipped => "bg-primary",
-                                _ => "bg-dark"
+                                OrderStatus.Draft => "text-bg-secondary",
+                                OrderStatus.Submitted => "text-bg-warning",
+                                OrderStatus.Approved => "text-bg-success",
+                                OrderStatus.Rejected => "text-bg-danger",
+                                OrderStatus.Shipped => "text-bg-primary",
+                                _ => "text-bg-secondary"
                             };
 
                             <tr>
@@ -157,7 +157,7 @@
                                     </span>
                                     @if (o.IsRecurringGenerated)
                                     {
-                                        <span class="badge bg-info ms-1">Auto</span>
+                                        <span class="badge text-bg-secondary ms-1">Auto</span>
                                     }
                                 </td>
 
@@ -193,7 +193,7 @@
 
                                         <a asp-action="Details"
                                            asp-route-id="@o.Id"
-                                           class="btn btn-sm btn-secondary"
+                                           class="btn btn-sm btn-outline-secondary"
                                            data-bs-toggle="tooltip" data-bs-placement="top">
                                             View
                                         </a>
@@ -201,7 +201,7 @@
                                         <a asp-controller="RecurringOrder"
                                            asp-action="Create"
                                            asp-route-orderId="@o.Id"
-                                           class="btn btn-sm btn-info text-white"
+                                           class="btn btn-sm btn-outline-secondary"
                                            data-bs-toggle="tooltip" data-bs-placement="top">
                                             Recurring
                                         </a>
@@ -209,7 +209,7 @@
                                         <a asp-controller="RecurringOrder"
                                            asp-action="Index"
                                            asp-route-orderId="@o.Id"
-                                           class="btn btn-sm btn-warning text-white"
+                                           class="btn btn-sm btn-outline-secondary"
                                            data-bs-toggle="tooltip" data-bs-placement="top">
                                             Schedule
                                         </a>
