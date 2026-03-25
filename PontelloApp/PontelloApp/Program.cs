@@ -1,10 +1,11 @@
-﻿using Hangfire;
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Services;
 using PontelloApp.Ultilities;
+using PontelloApp.Utilities;
 using PontelloApp.ViewModels;
 using QuestPDF.Infrastructure;
 
@@ -93,7 +94,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    PontelloAppInitializer.Initialize(serviceProvider: services, DeleteDatabase: false,
+    PontelloAppInitializer.Initialize(serviceProvider: services, DeleteDatabase: true,
         UseMigrations: true, SeedSampleData: true);
 
 }
