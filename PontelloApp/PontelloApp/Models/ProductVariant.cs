@@ -24,7 +24,7 @@ namespace PontelloApp.Models
 
         [Display(Name = "Stock Quantity")]
         [Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative.")]
-        public int StockQuantity { get; set; }
+        public int? StockQuantity { get; set; }
 
         [StringLength(50, ErrorMessage = "SKU_ExternalID cannot be more than 50 characters long.")]
         [Display(Name = "SKU")]
