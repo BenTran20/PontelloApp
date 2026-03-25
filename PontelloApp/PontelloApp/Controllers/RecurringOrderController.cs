@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Models;
+using QuestPDF.Fluent;
 
 namespace PontelloApp.Controllers
 {
@@ -223,60 +224,60 @@ namespace PontelloApp.Controllers
             return now;
         }
 
-    }
-
- [HttpPost]
- public async Task<IActionResult> RecurrMessage(int id, RecurringOrder model)
- {
-     var order = await _context.Orders
-         .Include(o => o.Shipping)
-         .Include(o => o.Items)
-         .ThenInclude(i => i.Product)
-         .FirstOrDefaultAsync(o => o.Id == id);
-
-     if (order == null)
-         return NotFound();
-
-     if (order.Shipping == null)
-         order.Shipping = new Shipping();
-
-     // Add shipping cost to total
-
-     order.Status = OrderStatus.Shipped;
-
-     // Recalculate totals including shipping
-     var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
-
-     // Keep existing tax amount (tax already calculated when shipping was first saved). If you need to recalc,
-     // you can adopt the same BIN/EIN logic used elsewhere. Here we preserve order.TaxAmount.
-     var tax = order.TaxAmount;
-
-     order.TotalAmount = Math.Round(subtotal + tax + (order.Shipping?.ShippingCost ?? 0m), 2);
-
-     await _context.SaveChangesAsync();
-
-     //Time to send Order Message
-     DateTime SendAt = DateTime.Now;
-
-     //Time to send Recur Message
-     DateTime SendAt1 = DateTime.Now;
 
 
-     var now = DateTime.Now;
-     var today = now.Date + model.TimeOfDay;
+        [HttpPost]
+        public async Task<IActionResult> RecurrMessage(int id, RecurringOrder model)
+        {
+            var order = await _context.Orders
+                .Include(o => o.Shipping)
+                .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(o => o.Id == id);
 
-     //Daily
-     TimeSpan Interval1 = TimeSpan.FromMinutes(3);
-     TimeSpan Interval = TimeSpan.FromMinutes(6);
+            if (order == null)
+                return NotFound();
 
-     // Generate PO PDF bytes
-     byte[] pdfBytes = GeneratePurchaseOrderPdf(order);
+            if (order.Shipping == null)
+                order.Shipping = new Shipping();
 
-     if (!string.IsNullOrWhiteSpace(order.Shipping?.Email))
-     {
-         string subject = $"Your Pontello Order {order.PONumber}";
-         //original message
-         string body = $@"
+            // Add shipping cost to total
+
+            order.Status = OrderStatus.Shipped;
+
+            // Recalculate totals including shipping
+            var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
+
+            // Keep existing tax amount (tax already calculated when shipping was first saved). If you need to recalc,
+            // you can adopt the same BIN/EIN logic used elsewhere. Here we preserve order.TaxAmount.
+            var tax = order.TaxAmount;
+
+            order.TotalAmount = Math.Round(subtotal + tax + (order.Shipping?.ShippingCost ?? 0m), 2);
+
+            await _context.SaveChangesAsync();
+
+            //Time to send Order Message
+            DateTime SendAt = DateTime.Now;
+
+            //Time to send Recur Message
+            DateTime SendAt1 = DateTime.Now;
+
+
+            var now = DateTime.Now;
+            var today = now.Date + model.TimeOfDay;
+
+            //Daily
+            TimeSpan Interval1 = TimeSpan.FromMinutes(3);
+            TimeSpan Interval = TimeSpan.FromMinutes(6);
+
+            // Generate PO PDF bytes
+            byte[] pdfBytes = GeneratePurchaseOrderPdf(order);
+
+            if (!string.IsNullOrWhiteSpace(order.Shipping?.Email))
+            {
+                string subject = $"Your Pontello Order {order.PONumber}";
+                //original message
+                string body = $@"
                      <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
 
                      <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>
@@ -293,51 +294,51 @@ namespace PontelloApp.Controllers
                      </p>
                  </div>";
 
-         //recurr message
-         string body1 = $@"
+                //recurr message
+                string body1 = $@"
                      <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
 
                      <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>";
 
-         if (model.Frequency == "Daily")
-         {
-             body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 12 hours before being order is shipped.</p>";
-             //SendAt1 = DateTime.Now.AddHours(12);
-             //SendAt = DateTime.Now.AddDays(1).AddMinutes(model.TimeOfDay.TotalMinutes);
-             //Interval1 = TimeSpan.FromHours(12);
-             //Interval = TimeSpan.FromMinutes(model.TimeOfDay.TotalMinutes);
-             SendAt1 = DateTime.Now.AddMinutes(2);
-             SendAt = DateTime.Now.AddMinutes(4);
-         }
-         if (model.Frequency == "Weekly")
-         {
-             body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 3 Days before being order is shipped.</p>";
-             //SendAt1 = DateTime.Now.AddDays(3);
-             //SendAt = DateTime.Now.AddMonths(1);
-             //Interval1 = TimeSpan.FromDays(3);
-             //int daysUntil = ((int)model.WeeklyDay!.Value - (int)now.DayOfWeek + 7) % 7;
-             //Interval = TimeSpan.FromDays(daysUntil);
-             SendAt1 = DateTime.Now.AddMinutes(2);
-             SendAt = DateTime.Now.AddMinutes(4);
-             Interval1 = TimeSpan.FromMinutes(3);
-             Interval =  TimeSpan.FromMinutes(5);                    
-         
-         }
-         if (model.Frequency == "Monthly")
-         {
-             body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 15 Days before being order is shipped.</p>";
-             //TimeSpan Interval = TimeSpan.FromDays(model.MonthlyDay.Value); 
-             //SendAt1 = DateTime.Now.AddDays(15);
-             //SendAt = DateTime.Now.AddMonths(1);
-             // int WhenToSend = model.MonthlyDay.Value / 2;
-             //Interval1 = TimeSpan.FromDays(WhenToSend);
-             SendAt1 = DateTime.Now.AddMinutes(3);
-             SendAt = DateTime.Now.AddMinutes(5);
-             Interval1 = TimeSpan.FromMinutes(3);
-             Interval = TimeSpan.FromMinutes(5); //unsure precise day each month
-         }
+                if (model.Frequency == "Daily")
+                {
+                    body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 12 hours before being order is shipped.</p>";
+                    //SendAt1 = DateTime.Now.AddHours(12);
+                    //SendAt = DateTime.Now.AddDays(1).AddMinutes(model.TimeOfDay.TotalMinutes);
+                    //Interval1 = TimeSpan.FromHours(12);
+                    //Interval = TimeSpan.FromMinutes(model.TimeOfDay.TotalMinutes);
+                    SendAt1 = DateTime.Now.AddMinutes(2);
+                    SendAt = DateTime.Now.AddMinutes(4);
+                }
+                if (model.Frequency == "Weekly")
+                {
+                    body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 3 Days before being order is shipped.</p>";
+                    //SendAt1 = DateTime.Now.AddDays(3);
+                    //SendAt = DateTime.Now.AddMonths(1);
+                    //Interval1 = TimeSpan.FromDays(3);
+                    //int daysUntil = ((int)model.WeeklyDay!.Value - (int)now.DayOfWeek + 7) % 7;
+                    //Interval = TimeSpan.FromDays(daysUntil);
+                    SendAt1 = DateTime.Now.AddMinutes(2);
+                    SendAt = DateTime.Now.AddMinutes(4);
+                    Interval1 = TimeSpan.FromMinutes(3);
+                    Interval = TimeSpan.FromMinutes(5);
 
-         body1 += @$"<p>You can find your Purchase Order attached for your reference.</p>
+                }
+                if (model.Frequency == "Monthly")
+                {
+                    body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 15 Days before being order is shipped.</p>";
+                    //TimeSpan Interval = TimeSpan.FromDays(model.MonthlyDay.Value); 
+                    //SendAt1 = DateTime.Now.AddDays(15);
+                    //SendAt = DateTime.Now.AddMonths(1);
+                    // int WhenToSend = model.MonthlyDay.Value / 2;
+                    //Interval1 = TimeSpan.FromDays(WhenToSend);
+                    SendAt1 = DateTime.Now.AddMinutes(3);
+                    SendAt = DateTime.Now.AddMinutes(5);
+                    Interval1 = TimeSpan.FromMinutes(3);
+                    Interval = TimeSpan.FromMinutes(5); //unsure precise day each month
+                }
+
+                body1 += @$"<p>You can find your Purchase Order attached for your reference.</p>
 
                      <hr style=""border:none; border-top:1px solid #eee; margin:20px 0;"" />
 
@@ -347,193 +348,194 @@ namespace PontelloApp.Controllers
                      </p>
                  </div>";
 
-         // Save pdf temporarily
-         // Generate PDF into temp file
-         string tempPath = Path.Combine(Path.GetTempPath(), $"PO_{order.PONumber}.pdf");
+                // Save pdf temporarily
+                // Generate PDF into temp file
+                string tempPath = Path.Combine(Path.GetTempPath(), $"PO_{order.PONumber}.pdf");
 
-         try
-         {
-             
-             // IMPORTANT: use System.IO.File
-             System.IO.File.WriteAllBytes(tempPath, pdfBytes);
+                try
+                {
 
-             //Recurr Message
-             var schedule1 = new ScheduledEmail
-             {
-                 Email = order.Shipping.Email,
-                 Subject = subject,
-                 HtmlBody = body1,
-                 AttachmentBytes = pdfBytes,
-                 AttachmentName = tempPath,
-                 NextSendAt = SendAt1,
-                 RepeatInterval = Interval1,
-                 IsActive = model.IsActive
-             };
+                    // IMPORTANT: use System.IO.File
+                    System.IO.File.WriteAllBytes(tempPath, pdfBytes);
 
-             //Order Message
-             var schedule = new ScheduledEmail
-             {
-                 Email = order.Shipping.Email,
-                 Subject = subject,
-                 HtmlBody = body,
-                 AttachmentBytes = pdfBytes,
-                 AttachmentName = tempPath,
-                 NextSendAt = SendAt,
-                 //NextSendAt = CalculateNextRun(model), //unsure why the following line doesnt work correctly, test if same issue
-                 RepeatInterval = Interval,
-                 IsActive = model.IsActive
-             };
+                    //Recurr Message
+                    var schedule1 = new ScheduledEmail
+                    {
+                        Email = order.Shipping.Email,
+                        Subject = subject,
+                        HtmlBody = body1,
+                        AttachmentBytes = pdfBytes,
+                        AttachmentName = tempPath,
+                        NextSendAt = SendAt1,
+                        RepeatInterval = Interval1,
+                        IsActive = model.IsActive
+                    };
 
-             _context.ScheduledEmails.Add(schedule1);
-             _context.ScheduledEmails.Add(schedule);
-             await _context.SaveChangesAsync();
+                    //Order Message
+                    var schedule = new ScheduledEmail
+                    {
+                        Email = order.Shipping.Email,
+                        Subject = subject,
+                        HtmlBody = body,
+                        AttachmentBytes = pdfBytes,
+                        AttachmentName = tempPath,
+                        NextSendAt = SendAt,
+                        //NextSendAt = CalculateNextRun(model), //unsure why the following line doesnt work correctly, test if same issue
+                        RepeatInterval = Interval,
+                        IsActive = model.IsActive
+                    };
+
+                    _context.ScheduledEmails.Add(schedule1);
+                    _context.ScheduledEmails.Add(schedule);
+                    await _context.SaveChangesAsync();
 
 
-         }
-         finally
-         {
-             // optional: delete temp file after sending
-             try { System.IO.File.Delete(tempPath); } catch { /* swallow */ }
-         }
-     }
+                }
+                finally
+                {
+                    // optional: delete temp file after sending
+                    try { System.IO.File.Delete(tempPath); } catch { /* swallow */ }
+                }
+            }
 
-     return RedirectToAction("Index", "Order");
- }
+            return RedirectToAction("Index", "Order");
+        }
 
- private byte[] GeneratePurchaseOrderPdf(Order order)
- {
-     var items = order.Items.Select(i => new
-     {
-         Product = i.Product?.ProductName ?? "",
-         Quantity = i.Quantity,
-         Price = i.UnitPrice,
-         Total = i.Quantity * i.UnitPrice
-     }).ToList();
+        private byte[] GeneratePurchaseOrderPdf(Order order)
+        {
+            var items = order.Items.Select(i => new
+            {
+                Product = i.Product?.ProductName ?? "",
+                Quantity = i.Quantity,
+                Price = i.UnitPrice,
+                Total = i.Quantity * i.UnitPrice
+            }).ToList();
 
-     decimal subtotal = items.Sum(i => i.Total);
-     decimal tax = order.TaxAmount;
-     decimal shippingCost = order.Shipping?.ShippingCost ?? 0m;
-     decimal grandTotal = order.TotalAmount;
+            decimal subtotal = items.Sum(i => i.Total);
+            decimal tax = order.TaxAmount;
+            decimal shippingCost = order.Shipping?.ShippingCost ?? 0m;
+            decimal grandTotal = order.TotalAmount;
 
-     byte[] pdf = Document.Create(container =>
-     {
-         container.Page(page =>
-         {
-             page.Margin(30);
+            byte[] pdf = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(30);
 
-             // HEADER
-             page.Header().Row(row =>
-             {
-                 row.RelativeItem().Column(col =>
-                 {
-                     col.Item().Text("Pontello").FontSize(20).Bold();
-                     col.Item().Text("Purchase Order").FontSize(14);
-                 });
+                    // HEADER
+                    page.Header().Row(row =>
+                    {
+                        row.RelativeItem().Column(col =>
+                        {
+                            col.Item().Text("Pontello").FontSize(20).Bold();
+                            col.Item().Text("Purchase Order").FontSize(14);
+                        });
 
-                 row.ConstantItem(200).AlignRight().Column(col =>
-                 {
-                     col.Item().Text($"PO #: {order.PONumber}").Bold();
-                     col.Item().Text($"Date: {order.CreatedAt:yyyy-MM-dd}");
-                 });
-             });
+                        row.ConstantItem(200).AlignRight().Column(col =>
+                        {
+                            col.Item().Text($"PO #: {order.PONumber}").Bold();
+                            col.Item().Text($"Date: {order.CreatedAt:yyyy-MM-dd}");
+                        });
+                    });
 
-             // CONTENT
-             page.Content().PaddingVertical(15).Column(col =>
-             {
+                    // CONTENT
+                    page.Content().PaddingVertical(15).Column(col =>
+                    {
 
-                 // SHIPPING INFO
-                 col.Item().Row(row =>
-                 {
-                     row.RelativeItem().Column(c =>
-                     {
-                         c.Item().Text("Ship To").Bold();
-                         c.Item().Text(order.Shipping?.FullName ?? "");
-                         c.Item().Text(order.Shipping?.FullAddress ?? "N/A");
-                         c.Item().Text(order.Shipping?.Email ?? "");
-                         c.Item().Text(order.Shipping?.Phone ?? "");
+                        // SHIPPING INFO
+                        col.Item().Row(row =>
+                        {
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text("Ship To").Bold();
+                                c.Item().Text(order.Shipping?.FullName ?? "");
+                                c.Item().Text(order.Shipping?.FullAddress ?? "N/A");
+                                c.Item().Text(order.Shipping?.Email ?? "");
+                                c.Item().Text(order.Shipping?.Phone ?? "");
 
-                         if (!string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin))
-                             c.Item().Text($"BIN: {order.Shipping.BinOrEin}");
+                                if (!string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin))
+                                    c.Item().Text($"BIN: {order.Shipping.BinOrEin}");
 
-                         if (!string.IsNullOrWhiteSpace(order.Shipping?.TrackingNumber))
-                             c.Item().Text($"Tracking #: {order.Shipping.TrackingNumber}");
-                     });
-                 });
+                                if (!string.IsNullOrWhiteSpace(order.Shipping?.TrackingNumber))
+                                    c.Item().Text($"Tracking #: {order.Shipping.TrackingNumber}");
+                            });
+                        });
 
-                 col.Item().PaddingVertical(10);
+                        col.Item().PaddingVertical(10);
 
-                 // TABLE
-                 col.Item().Table(table =>
-                 {
-                     table.ColumnsDefinition(columns =>
-                     {
-                         columns.RelativeColumn(5);
-                         columns.RelativeColumn(2);
-                         columns.RelativeColumn(2);
-                         columns.RelativeColumn(2);
-                     });
+                        // TABLE
+                        col.Item().Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(5);
+                                columns.RelativeColumn(2);
+                                columns.RelativeColumn(2);
+                                columns.RelativeColumn(2);
+                            });
 
-                     table.Header(header =>
-                     {
-                         header.Cell().Background("#F3F4F6").Padding(6).Text("Product").Bold();
-                         header.Cell().Background("#F3F4F6").Padding(6).Text("Qty").Bold();
-                         header.Cell().Background("#F3F4F6").Padding(6).Text("Unit Price").Bold();
-                         header.Cell().Background("#F3F4F6").Padding(6).Text("Total").Bold();
-                     });
+                            table.Header(header =>
+                            {
+                                header.Cell().Background("#F3F4F6").Padding(6).Text("Product").Bold();
+                                header.Cell().Background("#F3F4F6").Padding(6).Text("Qty").Bold();
+                                header.Cell().Background("#F3F4F6").Padding(6).Text("Unit Price").Bold();
+                                header.Cell().Background("#F3F4F6").Padding(6).Text("Total").Bold();
+                            });
 
-                     foreach (var i in items)
-                     {
-                         table.Cell().Padding(5).Text(i.Product);
-                         table.Cell().Padding(5).Text(i.Quantity.ToString());
-                         table.Cell().Padding(5).Text("$" + i.Price.ToString("0.00"));
-                         table.Cell().Padding(5).Text("$" + i.Total.ToString("0.00"));
-                     }
-                 });
+                            foreach (var i in items)
+                            {
+                                table.Cell().Padding(5).Text(i.Product);
+                                table.Cell().Padding(5).Text(i.Quantity.ToString());
+                                table.Cell().Padding(5).Text("$" + i.Price.ToString("0.00"));
+                                table.Cell().Padding(5).Text("$" + i.Total.ToString("0.00"));
+                            }
+                        });
 
-                 col.Item().PaddingTop(15);
+                        col.Item().PaddingTop(15);
 
-                 // TOTALS
-                 col.Item().AlignRight().Column(c =>
-                 {
-                     c.Item().Row(r =>
-                     {
-                         r.RelativeItem().AlignRight().Text("Subtotal:");
-                         r.ConstantItem(100).AlignRight().Text("$" + subtotal.ToString("0.00"));
-                     });
+                        // TOTALS
+                        col.Item().AlignRight().Column(c =>
+                        {
+                            c.Item().Row(r =>
+                            {
+                                r.RelativeItem().AlignRight().Text("Subtotal:");
+                                r.ConstantItem(100).AlignRight().Text("$" + subtotal.ToString("0.00"));
+                            });
 
-                     c.Item().Row(r =>
-                     {
-                         r.RelativeItem().AlignRight().Text("Tax:");
-                         r.ConstantItem(100).AlignRight().Text("$" + tax.ToString("0.00"));
-                     });
+                            c.Item().Row(r =>
+                            {
+                                r.RelativeItem().AlignRight().Text("Tax:");
+                                r.ConstantItem(100).AlignRight().Text("$" + tax.ToString("0.00"));
+                            });
 
-                     if (shippingCost > 0)
-                     {
-                         c.Item().Row(r =>
-                         {
-                             r.RelativeItem().AlignRight().Text("Shipping:");
-                             r.ConstantItem(100).AlignRight().Text("$" + shippingCost.ToString("0.00"));
-                         });
-                     }
+                            if (shippingCost > 0)
+                            {
+                                c.Item().Row(r =>
+                                {
+                                    r.RelativeItem().AlignRight().Text("Shipping:");
+                                    r.ConstantItem(100).AlignRight().Text("$" + shippingCost.ToString("0.00"));
+                                });
+                            }
 
-                     c.Item().Row(r =>
-                     {
-                         r.RelativeItem().AlignRight().Text("Total:").Bold();
-                         r.ConstantItem(100).AlignRight().Text("$" + grandTotal.ToString("0.00")).Bold();
-                     });
-                 });
-             });
+                            c.Item().Row(r =>
+                            {
+                                r.RelativeItem().AlignRight().Text("Total:").Bold();
+                                r.ConstantItem(100).AlignRight().Text("$" + grandTotal.ToString("0.00")).Bold();
+                            });
+                        });
+                    });
 
-             // FOOTER
-             page.Footer()
-                 .AlignCenter()
-                 .Text($"Generated {DateTime.Now:yyyy-MM-dd HH:mm}")
-                 .FontSize(10)
-                 .FontColor("#777777");
-         });
+                    // FOOTER
+                    page.Footer()
+                        .AlignCenter()
+                        .Text($"Generated {DateTime.Now:yyyy-MM-dd HH:mm}")
+                        .FontSize(10)
+                        .FontColor("#777777");
+                });
 
-     }).GeneratePdf();
+            }).GeneratePdf();
 
-     return pdf;
- }
+            return pdf;
+        }
+    }
 }
