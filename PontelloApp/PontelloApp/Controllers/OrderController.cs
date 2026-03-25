@@ -288,28 +288,30 @@ namespace PontelloApp.Controllers
                             c.Item().Row(r =>
                             {
                                 r.RelativeItem().AlignRight().Text("Subtotal:");
-                                r.ConstantItem(100).AlignRight().Text("$" + subtotal.ToString("0.00"));
+                                r.ConstantItem(120).AlignRight().Text("$" + subtotal.ToString("0.00"));
                             });
-
+                        
                             c.Item().Row(r =>
                             {
-                                r.RelativeItem().AlignRight().Text("Tax:");
-                                r.ConstantItem(100).AlignRight().Text("$" + tax.ToString("0.00"));
+                                r.RelativeItem().AlignRight().Text("Tax (13%):");
+                                r.ConstantItem(120).AlignRight().Text("$" + tax.ToString("0.00"));
                             });
-
+                        
                             if (shippingCost > 0)
                             {
                                 c.Item().Row(r =>
                                 {
-                                    r.RelativeItem().AlignRight().Text("Shipping:");
-                                    r.ConstantItem(100).AlignRight().Text("$" + shippingCost.ToString("0.00"));
+                                    r.RelativeItem().AlignRight().Text("Shipping (incl. tax):");
+                                    r.ConstantItem(120).AlignRight().Text("$" + shippingCost.ToString("0.00"));
                                 });
                             }
-
+                        
+                            c.Item().PaddingTop(4).LineHorizontal(0.5f).LineColor("#CCCCCC");
+                        
                             c.Item().Row(r =>
                             {
                                 r.RelativeItem().AlignRight().Text("Total:").Bold();
-                                r.ConstantItem(100).AlignRight().Text("$" + grandTotal.ToString("0.00")).Bold();
+                                r.ConstantItem(120).AlignRight().Text("$" + grandTotal.ToString("0.00")).Bold();
                             });
                         });
                     });
@@ -387,20 +389,19 @@ namespace PontelloApp.Controllers
                 order.Shipping = new Shipping();
 
             order.Shipping.TrackingNumber = TrackingNumber;
-            order.Shipping.ShippingCost = ShippingCost;
-            order.TotalAmount += ShippingCost; // Add shipping cost to total
-
             order.Status = OrderStatus.Shipped;
-
-            // Recalculate totals including shipping
+            
             var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
-
-            // Keep existing tax amount (tax already calculated when shipping was first saved). If you need to recalc,
-            // you can adopt the same BIN/EIN logic used elsewhere. Here we preserve order.TaxAmount.
             var tax = order.TaxAmount;
-
-            order.TotalAmount = Math.Round(subtotal + tax + (order.Shipping?.ShippingCost ?? 0m), 2);
-
+            
+            bool isTaxExempt = !string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin);
+            decimal shippingWithTax = isTaxExempt
+                ? Math.Round(ShippingCost, 2)
+                : Math.Round(ShippingCost * 1.13m, 2); //shipping logic(13% tax)
+            
+            order.Shipping.ShippingCost = shippingWithTax;
+            order.TotalAmount = Math.Round(subtotal + tax + shippingWithTax, 2);
+            
             await _context.SaveChangesAsync();
 
             // Generate PO PDF bytes
