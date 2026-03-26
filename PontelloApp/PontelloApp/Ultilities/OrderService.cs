@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using MimeKit;
 using PontelloApp.Data;
 using PontelloApp.Models;
 
@@ -14,22 +15,21 @@ namespace PontelloApp.Ultilities
         }
 
         /// <summary>
-        /// Lấy hoặc tạo Order draft cho dealer hiện tại
         /// </summary>
-        public async Task<Order> GetOrCreateDraftOrderAsync(int dealerId)
+        public async Task<Order> GetOrCreateDraftOrderAsync(string userId)
         {
             var order = await _db.Orders
                 .Include(o => o.Items)
                 .ThenInclude(i => i.ProductVariant)
                 .Include(o => o.Items)
                 .ThenInclude(i => i.Product)
-                .FirstOrDefaultAsync(o => o.DealerId == dealerId && o.Status == OrderStatus.Draft);
+                .FirstOrDefaultAsync(o => o.UserId == userId && o.Status == OrderStatus.Draft);
 
             if (order == null)
             {
                 order = new Order
                 {
-                    DealerId = dealerId,
+                    UserId = userId,
                     Status = OrderStatus.Draft,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -41,11 +41,10 @@ namespace PontelloApp.Ultilities
         }
 
         /// <summary>
-        /// Thêm sản phẩm / variant + quantity vào order draft
         /// </summary>
-        public async Task AddToCartAsync(int dealerId, int productId, int? variantId, int quantity)
+        public async Task AddToCartAsync(string userId, int productId, int? variantId, int quantity)
         {
-            var order = await GetOrCreateDraftOrderAsync(dealerId);
+            var order = await GetOrCreateDraftOrderAsync(userId);
 
             // Lấy variant nếu có
             ProductVariant? variant = null;
@@ -80,7 +79,6 @@ namespace PontelloApp.Ultilities
                 order.Items.Add(orderItem);
             }
 
-            // Cập nhật tổng tiền order
             order.TotalAmount = order.Items.Sum(i => i.TotalPrice);
 
             await _db.SaveChangesAsync();
@@ -88,23 +86,23 @@ namespace PontelloApp.Ultilities
 
         /// <summary>
         /// </summary>
-        public async Task<List<OrderItem>> GetCartItemsAsync(int dealerId)
+        public async Task<List<OrderItem>> GetCartItemsAsync(string userId)
         {
             var order = await _db.Orders
                 .Include(o => o.Items)
                 .ThenInclude(i => i.ProductVariant)
                 .Include(o => o.Items)
                 .ThenInclude(i => i.Product)
-                .FirstOrDefaultAsync(o => o.DealerId == dealerId && o.Status == OrderStatus.Draft);
+                .FirstOrDefaultAsync(o => o.UserId == userId && o.Status == OrderStatus.Draft);
 
             return order?.Items.ToList() ?? new List<OrderItem>();
         }
 
         /// <summary>
         /// </summary>
-        public async Task UpdateOrderTotalAsync(int dealerId)
+        public async Task UpdateOrderTotalAsync(string userId)
         {
-            var order = await GetOrCreateDraftOrderAsync(dealerId);
+            var order = await GetOrCreateDraftOrderAsync(userId);
             order.TotalAmount = order.Items.Sum(i => i.TotalPrice);
             await _db.SaveChangesAsync();
         }
