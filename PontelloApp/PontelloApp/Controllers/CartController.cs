@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
@@ -9,15 +10,18 @@ namespace PontelloApp.Controllers
     public class CartController : Controller
     {
         private readonly PontelloAppContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public CartController(PontelloAppContext context)
+        public CartController(PontelloAppContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Cart()
         {
-            int dealerId = 1;
+            var user = await _userManager.GetUserAsync(User);
+
             var order = await _context.Orders
                 .Include(o => o.Items)
                     .ThenInclude(i => i.ProductVariant)
@@ -27,7 +31,9 @@ namespace PontelloApp.Controllers
                         .ThenInclude(pv => pv.Options)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
-                .FirstOrDefaultAsync(o => o.DealerId == dealerId && o.Status == OrderStatus.Draft);
+                .FirstOrDefaultAsync(o =>
+                    o.UserId == user.Id &&
+                    o.Status == OrderStatus.Draft);
 
             return View(order);
         }
@@ -41,16 +47,16 @@ namespace PontelloApp.Controllers
                         .ThenInclude(oi => oi.ProductVariant)
                             .ThenInclude(pv => pv.Product)
                 .FirstOrDefaultAsync(i => i.Id == id);
-        
+
             if (item == null)
             {
                 return RedirectToAction("Cart");
             }
-        
+
             var order = item.Order;
-        
+
             IEnumerable<OrderItem> remainingItems;
-        
+
             if (quantity <= 0)
             {
                 _context.OrderItems.Remove(item);
@@ -61,20 +67,20 @@ namespace PontelloApp.Controllers
                 item.Quantity = quantity;
                 remainingItems = order.Items;
             }
-        
+
             var subtotal = remainingItems.Sum(x => x.TotalPrice);
-        
+
             var taxableSubtotal = remainingItems
                 .Where(x => x.ProductVariant != null &&
                             x.ProductVariant.Product != null &&
                             x.ProductVariant.Product.IsTaxable)
                 .Sum(x => x.TotalPrice);
-        
+
             order.TaxAmount = Math.Round(taxableSubtotal * 0.13m, 2);
             order.TotalAmount = subtotal + order.TaxAmount;
-        
+
             await _context.SaveChangesAsync();
-        
+
             return RedirectToAction("Cart");
         }
 
@@ -82,13 +88,17 @@ namespace PontelloApp.Controllers
         [HttpPost]
         public async Task<IActionResult> RemoveItem(int itemId)
         {
+            var user = await _userManager.GetUserAsync(User);
+
             var cart = await _context.Orders
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.ProductVariant)
                         .ThenInclude(pv => pv.Product)
-                .FirstOrDefaultAsync(o => o.Status == OrderStatus.Draft /* && o.DealerId == currentDealerId */);
+                .FirstOrDefaultAsync(o =>
+                    o.UserId == user.Id &&
+                    o.Status == OrderStatus.Draft);
 
             if (cart == null)
             {
@@ -101,20 +111,20 @@ namespace PontelloApp.Controllers
             {
                 cart.Items.Remove(item);
                 _context.OrderItems.Remove(item);
-            
+
                 var subtotal = cart.Items.Sum(x => x.TotalPrice);
-            
+
                 var taxableSubtotal = cart.Items
                     .Where(x => x.ProductVariant != null &&
                                 x.ProductVariant.Product != null &&
                                 x.ProductVariant.Product.IsTaxable)
                     .Sum(x => x.TotalPrice);
-            
+
                 cart.TaxAmount = Math.Round(taxableSubtotal * 0.13m, 2);
                 cart.TotalAmount = subtotal + cart.TaxAmount;
-            
+
                 await _context.SaveChangesAsync();
-            
+
                 TempData["SuccessMessage"] = "Item removed from cart.";
             }
             else
@@ -156,13 +166,18 @@ namespace PontelloApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Checkout(int id)
         {
+            var user = await _userManager.GetUserAsync(User);
+
             var cart = await _context.Orders
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.ProductVariant)
                         .ThenInclude(pv => pv.Product)
-                .FirstOrDefaultAsync(o => o.Id == id && o.Status == OrderStatus.Draft);
+                .FirstOrDefaultAsync(o =>
+                    o.Id == id &&
+                    o.UserId == user.Id &&
+                    o.Status == OrderStatus.Draft);
 
             if (cart == null || cart.Items == null || !cart.Items.Any())
                 return RedirectToAction("Cart");
@@ -170,6 +185,7 @@ namespace PontelloApp.Controllers
             // generate PO, keep status as Draft until shipping is provided
             cart.PONumber = $"PO-{DateTime.Now:yyyyMMddHHmmss}";
 
+            cart.UserId = user.Id;
             cart.Status = OrderStatus.Progress;
             cart.CreatedAt = DateTime.Now;
 
@@ -185,9 +201,9 @@ namespace PontelloApp.Controllers
                             i.ProductVariant.Product != null &&
                             i.ProductVariant.Product.IsTaxable)
                 .Sum(i => i.TotalPrice);
-            
+
             var subtotal = cart.Items.Sum(i => i.TotalPrice);
-            
+
             cart.TaxAmount = Math.Round(taxableSubtotal * 0.13m, 2);
             cart.TotalAmount = subtotal + cart.TaxAmount;
 
