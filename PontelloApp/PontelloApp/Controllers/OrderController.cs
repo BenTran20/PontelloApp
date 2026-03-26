@@ -1,4 +1,5 @@
-using System.IO;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using PontelloApp.Models;
 using PontelloApp.Ultilities;
 using PontelloApp.Utilities;
 using QuestPDF.Fluent;
+using System.IO;
 
 namespace PontelloApp.Controllers
 {
@@ -14,31 +16,34 @@ namespace PontelloApp.Controllers
     {
         private readonly PontelloAppContext _context;
         private readonly EmailSender _emailSender;
+        private readonly UserManager<User> _userManager;
 
-
-        public OrderController(PontelloAppContext context, EmailSender emailSender)
+        public OrderController(PontelloAppContext context, EmailSender emailSender, UserManager<User> userManager)
         {
             _context = context;
             _emailSender = emailSender;
+            _userManager = userManager;
         }
 
         // GET: /Order
+        [Authorize(Roles = "Dealer, Admin")]
         public async Task<IActionResult> Index(string? SearchString, int? OrderStatusID, OrderStatus? Status, DateTime? FromDate, DateTime? ToDate, int? page, int? pageSizeID, string? actionButton)
         {
-            int dealerId = 1; // TODO: replace with current dealer/user
+            var user = await _userManager.GetUserAsync(User);
+
+            var orders = _context.Orders
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                .Include(o => o.Shipping)
+                .Where(o => o.UserId == user.Id && o.Status!=OrderStatus.Draft)
+                .OrderByDescending(o => o.CreatedAt)
+                .AsNoTracking();
+
 
             ViewData["Filtering"] = "btn-outline-secondary";
             int numberFilters = 0;
 
             ViewData["OrderStatusID"] = OrderStatusSelectList(Status);
-
-            var orders = _context.Orders
-                .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
-                .Include(o => o.Shipping)
-                .Where(o => o.DealerId == dealerId)
-                .OrderByDescending(o => o.CreatedAt)
-                .AsNoTracking();
 
             if (!String.IsNullOrEmpty(SearchString))
             {
@@ -83,6 +88,7 @@ namespace PontelloApp.Controllers
 
         }
 
+        [Authorize(Roles = "Admin")]
         // GET: Admin management view for orders
         public async Task<IActionResult> Admin()
         {
@@ -104,15 +110,19 @@ namespace PontelloApp.Controllers
         }
 
         // GET: /Order/Details/5
+        [Authorize(Roles = "Dealer, Admin")]
         public async Task<IActionResult> Details(int id)
         {
+            var user = await _userManager.GetUserAsync(User);
+
             var order = await _context.Orders
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Product)
                 .Include(o => o.Items)
                     .ThenInclude(i => i.ProductVariant)
                 .Include(o => o.Shipping)
-                .FirstOrDefaultAsync(o => o.Id == id);
+                .FirstOrDefaultAsync(o => o.Id == id &&
+                    (User.IsInRole("Admin") || o.UserId == user.Id));
 
             if (order == null) return NotFound();
 
@@ -120,6 +130,7 @@ namespace PontelloApp.Controllers
         }
 
         // GET: /Order/Review/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Review(int id)
         {
             var order = await _context.Orders
@@ -136,6 +147,7 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
+        [Authorize(Roles = "Admin")]
         private async Task<Order?> GetOrder(int id)
         {
             return await _context.Orders
@@ -148,6 +160,7 @@ namespace PontelloApp.Controllers
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Progress(int id)
         {
             var order = await GetOrder(id);
@@ -155,6 +168,7 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Approved(int id)
         {
             var order = await GetOrder(id);
@@ -162,6 +176,7 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Rejected(int id)
         {
             var order = await GetOrder(id);
@@ -169,18 +184,23 @@ namespace PontelloApp.Controllers
             return View(order);
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Shipped(int id)
         {
             var order = await GetOrder(id);
             if (order == null) return NotFound();
             return View(order);
         }
+
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Recurring(int id)
         {
             var order = await GetOrder(id);
             if (order == null) return NotFound();
             return View(order);
         }
+
+        [Authorize(Roles = "Dealer, Admin")]
         public IActionResult ExportOrderPO(int id)
         {
             var order = _context.Orders
@@ -290,13 +310,13 @@ namespace PontelloApp.Controllers
                                 r.RelativeItem().AlignRight().Text("Subtotal:");
                                 r.ConstantItem(120).AlignRight().Text("$" + subtotal.ToString("0.00"));
                             });
-                        
+
                             c.Item().Row(r =>
                             {
                                 r.RelativeItem().AlignRight().Text("Tax (13%):");
                                 r.ConstantItem(120).AlignRight().Text("$" + tax.ToString("0.00"));
                             });
-                        
+
                             if (shippingCost > 0)
                             {
                                 c.Item().Row(r =>
@@ -305,9 +325,9 @@ namespace PontelloApp.Controllers
                                     r.ConstantItem(120).AlignRight().Text("$" + shippingCost.ToString("0.00"));
                                 });
                             }
-                        
+
                             c.Item().PaddingTop(4).LineHorizontal(0.5f).LineColor("#CCCCCC");
-                        
+
                             c.Item().Row(r =>
                             {
                                 r.RelativeItem().AlignRight().Text("Total:").Bold();
@@ -342,6 +362,7 @@ namespace PontelloApp.Controllers
             return new SelectList(statusList, "Value", "Text", selectedStatus);
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Decision(int id, string status)
         {
             var order = await _context.Orders
@@ -374,6 +395,8 @@ namespace PontelloApp.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
+
         public async Task<IActionResult> ShipOrder(int id, string TrackingNumber, decimal ShippingCost)
         {
             var order = await _context.Orders
@@ -389,19 +412,24 @@ namespace PontelloApp.Controllers
                 order.Shipping = new Shipping();
 
             order.Shipping.TrackingNumber = TrackingNumber;
+            order.Shipping.ShippingCost = ShippingCost;
+            order.TotalAmount += ShippingCost; // Add shipping cost to total
+
             order.Status = OrderStatus.Shipped;
-            
+
+            // Recalculate totals including shipping
             var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
+
             var tax = order.TaxAmount;
-            
+
             bool isTaxExempt = !string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin);
             decimal shippingWithTax = isTaxExempt
                 ? Math.Round(ShippingCost, 2)
                 : Math.Round(ShippingCost * 1.13m, 2); //shipping logic(13% tax)
-            
+
             order.Shipping.ShippingCost = shippingWithTax;
             order.TotalAmount = Math.Round(subtotal + tax + shippingWithTax, 2);
-            
+
             await _context.SaveChangesAsync();
 
             // Generate PO PDF bytes
@@ -447,6 +475,7 @@ namespace PontelloApp.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RejectOrder(int id, string reason)
         {
             var order = await _context.Orders
@@ -464,6 +493,7 @@ namespace PontelloApp.Controllers
         }
 
         // Helper to generate PO PDF bytes (extracted from ExportOrderPO)
+        [Authorize(Roles = "Admin")]
         private byte[] GeneratePurchaseOrderPdf(Order order)
         {
             var items = order.Items.Select(i => new
