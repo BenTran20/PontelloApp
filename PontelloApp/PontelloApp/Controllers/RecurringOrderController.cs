@@ -76,6 +76,7 @@ namespace PontelloApp.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Recurring order created.";
+            RecurrMessage(model.OriginalOrderId, model);
             return RedirectToAction("Details", "Order", new { id = model.OriginalOrderId });
         }
 
@@ -129,6 +130,7 @@ namespace PontelloApp.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            RecurrMessage(recurringOrder.OriginalOrderId, recurringOrder);
             ViewData["OriginalOrderId"] = new SelectList(_context.Orders, "Id", "Id", recurringOrder.OriginalOrderId);
             return View(recurringOrder);
         }
