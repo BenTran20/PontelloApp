@@ -25,7 +25,7 @@ namespace PontelloApp.Services
             var newOrder = new Order
             {
                 PONumber = $"PO-{DateTime.Now:yyyyMMddHHmmss}",
-                DealerId = original.DealerId,
+                UserId = original.UserId,
                 CreatedAt = DateTime.Now,
                 IsRecurringGenerated = true,
                 Status = OrderStatus.Submitted,
