@@ -1,0 +1,70 @@
+﻿@using PontelloApp.ViewModels
+@model RegisterVM
+
+<div class="account-container" style="display:flex;justify-content:center;margin-top:50px;">
+    <div class="account-box" style="padding:30px 40px;border:1px solid #ddd;border-radius:10px;width:420px;background:#f9f9f9;box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+        <h2 style="text-align:center;margin-bottom:25px;">Register</h2>
+
+        <form asp-action="Register" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="FirstName"></label>
+                <input asp-for="FirstName" placeholder="First Name" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="LastName"></label>
+                <input asp-for="LastName" placeholder="Last Name" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Phone"></label>
+                <input asp-for="Phone" placeholder="Phone Number" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="BINorEIN"></label>
+                <input asp-for="BINorEIN" placeholder="BIN / EIN" class="form-control" />
+                <span asp-validation-for="BINorEIN" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" placeholder="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" type="password" placeholder="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ConfirmedPassword"></label>
+                <input asp-for="ConfirmedPassword" type="password" placeholder="Confirmed Password" class="form-control" />
+                <span asp-validation-for="ConfirmedPassword" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 p-2">Register</button>
+
+            <p class="text-center mt-3">
+                Already have an account?
+                <a asp-controller="Account" asp-action="Login" class="text-decoration-none">Login</a>
+            </p>
+
+            <div class="text-center mt-2">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none">Back</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts
+{
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");}
+}
