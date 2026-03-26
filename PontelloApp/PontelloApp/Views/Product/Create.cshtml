@@ -505,8 +505,23 @@
                     type: "POST",
                     url: form.attr('action'),
                     data: form.serialize(),
-                    success: function () {
+                    success: function (data) {
                         $('#addVendorModal').modal('hide');
+
+                        var ddl = $('#VendorID');
+
+                        if (ddl.find('option[value=""]').length === 0) {
+                            ddl.append($('<option/>', { value: "", text: "None" }));
+                        }
+                        $.each(data, function (i, item) {
+                            ddl.append($('<option/>', {
+                                value: item.value,
+                                text: item.text,
+                                selected: item.selected
+                            }));
+                        });
+
+                        ddl.trigger("chosen:updated");
                     },
                     error: function (xhr) { //Note: xhr is the XMLHttpRequest
                         var errorMessages = [];
@@ -544,7 +559,6 @@
             document.getElementById("createVendorForm").reset();//to clear the data in the popup form
             ClearErrors();
             var selectedOption = $('#VendorID').val();//Return to the current selected value
-            refreshDDL('VendorID', '/Product/GetVendor/' + selectedOption, false, null, true, 'None', true);
         });
         function ClearErrors() {
             //Empty out the list of validation errors if there are any
