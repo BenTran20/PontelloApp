@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PontelloApp.Models
 {
-    public class Category : Auditable, IValidatableObject
+    public class Category : Auditable
     {
         public int ID { get; set; }
 
@@ -39,13 +39,6 @@ namespace PontelloApp.Models
             }
         }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            if (Name.Length <= 2)
-            {
-                yield return new ValidationResult("Category Name must be at least 3 Characters long", new[] { "Name" });
-            }
-        }
 
     }
 }
