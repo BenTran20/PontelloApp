@@ -15,7 +15,7 @@ namespace PontelloApp.Models
                     string.IsNullOrWhiteSpace(City) &&
                     string.IsNullOrWhiteSpace(Province) &&
                     string.IsNullOrWhiteSpace(PostalCode))
-                    return ""; 
+                    return "";
 
                 return $"{StreetAddress}, {City}, {Province} {PostalCode}";
             }
