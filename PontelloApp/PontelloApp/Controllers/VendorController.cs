@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
@@ -66,6 +67,12 @@ namespace PontelloApp.Controllers
                 {
                     _context.Add(vendor);
                     await _context.SaveChangesAsync();
+
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        return Json(new[] { new SelectListItem { Value = vendor.VendorID.ToString(), Text = vendor.Name, Selected = true } });
+                    }
+
                     return RedirectToAction(nameof(Index));
                 }
             }
@@ -137,6 +144,8 @@ namespace PontelloApp.Controllers
                 {
                     _context.Update(vendor);
                     await _context.SaveChangesAsync();
+                    return Json(new[] { new SelectListItem { Value = vendor.VendorID.ToString(), Text = vendor.Name, Selected = true } });
+
                 }
                 catch (DbUpdateConcurrencyException)
                 {
