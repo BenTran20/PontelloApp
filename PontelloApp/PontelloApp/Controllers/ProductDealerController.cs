@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,15 +11,18 @@ using PontelloApp.Utilities;
 
 namespace PontelloApp.Controllers
 {
+    [Authorize(Roles = "Admin,Dealer")]
     public class ProductDealerController : ElephantController
     {
         private readonly PontelloAppContext _context;
         private readonly OrderService _orderService;
+        private readonly UserManager<User> _userManager;
 
-        public ProductDealerController(PontelloAppContext context, OrderService orderService)
+        public ProductDealerController(PontelloAppContext context, OrderService orderService, UserManager<User> userManager)
         {
             _context = context;
             _orderService = orderService;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> Index(string? SearchString, int? CategoryID,
@@ -32,7 +37,7 @@ namespace PontelloApp.Controllers
                     .ThenInclude(v => v.Options)
                 .Include(p => p.Category)
                 .Include(p => p.Vendor)
-                .Where(p => p.IsActive && !p.IsUnlisted) 
+                .Where(p => p.IsActive && !p.IsUnlisted)
                 .AsNoTracking();
 
             // Filter by search
@@ -130,8 +135,9 @@ namespace PontelloApp.Controllers
             }
 
             // If policy is Continue (special order), allow ordering regardless of stock
-            int dealerId = 1;
-            await _orderService.AddToCartAsync(dealerId, productId, variantId, quantity);
+            var userId = _userManager.GetUserId(User);
+
+            await _orderService.AddToCartAsync(userId, productId, variantId, quantity);
 
             TempData["SuccessMessage"] = "Product added to cart successfully!";
 
