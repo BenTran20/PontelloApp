@@ -13,9 +13,11 @@ using System.Drawing;
 using System.Numerics;
 using System.Text;
 using System.Globalization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PontelloApp.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class ProductController : ElephantController
     {
 
@@ -168,7 +170,7 @@ namespace PontelloApp.Controllers
             PopulateDropDownLists();
             return View(product);
         }
-        
+
         // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
