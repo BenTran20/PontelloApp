@@ -245,7 +245,7 @@ namespace PontelloApp.Controllers
 
             // Add shipping cost to total
 
-            order.Status = OrderStatus.Shipped;
+            order.IsRecurringGenerated = true;
 
             // Recalculate totals including shipping
             var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
