@@ -11,7 +11,7 @@ namespace PontelloApp.Models
 
         public int RevisionNumber { get; set; } = 0;
 
-        public int DealerId { get; set; }
+        public int? DealerId { get; set; }
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal TaxAmount { get; set; } = 0;
@@ -28,12 +28,13 @@ namespace PontelloApp.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // make ShippingId nullable so Order can exist without shipping
-        public int? ShippingId { get; set; }
         public Shipping? Shipping { get; set; }
 
         public string? RejectReason { get; set; }
 
         [Timestamp]
         public byte[]? RowVersion { get; set; }
+
+        public string UserId { get; set; }
     }
 }
