@@ -421,7 +421,7 @@ namespace PontelloApp.Data
                                 CategoryID = catUncategorizedId,
                                 Handle = "1-2-id-kingpin-washer",
                                 VendorID = chargerId,
-                                IsUnlisted=true,
+                                IsUnlisted = true,
                                 Tag = "Kingpin Items, Legacy, legacy cadet, Magnum, Prodigy, prodigy cadet, spindle, Spindle Items",
                                 Type = "Spindle Items"
                             },
@@ -1280,177 +1280,212 @@ namespace PontelloApp.Data
                     // -------- Seed Sample (Progress) Orders --------
                     if (!context.Orders.Any())
                     {
-
                         context.Orders.AddRange(
-                           // -------- Seed Sample (Submitted) Orders --------
-                           new Order //3 
-                                     //product 22
-                           {
-                               PONumber = "PO-20260313145735",
-                               UserId = dealer.Id,
-                               TotalAmount = 1.01m,
-                               Status = OrderStatus.Submitted,
-                               Shipping = new Shipping { FullName = "Ally Smith ", StreetAddress = "25 Sunset Way", City="Niagara Falls", Country="Canada", PostalCode="L2J 1N1", Province="Ontario", Phone = "289-456-7810", Email = "allysmith@gmail.com" },
-                               TaxAmount = 1.13m,
-                               Items = new List<OrderItem>
-                               {
-                               new OrderItem
-                           {
-                                ProductId = 2,
-                                ProductVariantId = 5,
-                                Quantity = 1,
-                                UnitPrice = 0.90m,
-                           }
-                             }
+                            // -------- Submitted Orders --------
+                            new Order
+                            {
+                                PONumber = "PO-20260313145735",
+                                UserId = dealer.Id,
+                                Status = OrderStatus.Submitted,
+                                CreatedAt = new DateTime(2026, 3, 17, 9, 15, 0),
+                                TotalAmount = 0.90m,
+                                TaxAmount = 0.12m,
+                                Shipping = new Shipping
+                                {
+                                    FullName = "Ally Smith",
+                                    StreetAddress = "25 Sunset Way",
+                                    City = "Niagara Falls",
+                                    Province = "Ontario",
+                                    Country = "Canada",
+                                    PostalCode = "L2J 1N1",
+                                    Phone = "289-456-7810",
+                                    Email = "allysmith@gmail.com"
+                                },
+                                Items = new List<OrderItem>
+                                {
+                new OrderItem { ProductId = 2, ProductVariantId = 5, Quantity = 1, UnitPrice = 0.90m }
+                                }
+                            },
 
-                           },
-                            new Order //4
-                                      //product 3
+                            new Order
                             {
                                 PONumber = "PO-20260203145730",
                                 UserId = dealer.Id,
-                                TotalAmount = 16.15m,
                                 Status = OrderStatus.Submitted,
-                                Shipping = new Shipping { FullName = "Ella Jones", StreetAddress = "345 Stone Road", City = "Welland", Country = "Canada", PostalCode = "L9N 1H2", Province = "Ontario", Phone = "289-749-2345", Email = "ellajones@gmail.com" },
-                                TaxAmount = 1.13m,
+                                CreatedAt = new DateTime(2026, 3, 18, 10, 30, 0),
+                                TotalAmount = 14.30m,
+                                TaxAmount = 1.86m,
+                                Shipping = new Shipping
+                                {
+                                    FullName = "Ella Jones",
+                                    StreetAddress = "345 Stone Road",
+                                    City = "Welland",
+                                    Province = "Ontario",
+                                    Country = "Canada",
+                                    PostalCode = "L9N 1H2",
+                                    Phone = "289-749-2345",
+                                    Email = "ellajones@gmail.com"
+                                },
                                 Items = new List<OrderItem>
-                               {
-                               new OrderItem
-                           {
-                                ProductId = 3,
-                                ProductVariantId = 9,
-                                Quantity = 1,
-                                UnitPrice = 14.30m,
-                           }
-                             }
+                                {
+                new OrderItem { ProductId = 3, ProductVariantId = 9, Quantity = 1, UnitPrice = 14.30m }
+                                }
                             },
 
-                            // -------- Seed Sample (Approved) Orders --------
-                            //product 4
-                            new Order //5
+                            // -------- Approved Orders --------
+                            new Order
                             {
                                 PONumber = "PO-20260113145725",
                                 UserId = dealer.Id,
-                                TotalAmount = 42.13m,
                                 Status = OrderStatus.Approved,
-                                Shipping = new Shipping { FullName = "Emma Smith", StreetAddress = "365 Velvet Rd", City = "Niagara Falls", Country = "Canada", PostalCode = "L2C 3N8", Province = "Ontario", Phone = "289-365-8374", Email = "emmasmith@hotmail.com" },
-                                TaxAmount = 1.13m,
+                                CreatedAt = new DateTime(2026, 3, 10, 14, 45, 0),
+                                TotalAmount = 37.29m,
+                                TaxAmount = 4.85m,
+                                Shipping = new Shipping
+                                {
+                                    FullName = "Emma Smith",
+                                    StreetAddress = "365 Velvet Rd",
+                                    City = "Niagara Falls",
+                                    Province = "Ontario",
+                                    Country = "Canada",
+                                    PostalCode = "L2C 3N8",
+                                    Phone = "289-365-8374",
+                                    Email = "emmasmith@hotmail.com"
+                                },
                                 Items = new List<OrderItem>
-                               {
-                               new OrderItem
-                           {
-                                ProductId = 4,
-                                ProductVariantId = 11,
-                                Quantity = 1,
-                                UnitPrice = 37.29m,
-                           }
-                             }
+                                {
+                new OrderItem { ProductId = 4, ProductVariantId = 11, Quantity = 1, UnitPrice = 37.29m }
+                                }
                             },
-                            //product 5
-                            new Order //6
+
+                            new Order
                             {
                                 PONumber = "PO-20260313145720",
                                 UserId = dealer.Id,
-                                TotalAmount = 5.22m,
                                 Status = OrderStatus.Approved,
-                                Shipping = new Shipping { FullName = "Lucas Jones", StreetAddress = "47 Merrit Ave", City = "St Catharines", Country = "Canada", PostalCode = "L1J 9I3", Province = "Ontario", Phone = "905-397-4836", Email = "lucasjones@gmail.com" },
-                                TaxAmount = 1.13m,
+                                CreatedAt = new DateTime(2026, 3, 12, 11, 0, 0),
+                                TotalAmount = 4.62m,
+                                TaxAmount = 0.60m,
+                                Shipping = new Shipping
+                                {
+                                    FullName = "Lucas Jones",
+                                    StreetAddress = "47 Merrit Ave",
+                                    City = "St Catharines",
+                                    Province = "Ontario",
+                                    Country = "Canada",
+                                    PostalCode = "L1J 9I3",
+                                    Phone = "905-397-4836",
+                                    Email = "lucasjones@gmail.com"
+                                },
                                 Items = new List<OrderItem>
-                               {
-                               new OrderItem
-                           {
-                                ProductId = 5,
-                                ProductVariantId = 12,
-                                Quantity = 6,
-                                UnitPrice = 0.77m,
-                           }
-                             }
+                                {
+                new OrderItem { ProductId = 5, ProductVariantId = 12, Quantity = 6, UnitPrice = 0.77m }
+                                }
                             },
 
-                             // -------- Seed Sample (Rejected) Orders --------
-                             //product 6
-                             new Order //7
-                             {
-                                 PONumber = "PO-20260313145715",
-                                 UserId = dealer.Id,
-                                 TotalAmount = 80.23m,
-                                 Status = OrderStatus.Rejected,
-                                 Shipping = new Shipping { FullName = "Jimmy White", StreetAddress="291 Portrage Road",  City = "Thorold", Country = "Canada", PostalCode = "L2J 2C2", Province = "Ontario", Email="jimmy@gmail.com", Phone="9313239239" },
-                                 TaxAmount = 1.13m,
-                                 Items = new List<OrderItem>
-                               {
-                               new OrderItem
-                           {
-                                ProductId = 6,
-                                ProductVariantId = 15,
-                                Quantity = 1,
-                                UnitPrice = 79.1m,
-                           }
-                             }
-                             },
-                             //product 7
-                             new Order //8
-                             {
-                                 PONumber = "PO-20260313145710",
-                                 UserId = dealer.Id,
-                                 TotalAmount = 14.69m,
-                                 Status = OrderStatus.Rejected,
-                                 Shipping = new Shipping { FullName = "Ava Smith", StreetAddress="632 Oneil street", City = "Niagara Falls", Country = "Canada", PostalCode = "L1J 8K1", Province = "Ontario", Email="smith@gmail.com", Phone="9053193204"},
-                                 TaxAmount = 1.13m,
-                                 Items = new List<OrderItem>
-                               {
-                               new OrderItem
-                           {
-                                ProductId = 7,
-                                ProductVariantId = 18,
-                                Quantity = 1,
-                                UnitPrice = 13.56m,
-                           }
-                             }
-                             },
+                            // -------- Rejected Orders --------
+                            new Order
+                            {
+                                PONumber = "PO-20260313145715",
+                                UserId = dealer.Id,
+                                Status = OrderStatus.Rejected,
+                                CreatedAt = new DateTime(2026, 3, 15, 16, 0, 0),
+                                TotalAmount = 79.10m,
+                                TaxAmount = 10.28m,
+                                Shipping = new Shipping
+                                {
+                                    FullName = "Jimmy White",
+                                    StreetAddress = "291 Portrage Road",
+                                    City = "Thorold",
+                                    Province = "Ontario",
+                                    Country = "Canada",
+                                    PostalCode = "L2J 2C2",
+                                    Phone = "931-323-9239",
+                                    Email = "jimmy@gmail.com"
+                                },
+                                Items = new List<OrderItem>
+                                {
+                new OrderItem { ProductId = 6, ProductVariantId = 15, Quantity = 1, UnitPrice = 79.10m }
+                                }
+                            },
 
-                             // -------- Seed Sample (Shipped) Orders --------
-                             //product 8
-                             new Order //9
-                             {
-                                 PONumber = "PO-20260313145770",
-                                 UserId = dealer.Id,
-                                 TotalAmount = 36.06m,
-                                 Status = OrderStatus.Shipped,
-                                 Shipping = new Shipping { FullName = "Tony Smith", StreetAddress = "100 Parkside Way", City = "Welland", Country = "Canada", PostalCode = "L3J 2L9", Province = "Ontario", Phone = "905-394-3875", Email = "tonysmith@outlook.com" },
-                                 TaxAmount = 1.13m,
-                                 Items = new List<OrderItem>
-                               {
-                               new OrderItem
-                           {
-                                ProductId = 8,
-                                ProductVariantId = 19,
-                                Quantity = 1,
-                                UnitPrice = 31.92m,
-                           }
-                             }
-                             },
-                             //product 9
-                             new Order //10
-                             {
-                                 PONumber = "PO-20260313145760",
-                                 UserId = dealer.Id,
-                                 TotalAmount = 228.82m,
-                                 Status = OrderStatus.Shipped,
-                                 Shipping = new Shipping { FullName = "Sam Jones", StreetAddress = "85 Autumn Ave", City = "London", Country = "Canada", PostalCode = "L1K 4M1", Province = "Ontario", Phone = "905-274-2874", Email = "samjones@hotmail.com" },
-                                 TaxAmount = 1.13m,
-                                 Items = new List<OrderItem>
-                               {
-                               new OrderItem
-                           {
-                                ProductId = 9,
-                                ProductVariantId = 20,
-                                Quantity = 1,
-                                UnitPrice = 202.50m,
-                           }
-                             }
-                             }
-                           );
+                            new Order
+                            {
+                                PONumber = "PO-20260313145710",
+                                UserId = dealer.Id,
+                                Status = OrderStatus.Rejected,
+                                CreatedAt = new DateTime(2026, 3, 16, 12, 30, 0),
+                                TotalAmount = 13.56m,
+                                TaxAmount = 1.76m,
+                                Shipping = new Shipping
+                                {
+                                    FullName = "Ava Smith",
+                                    StreetAddress = "632 Oneil Street",
+                                    City = "Niagara Falls",
+                                    Province = "Ontario",
+                                    Country = "Canada",
+                                    PostalCode = "L1J 8K1",
+                                    Phone = "905-319-3204",
+                                    Email = "smith@gmail.com"
+                                },
+                                Items = new List<OrderItem>
+                                {
+                new OrderItem { ProductId = 7, ProductVariantId = 18, Quantity = 1, UnitPrice = 13.56m }
+                                }
+                            },
+
+                            // -------- Shipped Orders --------
+                            new Order
+                            {
+                                PONumber = "PO-20260313145770",
+                                UserId = dealer.Id,
+                                Status = OrderStatus.Shipped,
+                                CreatedAt = new DateTime(2026, 3, 20, 9, 0, 0),
+                                TotalAmount = 31.92m,
+                                TaxAmount = 4.15m,
+                                Shipping = new Shipping
+                                {
+                                    FullName = "Tony Smith",
+                                    StreetAddress = "100 Parkside Way",
+                                    City = "Welland",
+                                    Province = "Ontario",
+                                    Country = "Canada",
+                                    PostalCode = "L3J 2L9",
+                                    Phone = "905-394-3875",
+                                    Email = "tonysmith@outlook.com"
+                                },
+                                Items = new List<OrderItem>
+                                {
+                new OrderItem { ProductId = 8, ProductVariantId = 19, Quantity = 1, UnitPrice = 31.92m }
+                                }
+                            },
+
+                            new Order
+                            {
+                                PONumber = "PO-20260313145760",
+                                UserId = dealer.Id,
+                                Status = OrderStatus.Shipped,
+                                CreatedAt = new DateTime(2026, 3, 21, 10, 15, 0),
+                                TotalAmount = 202.50m,
+                                TaxAmount = 26.33m,
+                                Shipping = new Shipping
+                                {
+                                    FullName = "Sam Jones",
+                                    StreetAddress = "85 Autumn Ave",
+                                    City = "London",
+                                    Province = "Ontario",
+                                    Country = "Canada",
+                                    PostalCode = "L1K 4M1",
+                                    Phone = "905-274-2874",
+                                    Email = "samjones@hotmail.com"
+                                },
+                                Items = new List<OrderItem>
+                                {
+                new OrderItem { ProductId = 9, ProductVariantId = 20, Quantity = 1, UnitPrice = 202.50m }
+                                }
+                            }
+                        );
+
                         context.SaveChanges();
                     }
                 }
@@ -1463,4 +1498,4 @@ namespace PontelloApp.Data
             }
         }
     }
-}  
+}
