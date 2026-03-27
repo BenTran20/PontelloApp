@@ -130,10 +130,10 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    PontelloAppInitializer.Initialize(serviceProvider: services, DeleteDatabase: true,
-        UseMigrations: true, SeedSampleData: true);
+    await ApplicationDbInitializer.Initialize(serviceProvider: services, useMigrations: true, seedSampleData: true);
 
-    ApplicationDbInitializer.Initialize(serviceProvider: services, useMigrations: true, seedSampleData: true);
+    PontelloAppInitializer.Initialize(serviceProvider: services, DeleteDatabase: false,
+        UseMigrations: true, SeedSampleData: true);
 
 }
 
