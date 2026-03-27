@@ -1,7 +1,8 @@
-using System.Diagnostics;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Models;
 using PontelloApp.Ultilities;
+using System.Diagnostics;
 using Product = PontelloApp.Models.Product;
 
 namespace PontelloApp.Data
@@ -1272,18 +1273,21 @@ namespace PontelloApp.Data
                             );
                         context.SaveChanges();
                     }
-                    
+
+                    var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
+                    var dealer = userManager.Users.FirstOrDefault(u => u.Email == "dealer@gmail.com");
 
                     // -------- Seed Sample (Progress) Orders --------
                     if (!context.Orders.Any())
                     {
+
                         context.Orders.AddRange(
                            // -------- Seed Sample (Submitted) Orders --------
                            new Order //3 
                                      //product 22
                            {
                                PONumber = "PO-20260313145735",
-                               DealerId = 1,
+                               UserId = dealer.Id,
                                TotalAmount = 1.01m,
                                Status = OrderStatus.Submitted,
                                Shipping = new Shipping { FullName = "Ally Smith ", StreetAddress = "25 Sunset Way", City="Niagara Falls", Country="Canada", PostalCode="L2J 1N1", Province="Ontario", Phone = "289-456-7810", Email = "allysmith@gmail.com" },
@@ -1304,7 +1308,7 @@ namespace PontelloApp.Data
                                       //product 3
                             {
                                 PONumber = "PO-20260203145730",
-                                DealerId = 1,
+                                UserId = dealer.Id,
                                 TotalAmount = 16.15m,
                                 Status = OrderStatus.Submitted,
                                 Shipping = new Shipping { FullName = "Ella Jones", StreetAddress = "345 Stone Road", City = "Welland", Country = "Canada", PostalCode = "L9N 1H2", Province = "Ontario", Phone = "289-749-2345", Email = "ellajones@gmail.com" },
@@ -1326,7 +1330,7 @@ namespace PontelloApp.Data
                             new Order //5
                             {
                                 PONumber = "PO-20260113145725",
-                                DealerId = 1,
+                                UserId = dealer.Id,
                                 TotalAmount = 42.13m,
                                 Status = OrderStatus.Approved,
                                 Shipping = new Shipping { FullName = "Emma Smith", StreetAddress = "365 Velvet Rd", City = "Niagara Falls", Country = "Canada", PostalCode = "L2C 3N8", Province = "Ontario", Phone = "289-365-8374", Email = "emmasmith@hotmail.com" },
@@ -1346,7 +1350,7 @@ namespace PontelloApp.Data
                             new Order //6
                             {
                                 PONumber = "PO-20260313145720",
-                                DealerId = 1,
+                                UserId = dealer.Id,
                                 TotalAmount = 5.22m,
                                 Status = OrderStatus.Approved,
                                 Shipping = new Shipping { FullName = "Lucas Jones", StreetAddress = "47 Merrit Ave", City = "St Catharines", Country = "Canada", PostalCode = "L1J 9I3", Province = "Ontario", Phone = "905-397-4836", Email = "lucasjones@gmail.com" },
@@ -1368,7 +1372,7 @@ namespace PontelloApp.Data
                              new Order //7
                              {
                                  PONumber = "PO-20260313145715",
-                                 DealerId = 1,
+                                 UserId = dealer.Id,
                                  TotalAmount = 80.23m,
                                  Status = OrderStatus.Rejected,
                                  Shipping = new Shipping { FullName = "Jimmy White", StreetAddress="291 Portrage Road",  City = "Thorold", Country = "Canada", PostalCode = "L2J 2C2", Province = "Ontario", Email="jimmy@gmail.com", Phone="9313239239" },
@@ -1388,7 +1392,7 @@ namespace PontelloApp.Data
                              new Order //8
                              {
                                  PONumber = "PO-20260313145710",
-                                 DealerId = 1,
+                                 UserId = dealer.Id,
                                  TotalAmount = 14.69m,
                                  Status = OrderStatus.Rejected,
                                  Shipping = new Shipping { FullName = "Ava Smith", StreetAddress="632 Oneil street", City = "Niagara Falls", Country = "Canada", PostalCode = "L1J 8K1", Province = "Ontario", Email="smith@gmail.com", Phone="9053193204"},
@@ -1410,7 +1414,7 @@ namespace PontelloApp.Data
                              new Order //9
                              {
                                  PONumber = "PO-20260313145770",
-                                 DealerId = 1,
+                                 UserId = dealer.Id,
                                  TotalAmount = 36.06m,
                                  Status = OrderStatus.Shipped,
                                  Shipping = new Shipping { FullName = "Tony Smith", StreetAddress = "100 Parkside Way", City = "Welland", Country = "Canada", PostalCode = "L3J 2L9", Province = "Ontario", Phone = "905-394-3875", Email = "tonysmith@outlook.com" },
@@ -1430,7 +1434,7 @@ namespace PontelloApp.Data
                              new Order //10
                              {
                                  PONumber = "PO-20260313145760",
-                                 DealerId = 1,
+                                 UserId = dealer.Id,
                                  TotalAmount = 228.82m,
                                  Status = OrderStatus.Shipped,
                                  Shipping = new Shipping { FullName = "Sam Jones", StreetAddress = "85 Autumn Ave", City = "London", Country = "Canada", PostalCode = "L1K 4M1", Province = "Ontario", Phone = "905-274-2874", Email = "samjones@hotmail.com" },
