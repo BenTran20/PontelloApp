@@ -1,19 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 using PontelloApp.Data;
 using PontelloApp.Models;
+using PontelloApp.Ultilities;
 using QuestPDF.Fluent;
+using System.Timers;
 
 namespace PontelloApp.Controllers
 {
     public class RecurringOrderController : Controller
     {
         private readonly PontelloAppContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public RecurringOrderController(PontelloAppContext context)
+        public RecurringOrderController(PontelloAppContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET: RecurringOrder
@@ -185,6 +190,7 @@ namespace PontelloApp.Controllers
         public async Task<IActionResult> ToggleActive(int id, int orderId)
         {
             var r = await _context.RecurringOrders.FindAsync(id);
+
             if (r == null) return NotFound();
 
             r.IsActive = !r.IsActive;
@@ -197,8 +203,6 @@ namespace PontelloApp.Controllers
         {
             return _context.RecurringOrders.Any(e => e.Id == id);
         }
-
-
 
         private DateTime CalculateNextRun(RecurringOrder r)
         {
@@ -226,8 +230,6 @@ namespace PontelloApp.Controllers
             return now;
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> RecurrMessage(int id, RecurringOrder model)
         {
@@ -247,6 +249,9 @@ namespace PontelloApp.Controllers
 
             order.IsRecurringGenerated = true;
 
+            ////Add recurring cost
+            //CalculateTotal(model.OriginalOrderId, order.Shipping);
+
             // Recalculate totals including shipping
             var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
 
@@ -264,6 +269,12 @@ namespace PontelloApp.Controllers
             //Time to send Recur Message
             DateTime SendAt1 = DateTime.Now;
 
+            DateTime SendAt2 = DateTime.Now;
+
+
+            var recurring = await _context.RecurringOrders.FindAsync(model.Id);
+            recurring.OriginalOrderId = order.Id;
+            await _context.SaveChangesAsync();
 
             var now = DateTime.Now;
             var today = now.Date + model.TimeOfDay;
@@ -271,6 +282,7 @@ namespace PontelloApp.Controllers
             //Daily
             TimeSpan Interval1 = TimeSpan.FromMinutes(3);
             TimeSpan Interval = TimeSpan.FromMinutes(6);
+            TimeSpan Interval2 = TimeSpan.FromMinutes(4);
 
             // Generate PO PDF bytes
             byte[] pdfBytes = GeneratePurchaseOrderPdf(order);
@@ -280,51 +292,76 @@ namespace PontelloApp.Controllers
                 string subject = $"Your Pontello Order {order.PONumber}";
                 //original message
                 string body = $@"
-                     <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
+                            <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
 
-                     <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>
+                            <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>
 
-                     <p>Thank you for your order! We're excited to let you know that your purchase has been received and is being processed.</p>
+                            <p>Thank you for your order! We're excited to let you know that your purchase has been received and is being processed.</p>
 
-                     <p>You can find your Purchase Order attached for your reference.</p>
+                            <p>You can find your Purchase Order attached for your reference.</p>
 
-                     <hr style=""border:none; border-top:1px solid #eee; margin:20px 0;"" />
+                            <hr style=""border:none; border-top:1px solid #eee; margin:20px 0;"" />
 
-                     <p style=""font-size:12px; color:#777;"">
-                         Pontello Team<br/>
-                         Questions? Reply to this email 
-                     </p>
-                 </div>";
+                            <p style=""font-size:12px; color:#777;"">
+                                Pontello Team<br/>
+                                Questions? Reply to this email 
+                            </p>
+                        </div>";
+                //reminder
+                string bodyR = $@"
+                            <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
+
+                            <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>
+
+                            <p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 4 hours before being order is shipped.</p>
+
+                            <p>You can find your Purchase Order attached for your reference.</p>
+
+                            <hr style=""border:none; border-top:1px solid #eee; margin:20px 0;"" />
+
+                            <p style=""font-size:12px; color:#777;"">
+                                Pontello Team<br/>
+                                Questions? Reply to this email 
+                            </p>
+                        </div>";
+
 
                 //recurr message
                 string body1 = $@"
-                     <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
+                            <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
 
-                     <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>";
+                            <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>";
 
                 if (model.Frequency == "Daily")
                 {
                     body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 12 hours before being order is shipped.</p>";
                     //SendAt1 = DateTime.Now.AddHours(12);
                     //SendAt = DateTime.Now.AddDays(1).AddMinutes(model.TimeOfDay.TotalMinutes);
+                    //SendAt2 = DateTime.Now.AddMinutes(model.TimeOfDay.TotalMinutes).AddHours(21);
                     //Interval1 = TimeSpan.FromHours(12);
                     //Interval = TimeSpan.FromMinutes(model.TimeOfDay.TotalMinutes);
+                    //Interval2 = TimeSpan.FromHours(20);
                     SendAt1 = DateTime.Now.AddMinutes(2);
                     SendAt = DateTime.Now.AddMinutes(4);
+                    SendAt2 = DateTime.Now.AddMinutes(3);
                 }
                 if (model.Frequency == "Weekly")
                 {
                     body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 3 Days before being order is shipped.</p>";
                     //SendAt1 = DateTime.Now.AddDays(3);
-                    //SendAt = DateTime.Now.AddMonths(1);
+                    //SendAt = DateTime.Now.AddDays(7);
+                    //SendAt2 = DateTime.Now.AddMinutes(model.TimeOfDay.TotalMinutes).AddDays(6).AddHours(21);
                     //Interval1 = TimeSpan.FromDays(3);
                     //int daysUntil = ((int)model.WeeklyDay!.Value - (int)now.DayOfWeek + 7) % 7;
                     //Interval = TimeSpan.FromDays(daysUntil);
+                    //Interval2 = TimeSpan.FromMinutes(TimeSpan.FromDays(6).TotalMinutes + TimeSpan.FromHours(20).TotalMinutes);
                     SendAt1 = DateTime.Now.AddMinutes(2);
                     SendAt = DateTime.Now.AddMinutes(4);
+                    SendAt2 = DateTime.Now.AddMinutes(3);
                     Interval1 = TimeSpan.FromMinutes(3);
-                    Interval = TimeSpan.FromMinutes(5);
-
+                    Interval =  TimeSpan.FromMinutes(5);
+                    Interval2 = TimeSpan.FromMinutes(4);
+                
                 }
                 if (model.Frequency == "Monthly")
                 {
@@ -332,23 +369,27 @@ namespace PontelloApp.Controllers
                     //TimeSpan Interval = TimeSpan.FromDays(model.MonthlyDay.Value); 
                     //SendAt1 = DateTime.Now.AddDays(15);
                     //SendAt = DateTime.Now.AddMonths(1);
-                    // int WhenToSend = model.MonthlyDay.Value / 2;
+                     //int WhenToSend = model.MonthlyDay.Value / 2;
+                    //SendAt2 = DateTime.Now.AddMinutes(model.TimeOfDay.TotalMinutes).AddMonths(30).AddDays(6).AddHours(21); //should add change based on each month later
                     //Interval1 = TimeSpan.FromDays(WhenToSend);
+                    //Interval2 = TimeSpan.FromMinutes(TimeSpan.FromDays(model.MonthlDay.Value).TotalMinutes - 1 + TimeSpan.FromHours(20).TotalMinutes);
                     SendAt1 = DateTime.Now.AddMinutes(3);
                     SendAt = DateTime.Now.AddMinutes(5);
+                    SendAt2 = DateTime.Now.AddMinutes(4);
                     Interval1 = TimeSpan.FromMinutes(3);
                     Interval = TimeSpan.FromMinutes(5); //unsure precise day each month
+                    Interval2 = TimeSpan.FromMinutes(4);
                 }
 
                 body1 += @$"<p>You can find your Purchase Order attached for your reference.</p>
 
-                     <hr style=""border:none; border-top:1px solid #eee; margin:20px 0;"" />
+                            <hr style=""border:none; border-top:1px solid #eee; margin:20px 0;"" />
 
-                     <p style=""font-size:12px; color:#777;"">
-                         Pontello Team<br/>
-                         Questions? Reply to this email 
-                     </p>
-                 </div>";
+                            <p style=""font-size:12px; color:#777;"">
+                                Pontello Team<br/>
+                                Questions? Reply to this email 
+                            </p>
+                        </div>";
 
                 // Save pdf temporarily
                 // Generate PDF into temp file
@@ -356,13 +397,15 @@ namespace PontelloApp.Controllers
 
                 try
                 {
-
+                    
                     // IMPORTANT: use System.IO.File
                     System.IO.File.WriteAllBytes(tempPath, pdfBytes);
 
                     //Recurr Message
                     var schedule1 = new ScheduledEmail
                     {
+                        RecurringOrderId = model.Id,
+                        OrderId = model.OriginalOrderId,
                         Email = order.Shipping.Email,
                         Subject = subject,
                         HtmlBody = body1,
@@ -370,12 +413,31 @@ namespace PontelloApp.Controllers
                         AttachmentName = tempPath,
                         NextSendAt = SendAt1,
                         RepeatInterval = Interval1,
-                        IsActive = model.IsActive
+                        IsActive = model.IsActive,
+                        PaymentTime = false
+                    };
+
+                    //reminder 3-4 hour message
+                    var schedule2 = new ScheduledEmail
+                    {
+                        RecurringOrderId = model.Id,
+                        OrderId = model.OriginalOrderId,
+                        Email = order.Shipping.Email,
+                        Subject = subject,
+                        HtmlBody = bodyR,
+                        AttachmentBytes = pdfBytes,
+                        AttachmentName = tempPath,
+                        NextSendAt = SendAt2,
+                        RepeatInterval = Interval2,
+                        IsActive = model.IsActive,
+                        PaymentTime = false
                     };
 
                     //Order Message
                     var schedule = new ScheduledEmail
                     {
+                        RecurringOrderId = model.Id,
+                        OrderId = null,
                         Email = order.Shipping.Email,
                         Subject = subject,
                         HtmlBody = body,
@@ -384,10 +446,12 @@ namespace PontelloApp.Controllers
                         NextSendAt = SendAt,
                         //NextSendAt = CalculateNextRun(model), //unsure why the following line doesnt work correctly, test if same issue
                         RepeatInterval = Interval,
-                        IsActive = model.IsActive
+                        IsActive = model.IsActive,
+                        PaymentTime = true
                     };
 
                     _context.ScheduledEmails.Add(schedule1);
+                    _context.ScheduledEmails.Add(schedule2);
                     _context.ScheduledEmails.Add(schedule);
                     await _context.SaveChangesAsync();
 
@@ -401,6 +465,19 @@ namespace PontelloApp.Controllers
             }
 
             return RedirectToAction("Index", "Order");
+        }
+
+        public async Task<IActionResult> StopSchedule(int id)
+        {
+            var schedule = await _context.ScheduledEmails.FindAsync(id);
+
+            if (schedule != null)
+            {
+                schedule.IsActive = false;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Index");
         }
 
         private byte[] GeneratePurchaseOrderPdf(Order order)
@@ -539,5 +616,6 @@ namespace PontelloApp.Controllers
 
             return pdf;
         }
+
     }
 }
