@@ -10,131 +10,238 @@
 
     var schedules = ViewBag.PendingSchedules as IEnumerable<PontelloApp.Models.RecurringOrder>;
     var scheduleCount = schedules?.Count() ?? 0;
+
+    var topProducts = ViewBag.TopProducts as IEnumerable<dynamic>;
+    var revenueTrends = ViewBag.RevenueTrends as IEnumerable<dynamic>;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold m-0">Order Management</h2>
-</div>
+<div class="container-fluid">
 
-<ul class="nav nav-tabs" id="orderTabs" role="tablist">
-    @foreach (var status in statuses)
-    {
-        var tabId = status.ToString();
-        var count = Model.Count(o => o.Status == status);
-        var badgeClass = count == 0 ? "bg-secondary" : "bg-danger";
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Order Management</h2>
+    </div>
 
-        <li class="nav-item" role="presentation">
-            <button class="nav-link @(status == PontelloApp.Models.OrderStatus.Submitted ? "active" : "")"
-                    id="@tabId-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#@tabId"
-                    type="button"
-                    role="tab">
-                @tabId
-                <span class="badge @badgeClass ms-2">@count</span>
-            </button>
-        </li>
-    }
+    <!-- Revenue Cards -->
+    <div class="row mb-4">
+        @foreach (var card in new[]
+                {
+                new { Title = "Total Revenue", Amount = ViewBag.TotalRevenue, Color = "primary" },
+                new { Title = "Today's Revenue", Amount = ViewBag.TodayRevenue, Color = "success" },
+                new { Title = "This Month's Revenue", Amount = ViewBag.MonthRevenue, Color = "warning" }
+                })
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card text-white bg-@card.Color shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title">@card.Title</h6>
+                        <p class="card-text fs-5">$@card.Amount</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 
-    <li class="nav-item" role="presentation">
-        <button class="nav-link"
-                id="Recurring-tab"
-                data-bs-toggle="tab"
-                data-bs-target="#Recurring"
-                type="button"
-                role="tab">
-            Recurring
-            <span class="badge @(scheduleCount == 0 ? "bg-secondary" : "bg-danger") ms-2">
-                @scheduleCount
-            </span>
-        </button>
-    </li>
-</ul>
-
-<div class="tab-content mt-4" id="orderTabsContent">
-
-    @foreach (var status in statuses)
-    {
-        var tabId = status.ToString();
-        var list = Model.Where(o => o.Status == status).ToList();
-
-        <div class="tab-pane fade @(status == PontelloApp.Models.OrderStatus.Submitted ? "show active" : "")"
-             id="@tabId"
-             role="tabpanel">
+    <!-- Top Products & Revenue Chart -->
+    <div class="row mb-4">
+        <!-- Top Selling Products -->
+        <div class="col-lg-6 mb-3">
             <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <table class="table table-hover align-middle mb-0">
+                <div class="card-header fw-bold">Top 5 Selling Products</div>
+                <div class="card-body p-2">
+                    <table class="table table-sm mb-0 table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>PO#</th>
-                                <th>Date</th>
-                                <th>Dealer</th>
-                                <th>Total</th>
-                                <th>Shipping</th>
-                                <th style="width:120px;"></th>
+                                <th>Product</th>
+                                <th>Qty Sold</th>
+                                <th>Revenue</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @if (!list.Any())
+                            @if (topProducts != null && topProducts.Any())
+                            {
+                                foreach (var p in topProducts)
+                                {
+                                    <tr>
+                                        <td>@p.ProductName</td>
+                                        <td>@p.QuantitySold</td>
+                                        <td>@p.Revenue.ToString("C")</td>
+                                    </tr>
+                                }
+                            }
+                            else
                             {
                                 <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">
-                                        No orders in this status
-                                    </td>
+                                    <td colspan="3" class="text-center text-muted">No products sold yet</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Trends -->
+        <div class="col-lg-6 mb-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-header fw-bold">Revenue Trends</div>
+                <div class="card-body">
+                    <div class="d-flex gap-2 mb-3">
+                        <div>
+                            <label class="form-label mb-0">From:</label>
+                            <input type="date" id="fromDate" class="form-control" value="@ViewData["FromDate"]" />
+                        </div>
+                        <div>
+                            <label class="form-label mb-0">To:</label>
+                            <input type="date" id="toDate" class="form-control" value="@ViewData["ToDate"]" />
+                        </div>
+                        <div class="align-self-end">
+                            <button id="filterBtn" class="btn btn-primary">Filter</button>
+                        </div>
+                    </div>
+                    <canvas id="revenueChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Tabs -->
+    <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+        @foreach (var status in statuses)
+        {
+            var tabId = status.ToString();
+            var count = Model.Count(o => o.Status == status);
+            <li class="nav-item" role="presentation">
+                <button class="nav-link @(status == PontelloApp.Models.OrderStatus.Submitted ? "active" : "")"
+                        id="@tabId-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#@tabId"
+                        type="button" role="tab">
+                    @tabId
+                    <span class="badge @(count == 0 ? "bg-secondary" : "bg-danger") ms-2">@count</span>
+                </button>
+            </li>
+        }
+
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="Recurring-tab" data-bs-toggle="tab" data-bs-target="#Recurring" type="button" role="tab">
+                Recurring
+                <span class="badge @(scheduleCount == 0 ? "bg-secondary" : "bg-danger") ms-2">@scheduleCount</span>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content mt-4" id="orderTabsContent">
+        @foreach (var status in statuses)
+        {
+            var tabId = status.ToString();
+            var list = Model.Where(o => o.Status == status).ToList();
+
+            <div class="tab-pane fade @(status == PontelloApp.Models.OrderStatus.Submitted ? "show active" : "")" id="@tabId" role="tabpanel">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-0">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>PO#</th>
+                                    <th>Date</th>
+                                    <th>Dealer</th>
+                                    <th>Total</th>
+                                    <th>Shipping</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (!list.Any())
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">No orders in this status</td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    foreach (var o in list)
+                                    {
+                                        <tr>
+                                            <td class="fw-semibold">
+                                                @o.PONumber
+                                                @if (o.IsRecurringGenerated)
+                                                {
+                                                    <span class="badge bg-info ms-1">Auto</span>
+                                                }
+                                            </td>
+                                            <td>@o.CreatedAt:g</td>
+                                            <td>@o.UserId</td>
+                                            <td>$@o.TotalAmount</td>
+                                            <td>@(o.Shipping?.FullAddress ?? "<span class='text-muted'>Not provided</span>")</td>
+                                            <td class="text-end">
+                                                @{
+                                                    var action = status switch
+                                                    {
+                                                        PontelloApp.Models.OrderStatus.Submitted => "Review",
+                                                        PontelloApp.Models.OrderStatus.Progress => "Progress",
+                                                        PontelloApp.Models.OrderStatus.Approved => "Approved",
+                                                        PontelloApp.Models.OrderStatus.Rejected => "Rejected",
+                                                        PontelloApp.Models.OrderStatus.Shipped => "Shipped",
+                                                        _ => ""
+                                                    };
+                                                    var btnClass = status switch
+                                                    {
+                                                        PontelloApp.Models.OrderStatus.Submitted => "btn-primary",
+                                                        PontelloApp.Models.OrderStatus.Progress => "btn-outline-primary",
+                                                        PontelloApp.Models.OrderStatus.Approved => "btn-outline-success",
+                                                        PontelloApp.Models.OrderStatus.Rejected => "btn-outline-danger",
+                                                        PontelloApp.Models.OrderStatus.Shipped => "btn-outline-secondary",
+                                                        _ => "btn-secondary"
+                                                    };
+                                                }
+                                                @if (!string.IsNullOrEmpty(action))
+                                                {
+                                                    <a asp-action="@action" asp-route-id="@o.Id" class="btn btn-sm @btnClass">View</a>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Recurring Orders -->
+        <div class="tab-pane fade" id="Recurring" role="tabpanel">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Original PO#</th>
+                                <th>Frequency</th>
+                                <th>Next Run</th>
+                                <th>Dealer</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (schedules == null || !schedules.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">No pending recurring schedules</td>
                                 </tr>
                             }
                             else
                             {
-                                @foreach (var o in list)
+                                foreach (var s in schedules)
                                 {
                                     <tr>
-                                        <td class="fw-semibold">
-                                            @o.PONumber
-                                            @if (o.IsRecurringGenerated)
-                                            {
-                                                <span class="badge bg-info ms-1">Auto</span>
-                                            }
-                                        </td>
-                                        <td>@o.CreatedAt.ToString("g")</td>
-                                        <td>@o.UserId</td>
-                                        <td>$@o.TotalAmount</td>
-                                        <td>
-                                            @if (o.Shipping != null)
-                                            {
-                                                @o.Shipping.FullAddress
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted">Not provided</span>
-                                            }
-                                        </td>
-                                        <td class="text-end">
-                                            @if (status == PontelloApp.Models.OrderStatus.Submitted)
-                                            {
-                                                <a asp-action="Review" asp-route-id="@o.Id"
-                                                   class="btn btn-sm btn-primary">Review</a>
-                                            }
-                                            @if (status == PontelloApp.Models.OrderStatus.Progress)
-                                            {
-                                                <a asp-action="Progress" asp-route-id="@o.Id"
-                                                   class="btn btn-sm btn-outline-primary">View</a>
-                                            }
-                                            @if (status == PontelloApp.Models.OrderStatus.Approved)
-                                            {
-                                                <a asp-action="Approved" asp-route-id="@o.Id"
-                                                   class="btn btn-sm btn-outline-success">View</a>
-                                            }
-                                            @if (status == PontelloApp.Models.OrderStatus.Rejected)
-                                            {
-                                                <a asp-action="Rejected" asp-route-id="@o.Id"
-                                                   class="btn btn-sm btn-outline-danger">View</a>
-                                            }
-                                            @if (status == PontelloApp.Models.OrderStatus.Shipped)
-                                            {
-                                                <a asp-action="Shipped" asp-route-id="@o.Id"
-                                                   class="btn btn-sm btn-outline-secondary">View</a>
-                                            }
-                                        </td>
+                                        <td class="fw-semibold">@s.OriginalOrder?.PONumber</td>
+                                        <td>@s.Frequency</td>
+                                        <td>@s.NextRun:dd/MM/yyyy HH:mm</td>
+                                        <td>@s.OriginalOrder?.UserId</td>
+                                        <td><span class="badge bg-success">Active</span></td>
                                     </tr>
                                 }
                             }
@@ -143,52 +250,38 @@
                 </div>
             </div>
         </div>
-    }
-
-    <div class="tab-pane fade" id="Recurring" role="tabpanel">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Original PO#</th>
-                            <th>Frequency</th>
-                            <th>Next Run</th>
-                            <th>Dealer</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (schedules == null || !schedules.Any())
-                        {
-                            <tr>
-                                <td colspan="5" class="text-center text-muted py-4">
-                                    No pending recurring schedules
-                                </td>
-                            </tr>
-                        }
-                        else
-                        {
-                            @foreach (var s in schedules)
-                            {
-                                <tr>
-                                    <td class="fw-semibold">@s.OriginalOrder?.PONumber</td>
-                                    <td>@s.Frequency</td>
-                                    <td>
-                                        @s.NextRun.ToString("dd/MM/yyyy HH:mm")
-                                    </td>
-                                    <td>@s.OriginalOrder?.UserId</td>
-                                    <td>
-                                        <span class="badge bg-success">Active</span>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
+</div>
 
-</div>
-</div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.RevenueTrends));
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: revenueData.map(r => r.Date),
+                datasets: [{
+                    label: 'Revenue',
+                    data: revenueData.map(r => r.Revenue),
+                    borderColor: 'rgb(75, 192, 192)',
+                    fill: false,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        document.getElementById('filterBtn').addEventListener('click', () => {
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            window.location.href = `@Url.Action("Admin", "Order")?fromDate=${fromDate}&toDate=${toDate}`;
+        });
+    </script>
+}
