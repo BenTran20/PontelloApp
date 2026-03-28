@@ -187,32 +187,34 @@
                                                asp-route-orderId="@o.Id"
                                                class="btn btn-sm btn-primary"
                                                data-bs-toggle="tooltip" data-bs-placement="top">
-                                                Info
+                                                Enter Shipping
                                             </a>
                                         }
+                                        @if (o.Status != OrderStatus.Progress && o.Status != OrderStatus.Draft)
+                                        {
+                                            <a asp-action="Details"
+                                               asp-route-id="@o.Id"
+                                               class="btn btn-sm btn-outline-secondary"
+                                               data-bs-toggle="tooltip" data-bs-placement="top">
+                                                View
+                                            </a>
 
-                                        <a asp-action="Details"
-                                           asp-route-id="@o.Id"
-                                           class="btn btn-sm btn-outline-secondary"
-                                           data-bs-toggle="tooltip" data-bs-placement="top">
-                                            View
-                                        </a>
+                                            <a asp-controller="RecurringOrder"
+                                               asp-action="Create"
+                                               asp-route-orderId="@o.Id"
+                                               class="btn btn-sm btn-outline-secondary"
+                                               data-bs-toggle="tooltip" data-bs-placement="top">
+                                                Recurring
+                                            </a>
 
-                                        <a asp-controller="RecurringOrder"
-                                           asp-action="Create"
-                                           asp-route-orderId="@o.Id"
-                                           class="btn btn-sm btn-outline-secondary"
-                                           data-bs-toggle="tooltip" data-bs-placement="top">
-                                            Recurring
-                                        </a>
-
-                                        <a asp-controller="RecurringOrder"
-                                           asp-action="Index"
-                                           asp-route-orderId="@o.Id"
-                                           class="btn btn-sm btn-outline-secondary"
-                                           data-bs-toggle="tooltip" data-bs-placement="top">
-                                            Schedule
-                                        </a>
+                                            <a asp-controller="RecurringOrder"
+                                               asp-action="Index"
+                                               asp-route-orderId="@o.Id"
+                                               class="btn btn-sm btn-outline-secondary"
+                                               data-bs-toggle="tooltip" data-bs-placement="top">
+                                                Schedule
+                                            </a>
+                                        }
                                     </div>
                                 </td>
                             </tr>
