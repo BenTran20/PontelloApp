@@ -503,6 +503,13 @@ namespace PontelloApp.Controllers
         {
             return Json(VendorSelectList(id));
         }
+
+        [HttpGet]
+        public JsonResult GetCategory(int? id)
+        {
+            return Json(CategorySelectList(id));
+        }
+        
         private SelectList CategorySelectList(int? selectedId)
         {
             return new SelectList(_context.Categories
