@@ -26,10 +26,22 @@
                 <span asp-validation-for="Phone" class="text-danger"></span>
             </div>
 
-            <div class="mb-3">
-                <label asp-for="BINorEIN" class="form-label"></label>
-                <input asp-for="BINorEIN" class="form-control" placeholder="BIN / EIN" />
-                <span asp-validation-for="BINorEIN" class="text-danger"></span>
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label asp-for="BINorEIN" class="form-label">
+                        BIN / EIN <span class="text-muted">(optional)</span>
+                    </label>
+
+                    <input asp-for="BINorEIN"
+                           class="form-control"
+                           placeholder="Enter BIN or EIN if tax-exempt" />
+
+                    <div class="form-text">
+                        If provided, your account will be marked as tax-exempt.
+                    </div>
+
+                    <span asp-validation-for="BINorEIN" class="text-danger"></span>
+                </div>
             </div>
 
             <div class="mb-3">
