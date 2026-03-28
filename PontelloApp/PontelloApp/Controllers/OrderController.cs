@@ -39,7 +39,6 @@ namespace PontelloApp.Controllers
                 .OrderByDescending(o => o.CreatedAt)
                 .AsNoTracking();
 
-
             ViewData["Filtering"] = "btn-outline-secondary";
             int numberFilters = 0;
 
