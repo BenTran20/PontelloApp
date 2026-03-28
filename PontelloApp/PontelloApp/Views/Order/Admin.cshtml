@@ -10,9 +10,6 @@
 
     var schedules = ViewBag.PendingSchedules as IEnumerable<PontelloApp.Models.RecurringOrder>;
     var scheduleCount = schedules?.Count() ?? 0;
-
-    var topProducts = ViewBag.TopProducts as IEnumerable<dynamic>;
-    var revenueTrends = ViewBag.RevenueTrends as IEnumerable<dynamic>;
 }
 
 <div class="container-fluid">
@@ -42,67 +39,10 @@
         }
     </div>
 
-    <!-- Top Products & Revenue Chart -->
-    <div class="row mb-4">
-        <!-- Top Selling Products -->
-        <div class="col-lg-6 mb-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-header fw-bold">Top 5 Selling Products</div>
-                <div class="card-body p-2">
-                    <table class="table table-sm mb-0 table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Product</th>
-                                <th>Qty Sold</th>
-                                <th>Revenue</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (topProducts != null && topProducts.Any())
-                            {
-                                foreach (var p in topProducts)
-                                {
-                                    <tr>
-                                        <td>@p.ProductName</td>
-                                        <td>@p.QuantitySold</td>
-                                        <td>@p.Revenue.ToString("C")</td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">No products sold yet</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Revenue Trends -->
-        <div class="col-lg-6 mb-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-header fw-bold">Revenue Trends</div>
-                <div class="card-body">
-                    <div class="d-flex gap-2 mb-3">
-                        <div>
-                            <label class="form-label mb-0">From:</label>
-                            <input type="date" id="fromDate" class="form-control" value="@ViewData["FromDate"]" />
-                        </div>
-                        <div>
-                            <label class="form-label mb-0">To:</label>
-                            <input type="date" id="toDate" class="form-control" value="@ViewData["ToDate"]" />
-                        </div>
-                        <div class="align-self-end">
-                            <button id="filterBtn" class="btn btn-primary">Filter</button>
-                        </div>
-                    </div>
-                    <canvas id="revenueChart" height="200"></canvas>
-                </div>
-            </div>
-        </div>
+    <div class="d-flex justify-content-end mb-3">
+        <a asp-controller="Order" asp-action="Analytics" class="btn btn-outline-dark">
+            View Analytics
+        </a>
     </div>
 
     <!-- Order Tabs -->
@@ -171,8 +111,8 @@
                                                     <span class="badge bg-info ms-1">Auto</span>
                                                 }
                                             </td>
-                                            <td>@o.CreatedAt:g</td>
-                                            <td>@o.UserId</td>
+                                            <td>@o.CreatedAt</td>
+                                            <td>@o.Shipping.Email</td>
                                             <td>$@o.TotalAmount</td>
                                             <td>@(o.Shipping?.FullAddress ?? "<span class='text-muted'>Not provided</span>")</td>
                                             <td class="text-end">
@@ -252,36 +192,3 @@
         </div>
     </div>
 </div>
-
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        const revenueData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.RevenueTrends));
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: revenueData.map(r => r.Date),
-                datasets: [{
-                    label: 'Revenue',
-                    data: revenueData.map(r => r.Revenue),
-                    borderColor: 'rgb(75, 192, 192)',
-                    fill: false,
-                    tension: 0.3
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: true } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        document.getElementById('filterBtn').addEventListener('click', () => {
-            const fromDate = document.getElementById('fromDate').value;
-            const toDate = document.getElementById('toDate').value;
-            window.location.href = `@Url.Action("Admin", "Order")?fromDate=${fromDate}&toDate=${toDate}`;
-        });
-    </script>
-}
