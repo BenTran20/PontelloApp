@@ -99,7 +99,7 @@
             const from = document.getElementById('fromDate').value;
             const to = document.getElementById('toDate').value;
 
-            window.location.href = `/Order/Analytics?fromDate=${from}&toDate=${to}&month=${month}&year=${year}`;
+            window.location.href = `/Order/Analytics?fromDate=${from}&toDate=${to}&month`;
         });
     </script>
 }
