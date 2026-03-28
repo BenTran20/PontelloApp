@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace PontelloApp.Controllers
     public class ShippingController : Controller
     {
         private readonly PontelloAppContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public ShippingController(PontelloAppContext context)
+        public ShippingController(PontelloAppContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Shipping/Create?orderId=123
@@ -41,7 +44,7 @@ namespace PontelloApp.Controllers
         // POST: Shipping/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int orderId, [Bind("FullName,Email,Phone,BinOrEin,StreetAddress,City,Province,PostalCode,Country,DeliveryNotes")] Shipping shipping)
+        public async Task<IActionResult> Create(int orderId, [Bind("FullName,Email,Phone,StreetAddress,City,Province,PostalCode,Country,DeliveryNotes")] Shipping shipping)
         {
             var order = await _context.Orders
                 .Include(o => o.Items)
@@ -61,6 +64,9 @@ namespace PontelloApp.Controllers
                 return View(order);
             }
 
+            var user = await _userManager.GetUserAsync(User);
+            var binOrEin = user?.BINorEIN;
+
             if (order.Shipping == null)
             {
                 order.Shipping = shipping;
@@ -70,7 +76,11 @@ namespace PontelloApp.Controllers
                 order.Shipping.FullName = shipping.FullName;
                 order.Shipping.Email = shipping.Email;
                 order.Shipping.Phone = shipping.Phone;
-                order.Shipping.BinOrEin = shipping.BinOrEin;
+                if (!string.IsNullOrWhiteSpace(binOrEin))
+                {
+                    order.Shipping.BinOrEin = binOrEin;
+                    order.TaxAmount = 0m;
+                }
                 order.Shipping.StreetAddress = shipping.StreetAddress;
                 order.Shipping.City = shipping.City;
                 order.Shipping.Province = shipping.Province;
