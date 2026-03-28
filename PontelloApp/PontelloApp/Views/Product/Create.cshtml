@@ -117,9 +117,10 @@
 
                     <div class="mb-3">
                         <label asp-for="CategoryID" class="form-label">Category <span class="text-danger">*</span></label>
-                        <select asp-for="CategoryID" asp-items="@(ViewData["CategoryID"] as IEnumerable<SelectListItem>)" class="form-select">
-                            <option value="">-- Select Category --</option>
-                        </select>
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addCategoryModal" type="button">+</button>
+                            <select asp-for="CategoryID" class="form-select" asp-items="ViewBag.CategoryID"></select>
+                        </div>
                         <span asp-validation-for="CategoryID" class="text-danger"></span>
                     </div>
 
