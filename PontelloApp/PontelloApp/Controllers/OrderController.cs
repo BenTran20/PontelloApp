@@ -89,7 +89,7 @@ namespace PontelloApp.Controllers
 
         [Authorize(Roles = "Admin")]
         // GET: Admin management view for orders
-        public async Task<IActionResult> Admin(DateTime? fromDate, DateTime? toDate)
+        public async Task<IActionResult> Admin()
         {
             var orders = await _context.Orders
                 .Include(o => o.Items)
@@ -115,46 +115,72 @@ namespace PontelloApp.Controllers
                 .Where(o => o.CreatedAt.Month == DateTime.Now.Month && o.CreatedAt.Year == DateTime.Now.Year)
                 .Sum(o => o.TotalAmount);
 
+            return View(orders);
+        }
 
-            // Top 5 Selling Products 
-            var topProducts = _context.OrderItems
-                .Include(oi => oi.Product)
-                .Include(oi => oi.Order)
-                .Where(oi => oi.Order.Status != OrderStatus.Rejected || oi.Order.Status!=OrderStatus.Draft)
-                .GroupBy(oi => new { oi.ProductId, oi.Product.ProductName })
-                .Select(g => new
-                {
-                    ProductId = g.Key.ProductId,
-                    ProductName = g.Key.ProductName,
-                    QuantitySold = g.Sum(x => x.Quantity),
-                    Revenue = g.Sum(x => x.Quantity * x.UnitPrice)  
-                })
-                .OrderByDescending(x => x.QuantitySold)
-                .Take(5)
-                .ToList();
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Analytics(DateTime? fromDate, DateTime? toDate)
+        {
+            var ordersQuery = _context.Orders
+                .Include(o => o.Items)
+                .ThenInclude(i => i.Product)
+                .Where(o => o.Status != OrderStatus.Draft && o.Status!=OrderStatus.Progress && o.Status!=OrderStatus.Rejected)
+                .AsQueryable();
 
-            ViewBag.TopProducts = topProducts;
-
-            // Revenue Trends 
+            // FILTER by date
             if (fromDate.HasValue)
-                orders = orders.Where(o => o.CreatedAt.Date >= fromDate.Value.Date).ToList();
-            if (toDate.HasValue)
-                orders = orders.Where(o => o.CreatedAt.Date <= toDate.Value.Date).ToList();
+                ordersQuery = ordersQuery.Where(o => o.CreatedAt >= fromDate);
 
-            ViewBag.RevenueTrends = orders
+            if (toDate.HasValue)
+                ordersQuery = ordersQuery.Where(o => o.CreatedAt <= toDate);
+
+            var orders = await ordersQuery.ToListAsync();
+
+            // Revenue trends
+            var revenueTrends = orders
                 .GroupBy(o => o.CreatedAt.Date)
-                .OrderBy(g => g.Key)
                 .Select(g => new
                 {
                     Date = g.Key.ToString("MM-dd"),
-                    Revenue = g.Sum(o => o.TotalAmount)
+                    Revenue = g.Sum(x => x.TotalAmount)
                 })
+                .OrderBy(x => x.Date)
                 .ToList();
+
+            // Top products
+            var topProducts = await _context.OrderItems
+                .Include(oi => oi.Product)
+                .Include(oi => oi.Order)
+                .Where(oi => oi.Order.Status != OrderStatus.Draft && oi.Order.Status != OrderStatus.Progress && oi.Order.Status != OrderStatus.Rejected)
+                .GroupBy(oi => new { oi.ProductId, oi.Product.ProductName })
+                .Select(g => new
+                {
+                    ProductName = g.Key.ProductName,
+                    QuantitySold = g.Sum(x => x.Quantity),
+                    Revenue = g.Sum(x => x.Quantity * x.UnitPrice)
+                })
+                .OrderByDescending(x => x.QuantitySold)
+                .Take(5)
+                .ToListAsync();
+
+            // Revenue 
+            var revenueByMonth = orders
+                .GroupBy(o => new { o.CreatedAt.Year, o.CreatedAt.Month })
+                .Select(g => new
+                {
+                    Month = $"{g.Key.Month}/{g.Key.Year}",
+                    Revenue = g.Sum(x => x.TotalAmount)
+                })
+                .OrderBy(x => x.Month)
+                .ToList();
+
+            ViewBag.TopProducts = topProducts;
+            ViewBag.RevenueTrends = revenueTrends;
 
             ViewData["FromDate"] = fromDate?.ToString("yyyy-MM-dd");
             ViewData["ToDate"] = toDate?.ToString("yyyy-MM-dd");
 
-            return View(orders);
+            return View();
         }
 
         // GET: /Order/Details/5
