@@ -1,0 +1,156 @@
+﻿@model List<PontelloApp.Models.Order>
+@{
+    ViewData["Title"] = "Sales Report";
+    var totalRevenue = (decimal)ViewData["TotalRevenue"];
+    var totalOrders = (int)ViewData["TotalOrders"];
+    var statusList = (List<PontelloApp.Models.OrderStatus>)ViewData["StatusList"];
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Sales Report</h2>
+        <a asp-controller="Report" asp-action="Index" class="btn btn-outline-secondary btn-sm">← Back</a>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="row g-2 mb-4">
+        <div class="col-md-3">
+            <label class="form-label">From Date</label>
+            <input type="date" name="fromDate" class="form-control" value="@ViewData["FromDate"]" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">To Date</label>
+            <input type="date" name="toDate" class="form-control" value="@ViewData["ToDate"]" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+                <option value="">All</option>
+                @foreach (var s in statusList)
+                {
+                    <option value="@s" selected="@(ViewData["Status"]?.ToString() == s.ToString())">@s</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="SalesReport" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </form>
+
+    <div class="mb-5">
+        <h5 class="fw-bold mb-1">Print Specific Order</h5>
+        <p class="text-muted small mb-2">Enter a PO number to export as PDF.</p>
+        <form asp-controller="Report" asp-action="PrintOrder" method="get" style="max-width: 400px;">
+            <div class="input-group">
+                <input type="text" name="poNumber" class="form-control" placeholder="e.g. PO-2026..." required />
+                <button class="btn btn-primary" type="submit">Export PDF</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Summary -->
+    <div class="mt-5 mb-3">
+        <h5 class="fw-bold mb-1">Summary Reports</h5>
+        <p class="text-muted small">Overview of total sales and order volume.</p>
+    </div>
+
+    <!-- 2. Summary Cards Section -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-0 bg-light">
+                <div class="card-body py-3">
+                    <div class="text-muted small uppercase fw-bold" style="font-size: 0.75rem;">Total Orders</div>
+                    <div class="fs-3 fw-bold text-dark">@totalOrders</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center shadow-sm border-0 bg-light">
+                <div class="card-body py-3">
+                    <div class="text-muted small uppercase fw-bold" style="font-size: 0.75rem;">Total Revenue</div>
+                    <div class="fs-3 fw-bold text-primary">$@totalRevenue.ToString("N2")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Export Buttons -->
+    <div class="d-flex justify-content-end gap-2 mb-3">
+        <a asp-action="ExportSalesPdf"
+           asp-route-fromDate="@ViewData["FromDate"]"
+           asp-route-toDate="@ViewData["ToDate"]"
+           asp-route-status="@ViewData["Status"]"
+           class="btn btn-danger btn-sm px-3">
+             Export PDF
+        </a>
+
+        <a asp-action="ExportSalesCsv"
+           asp-route-fromDate="@ViewData["FromDate"]"
+           asp-route-toDate="@ViewData["ToDate"]"
+           asp-route-status="@ViewData["Status"]"
+           class="btn btn-success btn-sm px-3">
+             Export CSV
+        </a>
+    </div>
+
+    <!-- Table -->
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>PO Number</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Print</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>@order.PONumber</td>
+                    <td>@order.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>@(order.Shipping?.FullName ?? "N/A")</td>
+                    <td>
+                        @if (order.Status == OrderStatus.Shipped)
+                        {
+                            <span class="badge bg-primary">Shipped</span>
+                        }
+                        else if (order.Status == OrderStatus.Rejected)
+                        {
+                            <span class="badge bg-danger">Rejected</span>
+                        }
+                        else if (order.Status == OrderStatus.Approved)
+                        {
+                            <span class="badge bg-success">Approved</span> 
+                        }
+                        else if (order.Status == OrderStatus.Submitted)
+                        {
+                            <span class="badge bg-warning text-dark">Submitted</span> 
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@order.Status</span>
+                        }
+                    </td>
+                    <td>@(order.Items?.Count ?? 0) item(s)</td>
+                    <td>$@order.TotalAmount.ToString("0.00")</td>
+                    <td>
+                        <a asp-controller="Order" asp-action="ExportOrderPO"
+                           asp-route-id="@order.Id"
+                           class="btn btn-outline-primary btn-sm">PDF</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr class="table-light fw-bold">
+                <td colspan="5" class="text-end">Total Revenue:</td>
+                <td colspan="2">$@totalRevenue.ToString("0.00")</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
