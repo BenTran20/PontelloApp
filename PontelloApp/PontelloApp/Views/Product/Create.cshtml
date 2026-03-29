@@ -498,23 +498,26 @@
     <script src="~/js/refreshDDL.js"></script>
 
     <script type="text/javascript">
+                // ================= VENDOR =================
         $('#submitVendorCreate').click(function (event) {
             event.preventDefault();
             ClearErrors();
+
             var form = $('#createVendorForm');
+
             if (form.valid()) {
                 $.ajax({
                     type: "POST",
                     url: form.attr('action'),
                     data: form.serialize(),
+
                     success: function (data) {
                         $('#addVendorModal').modal('hide');
 
                         var ddl = $('#VendorID');
+                        ddl.empty();
+                        ddl.append($('<option/>', { value: "", text: "None" }));
 
-                        if (ddl.find('option[value=""]').length === 0) {
-                            ddl.append($('<option/>', { value: "", text: "None" }));
-                        }
                         $.each(data, function (i, item) {
                             ddl.append($('<option/>', {
                                 value: item.value,
@@ -525,110 +528,101 @@
 
                         ddl.trigger("chosen:updated");
                     },
-                    error: function (xhr) { //Note: xhr is the XMLHttpRequest
-                        var errorMessages = [];
-                        switch (xhr.status) {
-                            case 401:
-                                errorMessages.push("You must be logged in first.");
-                                break;
-                            case 403:
-                                errorMessages.push("You are not authorized for this action.");
-                                break;
-                            default:
-                                //Messages coming from the Model State Errors
-                                //We split on the | delimeter and the .slice removes the last one
-                                errorMessages = xhr.responseText.split("|").slice(0, -1);
-                        }
-                        //This checks if there are any elements with some content
-                        //and if not then it provides a default feedback message.
-                        if (!errorMessages.some((str) => str !== "")) {
-                          errorMessages.push("Error: Unable to complete operation");
-                        }
-                        //Put the messages in the ErrorList ul contained in the 'ValidaitonSummary' div.
-                        var ul = document.getElementById("ErrorList");
-                        for (var i = 0; i < errorMessages.length; i++) {
-                          var errorMessage = errorMessages[i];
-                          var li = document.createElement("li");
-                          li.innerHTML = errorMessage;
-                          ul.appendChild(li);
-                        }
-                    }
 
-          $('#submitCategoryCreate').click(function (event) {
+                    error: function (xhr) {
+                        handleAjaxError(xhr);
+                    }
+                });
+            }
+
+            return false;
+        });
+
+
+        // ================= CATEGORY =================
+        $('#submitCategoryCreate').click(function (event) {
             event.preventDefault();
             ClearErrors();
+
             var form = $('#createCategoryForm');
+
             if (form.valid()) {
                 $.ajax({
                     type: "POST",
                     url: form.attr('action'),
                     data: form.serialize(),
-                    success: function () {
+
+                    success: function (data) {
                         $('#addCategoryModal').modal('hide');
+
+                        var ddl = $('#CategoryID');
+                        ddl.empty();
+                        ddl.append($('<option/>', { value: "", text: "None" }));
+
+                        $.each(data, function (i, item) {
+                            ddl.append($('<option/>', {
+                                value: item.value,
+                                text: item.text,
+                                selected: item.selected
+                            }));
+                        });
+
+                        ddl.trigger("chosen:updated");
                     },
-                    error: function (xhr) { //Note: xhr is the XMLHttpRequest
-                        var errorMessages = [];
-                        switch (xhr.status) {
-                            case 401:
-                                errorMessages.push("You must be logged in first.");
-                                break;
-                            case 403:
-                                errorMessages.push("You are not authorized for this action.");
-                                break;
-                            default:
-                                //Messages coming from the Model State Errors
-                                //We split on the | delimeter and the .slice removes the last one
-                                errorMessages = xhr.responseText.split("|").slice(0, -1);
-                        }
-                        //This checks if there are any elements with some content
-                        //and if not then it provides a default feedback message.
-                        if (!errorMessages.some((str) => str !== "")) {
-                          errorMessages.push("Error: Unable to complete operation");
-                        }
-                        //Put the messages in the ErrorList ul contained in the 'ValidaitonSummary' div.
-                        var ul = document.getElementById("ErrorList");
-                        for (var i = 0; i < errorMessages.length; i++) {
-                          var errorMessage = errorMessages[i];
-                          var li = document.createElement("li");
-                          li.innerHTML = errorMessage;
-                          ul.appendChild(li);
-                        }
+
+                    error: function (xhr) {
+                        handleAjaxError(xhr);
                     }
                 });
             }
+
             return false;
         });
+
+
+        // ================= COMMON =================
+        function handleAjaxError(xhr) {
+            var errorMessages = [];
+
+            switch (xhr.status) {
+                case 401:
+                    errorMessages.push("You must be logged in first.");
+                    break;
+                case 403:
+                    errorMessages.push("You are not authorized.");
+                    break;
+                default:
+                    errorMessages = xhr.responseText.split("|").slice(0, -1);
+            }
+
+            if (!errorMessages.some(str => str !== "")) {
+                errorMessages.push("Error: Unable to complete operation");
+            }
+
+            var ul = document.getElementById("ErrorList");
+            errorMessages.forEach(msg => {
+                var li = document.createElement("li");
+                li.innerHTML = msg;
+                ul.appendChild(li);
+            });
+        }
+
+        function ClearErrors() {
+            var ul = document.getElementById("ErrorList");
+            while (ul.firstChild) ul.removeChild(ul.firstChild);
+        }
+
         $('#addCategoryModal').on('hide.bs.modal', function () {
             document.getElementById("createCategoryForm").reset();//to clear the data in the popup form
             ClearErrors();
             var selectedOption = $('#CategoryID').val();//Return to the current selected value
-            refreshDDL('CategoryID', '/Product/GetCategory/' + selectedOption, false, null, true, true);
         });
-        function ClearErrors() {
-            //Empty out the list of validation errors if there are any
-            var ul = document.getElementById("ErrorList");
-            while (ul.firstChild) {
-              ul.removeChild(ul.firstChild);
-            }
-        }
 
-
-                });
-            }
-            return false;
-        });
         $('#addVendorModal').on('hide.bs.modal', function () {
             document.getElementById("createVendorForm").reset();//to clear the data in the popup form
             ClearErrors();
             var selectedOption = $('#VendorID').val();//Return to the current selected value
         });
-        function ClearErrors() {
-            //Empty out the list of validation errors if there are any
-            var ul = document.getElementById("ErrorList");
-            while (ul.firstChild) {
-              ul.removeChild(ul.firstChild);
-            }
-        }
     </script>
 }
 
