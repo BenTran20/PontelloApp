@@ -1,12 +1,13 @@
- using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
 using PontelloApp.Models;
+ using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PontelloApp.Controllers
 {
@@ -92,7 +93,6 @@ namespace PontelloApp.Controllers
 
         // POST: Category/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
@@ -103,8 +103,28 @@ namespace PontelloApp.Controllers
                 {
                     _context.Add(category);
                     await _context.SaveChangesAsync();
+
+                    if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        return Json(new SelectList(_context.Categories, "ID", "Name", category.ID));
+                    }
+
                     return RedirectToAction(nameof(Index));
                 }
+
+                if (!ModelState.IsValid && Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    string errorMessage = "";
+                    foreach (var modelState in ViewData.ModelState.Values)
+                    {
+                        foreach (ModelError error in modelState.Errors)
+                        {
+                            errorMessage += error.ErrorMessage + "|";
+                        }
+                    }
+                    return BadRequest(errorMessage);
+                }
+
                 ViewData["ParentCategoryID"] = new SelectList(_context.Categories, "ID", "Name", category.ParentCategoryID);
                 return View(category);
             }
@@ -114,7 +134,6 @@ namespace PontelloApp.Controllers
             }
 
             return View(category);
-
         }
 
 
