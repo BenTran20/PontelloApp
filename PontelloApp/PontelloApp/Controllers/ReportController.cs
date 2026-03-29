@@ -33,6 +33,12 @@ namespace PontelloApp.Controllers
                 .Where(o => o.Status != OrderStatus.Draft && o.Status != OrderStatus.Progress)
                 .AsQueryable();
 
+            var validRevenueStatuses = new[] {
+                OrderStatus.Submitted,
+                OrderStatus.Approved,
+                OrderStatus.Shipped
+            };
+
             if (fromDate.HasValue)
                 query = query.Where(o => o.CreatedAt >= fromDate.Value);
 
@@ -49,7 +55,7 @@ namespace PontelloApp.Controllers
             ViewData["Status"] = status;
             ViewData["TotalOrders"] = orders.Count;
             ViewData["TotalRevenue"] = orders
-                    .Where(o => o.Status == OrderStatus.Shipped)
+                    .Where(o => validRevenueStatuses.Contains(o.Status))
                     .Sum(o => o.TotalAmount);
             ViewData["StatusList"] = Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus>().ToList();
 

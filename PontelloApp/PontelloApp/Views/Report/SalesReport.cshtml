@@ -13,46 +13,75 @@
     </div>
 
     <!-- Filters -->
-    <form method="get" class="row g-2 mb-4">
-        <div class="col-md-3">
-            <label class="form-label">From Date</label>
-            <input type="date" name="fromDate" class="form-control" value="@ViewData["FromDate"]" />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">To Date</label>
-            <input type="date" name="toDate" class="form-control" value="@ViewData["ToDate"]" />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label">Status</label>
-            <select name="status" class="form-select">
-                <option value="">All</option>
-                @foreach (var s in statusList)
-                {
-                    <option value="@s" selected="@(ViewData["Status"]?.ToString() == s.ToString())">@s</option>
-                }
-            </select>
-        </div>
-        <div class="col-md-3 d-flex align-items-end gap-2">
-            <button type="submit" class="btn btn-primary">Filter</button>
-            <a asp-action="SalesReport" class="btn btn-outline-secondary">Reset</a>
+    <form method="get" class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+
+                <!-- FROM DATE -->
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">From Date</label>
+                    <input type="date" name="fromDate" class="form-control" value="@ViewData["FromDate"]" />
+                </div>
+
+                <!-- TO DATE -->
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">To Date</label>
+                    <input type="date" name="toDate" class="form-control" value="@ViewData["ToDate"]" />
+                </div>
+
+                <!-- STATUS -->
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Status</option>
+                        @if (ViewData["StatusList"] is IEnumerable<PontelloApp.Models.OrderStatus> statusList)
+                        {
+                            foreach (var s in statusList)
+                            {
+                                <option value="@s" selected="@(ViewData["Status"]?.ToString() == s.ToString())">@s</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- BUTTONS -->
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-50">
+                        <i class="bi bi-funnel me-1"></i> Apply
+                    </button>
+                    <a asp-action="SalesReport" class="btn btn-outline-secondary w-50">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Clear
+                    </a>
+                </div>
+
+            </div>
         </div>
     </form>
 
-    <div class="mb-5">
+<div class="card shadow-sm border-0 mb-5">
+    <div class="card-body">
         <h5 class="fw-bold mb-1">Print Specific Order</h5>
-        <p class="text-muted small mb-2">Enter a PO number to export as PDF.</p>
-        <form asp-controller="Report" asp-action="PrintOrder" method="get" style="max-width: 400px;">
+        <p class="text-muted small mb-3">Enter a PO number to export as PDF.</p>
+        
+        <form asp-controller="Report" asp-action="PrintOrder" method="get" style="max-width: 450px;">
             <div class="input-group">
-                <input type="text" name="poNumber" class="form-control" placeholder="e.g. PO-2026..." required />
-                <button class="btn btn-primary" type="submit">Export PDF</button>
+                <input type="text" 
+                       name="poNumber" 
+                       class="form-control" 
+                       placeholder="e.g. PO-2026..." 
+                       required />
+                <button class="btn btn-primary px-4" type="submit">
+                    Export PDF
+                </button>
             </div>
         </form>
     </div>
+</div>
 
     <!-- Summary -->
     <div class="mt-5 mb-3">
         <h5 class="fw-bold mb-1">Summary Reports</h5>
-        <p class="text-muted small">Overview of total sales and order volume.</p>
+        <p class="text-muted small">Overview of total orders and revenue.</p>
     </div>
 
     <!-- 2. Summary Cards Section -->
