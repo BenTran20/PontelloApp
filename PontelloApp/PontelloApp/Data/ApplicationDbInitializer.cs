@@ -54,10 +54,10 @@ namespace PontelloApp.Data
                         {
                             UserName = email,
                             Email = email,
-                            PhoneNumber = "0000000000",
+                            PhoneNumber = "9057362876",
                             EmailConfirmed = true,
                             FirstName = email.Split('@')[0],
-                            LastName = "Default",
+                            LastName = "Pontello",
                             BINorEIN = null
                         };
 
