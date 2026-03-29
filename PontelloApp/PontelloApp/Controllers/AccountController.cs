@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
@@ -12,11 +13,14 @@ namespace PontelloApp.Controllers
     {
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AccountController(SignInManager<User> signInManager, UserManager<User> userManager)
+
+        public AccountController(SignInManager<User> signInManager, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public IActionResult Login()
@@ -156,6 +160,131 @@ namespace PontelloApp.Controllers
                 ModelState.AddModelError(string.Empty, "Something went wrong !!");
                 return View(model);
             }
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Accounts()
+        {
+            var users = _userManager.Users.ToList();
+
+            var rolesDict = new Dictionary<string, string>();
+            foreach (var u in users)
+            {
+                var roles = await _userManager.GetRolesAsync(u);
+                rolesDict[u.Id] = string.Join(", ", roles);
+            }
+
+            ViewBag.UserRoles = rolesDict;
+
+            return View(users);
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> EditUser(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            ViewBag.AllRoles = _roleManager.Roles.Select(r => r.Name).ToList();
+
+            var roles = await _userManager.GetRolesAsync(user);
+            ViewBag.UserRoles = roles;
+
+            return View(user);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> EditUser(string id, string firstName, string lastName, string email, string phone, string binOrEIN, bool isActive, List<string> roles)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            // LOCK SEED ADMIN
+            var seedAdminEmail = "admin@gmail.com";
+            if (user.Email == seedAdminEmail && !roles.Contains("Admin"))
+            {
+                ModelState.AddModelError("", "Seed admin must always have the Admin role.");
+                ModelState.Remove("BINorEIN");
+                ViewBag.AllRoles = _roleManager.Roles.Select(r => r.Name).ToList();
+                ViewBag.UserRoles = await _userManager.GetRolesAsync(user);
+                return View(user);
+            }
+
+            user.FirstName = firstName;
+            user.LastName = lastName;
+            user.Email = email;
+            user.PhoneNumber = phone;
+            user.BINorEIN = binOrEIN;
+            user.IsActive = isActive;
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            var rolesToAdd = roles.Except(currentRoles).ToList();
+            var rolesToRemove = currentRoles.Except(roles).ToList();
+
+            if (rolesToAdd.Any())
+                await _userManager.AddToRolesAsync(user, rolesToAdd);
+
+            if (rolesToRemove.Any())
+                await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+
+            await _userManager.UpdateAsync(user);
+
+            TempData["Message"] = "User updated successfully!";
+            return RedirectToAction("EditUser", new { id = user.Id });
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeactivateUser(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            return View(user);
+        }
+
+        [HttpPost, ActionName("DeactivateUser")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeactivateUserConfirmed(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            user.IsActive = false;
+            await _userManager.UpdateAsync(user);
+
+            TempData["Message"] = $"User {user.Email} deactivated successfully.";
+            return RedirectToAction("Accounts");
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ActivateUser(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            return View(user);
+        }
+
+        [HttpPost, ActionName("ActivateUser")]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ActivateUserConfirmed(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            user.IsActive = true;
+            await _userManager.UpdateAsync(user);
+
+            TempData["Message"] = $"User {user.Email} activated successfully.";
+            return RedirectToAction("Accounts");
         }
 
         public async Task<IActionResult> Logout()
