@@ -45,7 +45,6 @@ builder.Services.AddHangfire(config => config
 builder.Services.AddScoped<RecurringOrderProcessorJob>();
 
 builder.Services.AddHostedService<EmailSchedulerService>();
-builder.Services.AddDbContext<ApplicationDbContext>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 
@@ -132,7 +131,7 @@ using (var scope = app.Services.CreateScope())
 
     await ApplicationDbInitializer.Initialize(serviceProvider: services, useMigrations: true, seedSampleData: true);
 
-    PontelloAppInitializer.Initialize(serviceProvider: services, DeleteDatabase: true,
+    PontelloAppInitializer.Initialize(serviceProvider: services, DeleteDatabase: false,
         UseMigrations: true, SeedSampleData: true);
 
 }
