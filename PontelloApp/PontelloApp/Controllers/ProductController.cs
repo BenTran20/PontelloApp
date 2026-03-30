@@ -323,8 +323,6 @@ namespace PontelloApp.Controllers
         }
 
 
-
-
         // GET: Products/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -494,6 +492,20 @@ namespace PontelloApp.Controllers
             }
 
             return View(product);
+        }
+
+        [HttpPost]
+        public IActionResult Unarchive(int id)
+        {
+            var product = _context.Products.Find(id);
+            if (product != null)
+            {
+                product.IsActive = true; 
+                _context.SaveChanges();
+
+                TempData["SuccessMessage"] = $"Product '{product.ProductName}' was unarchived successfully!";
+            }
+            return RedirectToAction(nameof(Archive)); 
         }
 
         [HttpGet]
