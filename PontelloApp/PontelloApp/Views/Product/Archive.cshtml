@@ -1,4 +1,4 @@
-﻿@model IEnumerable<PontelloApp.Models.Product>
+@model IEnumerable<PontelloApp.Models.Product>
 
 <partial name="_ViewHeading" />
 
@@ -6,6 +6,14 @@
 <h3 class="mb-3">Archived Products</h3>
 
 <partial name="_BackToList"/>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
 <table class="table table-hover align-middle">
     <thead class="table-light">
@@ -42,6 +50,12 @@
                        class="btn btn-outline-primary btn-sm">
                         Edit
                     </a>
+
+                    <form asp-action="Unarchive" asp-route-id="@item.ID" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-success btn-sm">
+                            Unarchive
+                        </button>
+                    </form>
                 </td>
             </tr>
         }
