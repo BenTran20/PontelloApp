@@ -458,19 +458,6 @@ if (!string.IsNullOrWhiteSpace(order.Shipping?.Email))
             return RedirectToAction("Index", "Order");
         }
 
-        public async Task<IActionResult> StopSchedule(int id)
-        {
-            var schedule = await _context.ScheduledEmails.FindAsync(id);
-
-            if (schedule != null)
-            {
-                schedule.IsActive = false;
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToAction("Index");
-        }
-
         private byte[] GeneratePurchaseOrderPdf(Order order)
         {
             var items = order.Items.Select(i => new
