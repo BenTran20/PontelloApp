@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Data;
@@ -17,14 +17,8 @@ namespace PontelloApp.Controllers
             _context = context;
         }
 
-        // GET: /Report
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        // GET: /Report/SalesReport
-        public async Task<IActionResult> SalesReport(DateTime? fromDate, DateTime? toDate, OrderStatus? status)
+        // MAIN DASHBOARD 
+        public async Task<IActionResult> DashboardReport(DateTime? fromDate, DateTime? toDate, OrderStatus? status)
         {
             var query = _context.Orders
                 .Include(o => o.Items)
@@ -33,12 +27,7 @@ namespace PontelloApp.Controllers
                 .Where(o => o.Status != OrderStatus.Draft && o.Status != OrderStatus.Progress)
                 .AsQueryable();
 
-            var validRevenueStatuses = new[] {
-                OrderStatus.Submitted,
-                OrderStatus.Approved,
-                OrderStatus.Shipped
-            };
-
+            // FILTER
             if (fromDate.HasValue)
                 query = query.Where(o => o.CreatedAt >= fromDate.Value);
 
@@ -48,21 +37,75 @@ namespace PontelloApp.Controllers
             if (status.HasValue)
                 query = query.Where(o => o.Status == status.Value);
 
-            var orders = await query.OrderByDescending(o => o.CreatedAt).ToListAsync();
+            var orders = await query
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
 
+            // ✅ SUMMARY
+            var validRevenueStatuses = new[]
+            {
+                OrderStatus.Submitted,
+                OrderStatus.Approved,
+                OrderStatus.Shipped
+            };
+
+            var totalRevenue = orders
+                .Where(o => validRevenueStatuses.Contains(o.Status))
+                .Sum(o => o.TotalAmount);
+
+            var totalOrders = orders.Count;
+
+            // REVENUE TREND (chart)
+            var revenueTrends = orders
+                .GroupBy(o => o.CreatedAt.Date)
+                .Select(g => new
+                {
+                    Date = g.Key.ToString("MM-dd"),
+                    Revenue = g.Sum(x => x.TotalAmount)
+                })
+                .OrderBy(x => x.Date)
+                .ToList();
+
+            // TOP PRODUCTS
+            var topProducts = await _context.OrderItems
+                .Include(oi => oi.Product)
+                .Include(oi => oi.Order)
+                .Where(oi =>
+                    oi.Order.Status != OrderStatus.Draft &&
+                    oi.Order.Status != OrderStatus.Progress &&
+                    oi.Order.Status != OrderStatus.Rejected)
+                .GroupBy(oi => new { oi.ProductId, oi.Product.ProductName })
+                .Select(g => new
+                {
+                    ProductName = g.Key.ProductName,
+                    QuantitySold = g.Sum(x => x.Quantity),
+                    Revenue = g.Sum(x => x.Quantity * x.UnitPrice)
+                })
+                .OrderByDescending(x => x.QuantitySold)
+                .Take(5)
+                .ToListAsync();
+
+            // VIEW DATA
             ViewData["FromDate"] = fromDate?.ToString("yyyy-MM-dd");
             ViewData["ToDate"] = toDate?.ToString("yyyy-MM-dd");
             ViewData["Status"] = status;
-            ViewData["TotalOrders"] = orders.Count;
-            ViewData["TotalRevenue"] = orders
-                    .Where(o => validRevenueStatuses.Contains(o.Status))
-                    .Sum(o => o.TotalAmount);
             ViewData["StatusList"] = Enum.GetValues(typeof(OrderStatus)).Cast<OrderStatus>().ToList();
+
+            ViewData["TotalRevenue"] = totalRevenue;
+            ViewData["TotalOrders"] = totalOrders;
+
+            ViewBag.TopProducts = topProducts;
+            ViewBag.RevenueTrends = revenueTrends;
 
             return View(orders);
         }
 
-        // GET: /Report/ExportSalesCsv
+
+        public IActionResult Index()
+        {
+            return View();
+        }
+
         public async Task<IActionResult> ExportSalesCsv(DateTime? fromDate, DateTime? toDate, OrderStatus? status)
         {
             var query = _context.Orders
@@ -74,8 +117,10 @@ namespace PontelloApp.Controllers
 
             if (fromDate.HasValue)
                 query = query.Where(o => o.CreatedAt >= fromDate.Value);
+
             if (toDate.HasValue)
                 query = query.Where(o => o.CreatedAt <= toDate.Value.AddDays(1));
+
             if (status.HasValue)
                 query = query.Where(o => o.Status == status.Value);
 
@@ -94,20 +139,21 @@ namespace PontelloApp.Controllers
             return File(bytes, "text/csv", $"SalesReport_{DateTime.Now:yyyyMMdd}.csv");
         }
 
-        // GET: /Report/ExportSalesPdf
         public async Task<IActionResult> ExportSalesPdf(DateTime? fromDate, DateTime? toDate, OrderStatus? status)
         {
             var query = _context.Orders
-            .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
-            .Include(o => o.Shipping)
-            .Where(o => o.Status != OrderStatus.Draft && o.Status != OrderStatus.Progress)
-            .AsQueryable();
+                .Include(o => o.Items)
+                    .ThenInclude(i => i.Product)
+                .Include(o => o.Shipping)
+                .Where(o => o.Status != OrderStatus.Draft && o.Status != OrderStatus.Progress)
+                .AsQueryable();
 
             if (fromDate.HasValue)
                 query = query.Where(o => o.CreatedAt >= fromDate.Value);
+
             if (toDate.HasValue)
                 query = query.Where(o => o.CreatedAt <= toDate.Value.AddDays(1));
+
             if (status.HasValue)
                 query = query.Where(o => o.Status == status.Value);
 
@@ -122,75 +168,13 @@ namespace PontelloApp.Controllers
                 container.Page(page =>
                 {
                     page.Margin(30);
+                    page.Header().Text("Pontello — Sales Report").FontSize(20).Bold();
 
-                    page.Header().Column(col =>
+                    page.Content().Column(col =>
                     {
-                        col.Item().Text("Pontello — Sales Report").FontSize(20).Bold();
-                        col.Item().Text($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm}").FontSize(10).FontColor("#777777");
-                        if (fromDate.HasValue || toDate.HasValue)
-                            col.Item().Text($"Period: {fromDate?.ToString("yyyy-MM-dd") ?? "All"} → {toDate?.ToString("yyyy-MM-dd") ?? "All"}").FontSize(10);
-                        if (status.HasValue)
-                            col.Item().Text($"Status: {status}").FontSize(10);
+                        col.Item().Text($"Total Orders: {orders.Count}");
+                        col.Item().Text($"Total Revenue: ${totalRevenue:0.00}");
                     });
-
-                    page.Content().PaddingVertical(15).Column(col =>
-                    {
-                        // Summary
-                        col.Item().Row(row =>
-                        {
-                            row.RelativeItem().Border(1).BorderColor("#EEEEEE").Padding(10).Column(c =>
-                            {
-                                c.Item().Text("Total Orders").FontSize(10).FontColor("#777");
-                                c.Item().Text(orders.Count.ToString()).FontSize(18).Bold();
-                            });
-                            row.ConstantItem(10);
-                            row.RelativeItem().Border(1).BorderColor("#EEEEEE").Padding(10).Column(c =>
-                            {
-                                c.Item().Text("Total Revenue").FontSize(10).FontColor("#777");
-                                c.Item().Text($"${totalRevenue:0.00}").FontSize(18).Bold();
-                            });
-                        });
-
-                        col.Item().PaddingVertical(10);
-
-                        // Table
-                        col.Item().Table(table =>
-                        {
-                            table.ColumnsDefinition(columns =>
-                            {
-                                columns.RelativeColumn(3);
-                                columns.RelativeColumn(2);
-                                columns.RelativeColumn(2);
-                                columns.RelativeColumn(2);
-                                columns.RelativeColumn(2);
-                            });
-
-                            table.Header(header =>
-                            {
-                                header.Cell().Background("#F3F4F6").Padding(6).Text("PO Number").Bold();
-                                header.Cell().Background("#F3F4F6").Padding(6).Text("Date").Bold();
-                                header.Cell().Background("#F3F4F6").Padding(6).Text("Customer").Bold();
-                                header.Cell().Background("#F3F4F6").Padding(6).Text("Status").Bold();
-                                header.Cell().Background("#F3F4F6").Padding(6).Text("Total").Bold();
-                            });
-
-                            foreach (var o in orders)
-                            {
-                                table.Cell().Padding(5).Text(o.PONumber);
-                                table.Cell().Padding(5).Text(o.CreatedAt.ToString("yyyy-MM-dd"));
-                                table.Cell().Padding(5).Text(o.Shipping?.FullName ?? "N/A");
-                                table.Cell().Padding(5).Text(o.Status.ToString());
-                                table.Cell().Padding(5).Text("$" + o.TotalAmount.ToString("0.00"));
-                            }
-                        });
-
-                        col.Item().PaddingTop(10).AlignRight()
-                            .Text($"Total Revenue: ${totalRevenue:0.00}").Bold().FontSize(12);
-                    });
-
-                    page.Footer().AlignCenter()
-                        .Text($"Pontello Sales Report — {DateTime.Now:yyyy-MM-dd}")
-                        .FontSize(9).FontColor("#999999");
                 });
             }).GeneratePdf();
 
@@ -200,7 +184,7 @@ namespace PontelloApp.Controllers
         public async Task<IActionResult> PrintOrder(string poNumber)
         {
             if (string.IsNullOrWhiteSpace(poNumber))
-                return RedirectToAction("Index");
+                return RedirectToAction("DashboardReport");
 
             var order = await _context.Orders
                 .FirstOrDefaultAsync(o => o.PONumber == poNumber);
@@ -208,7 +192,7 @@ namespace PontelloApp.Controllers
             if (order == null)
             {
                 TempData["Error"] = $"Order '{poNumber}' not found.";
-                return RedirectToAction("Index");
+                return RedirectToAction("DashboardReport");
             }
 
             return RedirectToAction("ExportOrderPO", "Order", new { id = order.Id });
