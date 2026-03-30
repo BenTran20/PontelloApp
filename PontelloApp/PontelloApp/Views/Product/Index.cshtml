@@ -33,6 +33,9 @@
             <!-- Sidebar -->
             <div class="col-md-3">
 
+                <!-- guide -->
+                <button id="startTourBtn" type="button" class="btn btn-success mb-3">How to inactive order</button>
+
                 <div class="card shadow-sm p-3">
 
                     <h6 class="fw-bold mb-3">Filters</h6>
@@ -105,7 +108,7 @@
 
                     <h6 class="fw-bold mb-3">Manage</h6>
 
-                    <a asp-action="Archive"
+                    <a asp-action="Archive" id="archivedProducts"
                        class="btn btn-outline-secondary w-100 mb-2">
                         <i class="bi bi-archive"></i> Archived Products
                     </a>
@@ -245,7 +248,7 @@
                                                     Edit
                                                 </a>
 
-                                                <a asp-action="Delete"
+                                                <a asp-action="Delete" id="archivebtn"
                                                    asp-route-id="@item.ID"
                                                    class="btn btn-danger"
                                                    style="text-decoration: none"
@@ -276,3 +279,11 @@
     </div>
 
 </form>
+
+@section Scripts {
+    <script>
+        document.getElementById("startTourBtn").addEventListener("click", function () {
+            startTour();
+        });
+    </script>
+}
