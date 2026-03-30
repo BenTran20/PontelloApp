@@ -1207,7 +1207,7 @@ namespace PontelloApp.Data
                                CostPrice = 0.9m,
                                InventoryPolicy = InventoryPolicy.Deny,
                                Weight = 0.008454m,
-                               Unit = ImperialUnits.floz,
+                               Unit = ImperialUnits.oz,
                                Barcode = "56420316",
                                Status = true,
                                Options = new List<Variant>
