@@ -231,8 +231,7 @@ namespace PontelloApp.Controllers
                         Weight = weight,
                         Status = status,
                         InventoryPolicy = inventoryPolicy,
-                        Unit = form["Unit"] == "lb" ? ImperialUnits.lb :
-                               form["Unit"] == "floz" ? ImperialUnits.floz : ImperialUnits.oz
+                        Unit = form["Unit"] == "lb" ? ImperialUnits.lb : ImperialUnits.oz
                     };
 
                     parsedVariants.Add(variant);
@@ -265,8 +264,7 @@ namespace PontelloApp.Controllers
                             Weight = weight,
                             Status = status,
                             InventoryPolicy = inventoryPolicy,
-                            Unit = form[$"{prefix}.Unit"] == "lb" ? ImperialUnits.lb :
-                                   form[$"{prefix}.Unit"] == "floz" ? ImperialUnits.floz : ImperialUnits.oz,
+                            Unit = form[$"{prefix}.Unit"] == "lb" ? ImperialUnits.lb : ImperialUnits.oz,
                             Options = new List<Variant>()
                         };
 
