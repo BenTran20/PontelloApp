@@ -820,10 +820,6 @@ namespace PontelloApp.Controllers
                             case "oz":
                                 unit = ImperialUnits.oz;
                                 break;
-                            case "floz":
-                            case "fl oz":
-                                unit = ImperialUnits.floz;
-                                break;
                             case "lb":
                             case "lbs":
                                 unit = ImperialUnits.lb;
