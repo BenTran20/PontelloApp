@@ -353,6 +353,7 @@ if (!string.IsNullOrWhiteSpace(order.Shipping?.Email))
     if (model.Frequency == "Daily")
     {
         body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 4 hours before being order is shipped.</p>";
+        SendAt1 = DateTime.Now.AddHours(20);
     }
     else if (model.Frequency == "Weekly")
     {
