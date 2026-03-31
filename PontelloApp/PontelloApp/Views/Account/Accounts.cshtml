@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @using PontelloApp.Models
 
 @model IEnumerable<PontelloApp.Models.User>
@@ -13,7 +13,6 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold">Manage Accounts</h2>
-        <a asp-action="Index" asp-controller="Admin" class="btn btn-outline-secondary">← Back to Dashboard</a>
     </div>
 
     @if (TempData["Message"] != null)
