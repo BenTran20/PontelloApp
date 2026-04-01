@@ -12,7 +12,7 @@ namespace PontelloApp.Models
         public string PhoneNumber { get; set; }
         public string? BINorEIN { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public AccountStatus Status { get; set; } = AccountStatus.Pending;
 
         public ICollection<Order>? Orders { get; set; } = new HashSet<Order>();
 
