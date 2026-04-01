@@ -6,7 +6,8 @@
 
 @{
     ViewData["Title"] = "Manage Accounts";
-    var userRoles = ViewBag.UserRoles as Dictionary<string, string>;
+    var userRoles = ViewBag.UserRoles as Dictionary<string, string> ?? new Dictionary<string, string>();
+    var pendingUsers = ViewBag.PendingUsers as List<PontelloApp.Models.User> ?? new List<PontelloApp.Models.User>();
 }
 
 <div class="container-fluid">
@@ -23,59 +24,130 @@
         </div>
     }
 
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <table class="table table-hover table-striped align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Email</th>
-                        <th>Name</th>
-                        <th>Phone</th>
-                        <th>BIN/EIN</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Model)
-                    {
-                        <tr>
-                            <td>@user.Email</td>
-                            <td>@user.FirstName @user.LastName</td>
-                            <td>@user.PhoneNumber</td>
-                            <td>@user.BINorEIN</td>
-                            <td>@(userRoles.ContainsKey(user.Id) ? userRoles[user.Id] : "")</td>
-                            <td>
-                                @if (user.IsActive)
-                                {
-                                    <span class="badge bg-success">Active</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">Inactive</span>
-                                }
-                            </td>
-                            <td class="text-end">
-                                <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+    <ul class="nav nav-tabs mb-3" id="accountsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                Pending (@pendingUsers.Count)
+            </button>
+        </li>
+    </ul>
 
-                                @if (user.IsActive)
+    <div class="tab-content">
+        <!-- All users tab -->
+        <div class="tab-pane fade show active" id="all" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-hover table-striped align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Email</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>BIN/EIN</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model)
+                            {
+                                <tr>
+                                    <td>@user.Email</td>
+                                    <td>@user.FirstName @user.LastName</td>
+                                    <td>@user.PhoneNumber</td>
+                                    <td>@user.BINorEIN</td>
+                                    <td>@(userRoles.ContainsKey(user.Id) ? userRoles[user.Id] : "")</td>
+                                    <td>
+                                        @switch (user.Status)
+                                        {
+                                            case AccountStatus.Pending:
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                                break;
+                                            case AccountStatus.Active:
+                                                <span class="badge bg-success">Active</span>
+                                                break;
+                                            case AccountStatus.Inactive:
+                                                <span class="badge bg-secondary">Inactive</span>
+                                                break;
+                                            case AccountStatus.Rejected:
+                                                <span class="badge bg-danger">Rejected</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+
+                                        @if (user.Status==AccountStatus.Active)
+                                        {
+                                            <form asp-action="DeactivateUser" asp-route-id="@user.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Deactivate</button>
+                                            </form>
+                                        }
+                                        else if (user.Status == AccountStatus.Inactive)
+                                        {
+                                            <form asp-action="ActivateUser" asp-route-id="@user.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-success">Activate</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending users tab -->
+        <div class="tab-pane fade" id="pending" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <table class="table table-hover table-striped align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Email</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>BIN/EIN</th>
+                                <th>Role</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!pendingUsers.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No pending accounts</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var user in pendingUsers)
                                 {
-                                    <form asp-action="DeactivateUser" asp-route-id="@user.Id" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Deactivate</button>
-                                    </form>
+                                    <tr>
+                                        <td>@user.Email</td>
+                                        <td>@user.FirstName @user.LastName</td>
+                                        <td>@user.PhoneNumber</td>
+                                        <td>@user.BINorEIN</td>
+                                        <td>@(userRoles.ContainsKey(user.Id) ? userRoles[user.Id] : "")</td>
+                                        <td class="text-end">
+                                            <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-primary">
+                                                Review
+                                            </a>
+                                        </td>
+                                    </tr>
                                 }
-                                else
-                                {
-                                    <form asp-action="ActivateUser" asp-route-id="@user.Id" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-success">Activate</button>
-                                    </form>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
