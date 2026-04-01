@@ -11,7 +11,7 @@ using PontelloApp.Utilities;
 
 namespace PontelloApp.Controllers
 {
-    [Authorize(Roles = "Admin,Dealer")]
+    [Authorize(Roles = "Dealer")]
     public class ProductDealerController : ElephantController
     {
         private readonly PontelloAppContext _context;
