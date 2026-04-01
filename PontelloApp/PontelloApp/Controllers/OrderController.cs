@@ -26,7 +26,7 @@ namespace PontelloApp.Controllers
         }
 
         // GET: /Order
-        [Authorize(Roles = "Dealer, Admin")]
+        [Authorize(Roles = "Dealer")]
         public async Task<IActionResult> Index(string? SearchString, int? OrderStatusID, OrderStatus? Status, DateTime? FromDate, DateTime? ToDate, int? page, int? pageSizeID, string? actionButton)
         {
             var user = await _userManager.GetUserAsync(User);
