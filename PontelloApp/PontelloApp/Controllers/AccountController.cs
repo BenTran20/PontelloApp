@@ -144,6 +144,8 @@ namespace PontelloApp.Controllers
             return RedirectToAction("Login");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
@@ -182,14 +184,44 @@ namespace PontelloApp.Controllers
             user.FirstName = FirstName;
             user.LastName = LastName;
             user.Email = Email;
+            user.UserName = Email;
             user.PhoneNumber = PhoneNumber;
 
             var result = await _userManager.UpdateAsync(user);
-            TempData["SuccessMessage"] = result.Succeeded ? "Profile updated successfully!" : "Update failed.";
+            TempData["SuccessMessage"] = result.Succeeded ? "Profile updated successfully." : "Update failed.";
             return RedirectToAction("Settings");
         }
 
-        //  Admin: Accounts list
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePasswordSettings(string CurrentPassword, string NewPassword, string ConfirmPassword)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            if (NewPassword != ConfirmPassword)
+            {
+                TempData["ErrorMessage"] = "New password and confirmation do not match.";
+                return RedirectToAction("Settings");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, CurrentPassword, NewPassword);
+            if (result.Succeeded)
+            {
+                await _signInManager.RefreshSignInAsync(user);
+                TempData["SuccessMessage"] = "Password changed successfully.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = string.Join(" ", result.Errors.Select(e => e.Description));
+            }
+
+            return RedirectToAction("Settings");
+        }
+
+        //  Admin: Accounts list 
 
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Accounts()
@@ -210,7 +242,7 @@ namespace PontelloApp.Controllers
             return View(users);
         }
 
-        // Admin: Edit user 
+        //  Admin: Edit user 
 
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EditUser(string id)
