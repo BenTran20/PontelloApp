@@ -58,7 +58,8 @@ namespace PontelloApp.Data
                             EmailConfirmed = true,
                             FirstName = email.Split('@')[0],
                             LastName = "Pontello",
-                            BINorEIN = null
+                            BINorEIN = null,
+                            Status= AccountStatus.Active
                         };
 
                         var result = await userManager.CreateAsync(user, password);
