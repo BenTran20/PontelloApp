@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pag
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using PontelloApp.Models;
 using PontelloApp.ViewModels;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace PontelloApp.Controllers
@@ -285,6 +286,52 @@ namespace PontelloApp.Controllers
 
             TempData["Message"] = $"User {user.Email} activated successfully.";
             return RedirectToAction("Accounts");
+        }
+
+        [Authorize]
+        public IActionResult Profile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = _userManager.FindByIdAsync(userId).Result;
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
+        }
+
+        [Authorize]
+        public IActionResult Settings()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = _userManager.FindByIdAsync(userId).Result;
+
+            if (user == null) return NotFound();
+
+            return View(user);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(string FirstName, string LastName, string Email, string PhoneNumber)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null) return NotFound();
+
+            user.FirstName = FirstName;
+            user.LastName = LastName;
+            user.Email = Email;
+            user.PhoneNumber = PhoneNumber;
+
+            var result = await _userManager.UpdateAsync(user);
+            TempData["SuccessMessage"] = result.Succeeded ? "Profile updated successfully!" : "Update failed.";
+
+            return RedirectToAction("Settings");
         }
 
         public async Task<IActionResult> Logout()
