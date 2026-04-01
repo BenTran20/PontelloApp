@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,7 +38,7 @@ namespace PontelloApp.Utilities
 
                 var dueEmails = db.ScheduledEmails
                     .Include(e => e.RecurringOrder)
-                    .Where(e => e.NextSendAt <= DateTime.Now)
+                    .Where(e => e.NextSendAt >= DateTime.Now)
                     .ToList();
 
                 foreach (var schedule in dueEmails)
@@ -59,7 +59,7 @@ namespace PontelloApp.Utilities
                         {
                             schedule.NextSendAt = DateTime.UtcNow.AddDays(daysUntil - 1);
                         }
-                        else if (schedule.Remninder == "FirstReminder" && schedule.RecurringOrder.Frequency == "Daily")
+                        else if(schedule.Remninder == "FirstReminder" && schedule.RecurringOrder.Frequency == "Daily")
                         {
                             schedule.NextSendAt = DateTime.UtcNow.AddMinutes(1220 - DateTime.UtcNow.TimeOfDay.TotalMinutes + schedule.RecurringOrder.TimeOfDay.TotalMinutes);
                         }
@@ -73,7 +73,7 @@ namespace PontelloApp.Utilities
                         }
                     }
 
-                    else if (schedule.NextSendAt == DateTime.Now)
+                    else if (schedule.RecurringOrder.TimeOfDay.TotalMinutes == DateTime.UtcNow.TimeOfDay.TotalMinutes)
                     {
                         if (schedule.Remninder == "FirstReminder" && schedule.Remninder != "PaymentEmail" && schedule.RecurringOrder.Frequency != "Daily")
                         {
@@ -93,121 +93,120 @@ namespace PontelloApp.Utilities
                         }
                     }
 
-                        //if (schedule.RecurringOrder.Frequency == "Weekly")
-                        //{
-                        //    if (schedule.Remninder == "FirstReminder")
-                        //    {
-                        //        schedule.NextSendAt.AddDays(daysUntil - 1);
-                        //    }
 
-                        //}
-                        //else if (schedule.RecurringOrder.Frequency == "Monthly")
-                        //{
-                        //    if (schedule.Remninder == "FirstReminder")
-                        //    {
-                        //        schedule.NextSendAt.AddDays((int)schedule.RecurringOrder.MonthlyDay.Value / 2);
-                        //    }
-                        //    else if (schedule.Remninder == "LastReminder")
-                        //    {
-                        //        schedule.NextSendAt.AddDays(schedule.RecurringOrder.MonthlyDay.Value - 1);
-                        //    }
-                        //    else if (schedule.Remninder == "PaymentEmail")
-                        //    {
-                        //        schedule.NextSendAt.AddMonths(1);
-                        //    }
-                        //}
+                    //if (schedule.RecurringOrder.Frequency == "Weekly")
+                    //{
+                    //    if (schedule.Remninder == "FirstReminder")
+                    //    {
+                    //        schedule.NextSendAt.AddDays(daysUntil - 1);
+                    //    }
 
-                        //else  if (schedule.NextSendAt <= DateTime.Now)
-                        // {
-                        //schedule.NextSendAt.AddMinutes(1);
+                    //}
+                    //else if (schedule.RecurringOrder.Frequency == "Monthly")
+                    //{
+                    //    if (schedule.Remninder == "FirstReminder")
+                    //    {
+                    //        schedule.NextSendAt.AddDays((int)schedule.RecurringOrder.MonthlyDay.Value / 2);
+                    //    }
+                    //    else if (schedule.Remninder == "LastReminder")
+                    //    {
+                    //        schedule.NextSendAt.AddDays(schedule.RecurringOrder.MonthlyDay.Value - 1);
+                    //    }
+                    //    else if (schedule.Remninder == "PaymentEmail")
+                    //    {
+                    //        schedule.NextSendAt.AddMonths(1);
+                    //    }
+                    //}
 
-                        var tempPath = Path.Combine(Path.GetTempPath(), schedule.AttachmentName);
-                        System.IO.File.WriteAllBytes(tempPath, schedule.AttachmentBytes);
+                    //else  if (schedule.NextSendAt <= DateTime.Now)
+                    // {
+                    var tempPath = Path.Combine(Path.GetTempPath(), schedule.AttachmentName);
+                    System.IO.File.WriteAllBytes(tempPath, schedule.AttachmentBytes);
 
-                        if (schedule.PaymentTime == true)
+                    if (schedule.PaymentTime == true)
+                    {
+                        int newOrderId = await payment.CreateOrderFromRecurring(recurring);
+
+                        var order = await db.Orders
+                        .Include(o => o.Shipping)
+                        .Include(o => o.Items)
+                        .ThenInclude(i => i.Product)
+                        .FirstOrDefaultAsync(o => o.Id == newOrderId);
+
+                        byte[] pdfBytes = GeneratePurchaseOrderPdf(order);
+                        tempPath = Path.Combine(Path.GetTempPath(), $"PO_{order.PONumber}.pdf");
+                        System.IO.File.WriteAllBytes(tempPath, pdfBytes);
+
+                        await emailSender.SendEmailWithAttachmentAsync(
+                            schedule.Email,
+                            $"Your Pontello Order {order.PONumber}",
+                            schedule.HtmlBody,
+                            tempPath
+                        );
+
+                        var schedule1 = new ScheduledEmail
                         {
-                            int newOrderId = await payment.CreateOrderFromRecurring(recurring);
+                            RecurringOrderId = recurring.Id,
+                            OrderId = newOrderId,
+                            Email = order.Shipping.Email,
+                            Subject = schedule.Subject,
+                            HtmlBody = schedule.HtmlBody,
+                            AttachmentBytes = pdfBytes,
+                            AttachmentName = tempPath,
+                            NextSendAt = schedule.NextSendAt,
+                            Remninder = "PaymentEmail",
+                            PaymentTime = true
+                        };
 
-                            var order = await db.Orders
-                            .Include(o => o.Shipping)
-                            .Include(o => o.Items)
-                            .ThenInclude(i => i.Product)
-                            .FirstOrDefaultAsync(o => o.Id == recurring.OriginalOrderId);
+                        recurring.IsActive = false;
 
-                            byte[] pdfBytes = GeneratePurchaseOrderPdf(order);
-                            tempPath = Path.Combine(Path.GetTempPath(), $"PO_{order.PONumber}.pdf");
-                            System.IO.File.WriteAllBytes(tempPath, pdfBytes);
-
-                            await emailSender.SendEmailWithAttachmentAsync(
-                                schedule.Email,
-                                $"Your Pontello Order {order.PONumber}",
-                                schedule.HtmlBody,
-                                tempPath
-                            );
-
-                            var schedule1 = new ScheduledEmail
-                            {
-                                RecurringOrderId = recurring.Id,
-                                OrderId = newOrderId,
-                                Email = order.Shipping.Email,
-                                Subject = schedule.Subject,
-                                HtmlBody = schedule.HtmlBody,
-                                AttachmentBytes = pdfBytes,
-                                AttachmentName = tempPath,
-                                NextSendAt = schedule.NextSendAt,
-                                Remninder = "PaymentEmail",
-                                PaymentTime = true
-                            };
-
-
-                            db.ScheduledEmails.Add(schedule1);
-                        }
-
-                        if (schedule.PaymentTime == false)
-                        {
-                            await emailSender.SendEmailAsync(
-                                       schedule.Email,
-                                       schedule.Subject,
-                                       schedule.HtmlBody
-                               );
-
-                            var order = await db.Orders
-                            .Include(o => o.Shipping)
-                            .Include(o => o.Items)
-                            .ThenInclude(i => i.Product)
-                            .FirstOrDefaultAsync(o => o.Id == schedule.OrderId);
-
-                            var schedule1 = new ScheduledEmail
-                            {
-                                RecurringOrderId = recurring.Id,
-                                OrderId = recurring.OriginalOrderId,
-                                Email = order.Shipping.Email,
-                                Subject = schedule.Subject,
-                                HtmlBody = schedule.HtmlBody,
-                                NextSendAt = schedule.NextSendAt,
-                                Remninder = schedule.Remninder,
-                                PaymentTime = false
-                            };
-
-                            db.ScheduledEmails.Add(schedule1);
-                        }
-
-
-                        if (File.Exists(tempPath))
-                        {
-                            File.Delete(tempPath);
-                        }
-
-                        //remove/comment out will send recur messages, will continue if run app again
-                        //recurring.IsActive = false; //will send recur message once
-
-                        //    var now = DateTime.Now;
-                        //    var today = now.Date + schedule.RecurringOrder.TimeOfDay;
-                        //    int daysUntil = ((int)schedule.RecurringOrder.WeeklyDay!.Value - (int)now.DayOfWeek + 7) % 7;
-
-                        //}
+                        db.ScheduledEmails.Add(schedule1);
                     }
-                //}
+
+                    if (schedule.PaymentTime == false)
+                    {
+                        await emailSender.SendEmailAsync(
+                                   schedule.Email,
+                                   schedule.Subject,
+                                   schedule.HtmlBody
+                           );
+
+                        var order = await db.Orders
+                        .Include(o => o.Shipping)
+                        .Include(o => o.Items)
+                        .ThenInclude(i => i.Product)
+                        .FirstOrDefaultAsync(o => o.Id == schedule.OrderId);
+
+                        var schedule1 = new ScheduledEmail
+                        {
+                            RecurringOrderId = recurring.Id,
+                            OrderId = recurring.OriginalOrderId,
+                            Email = order.Shipping.Email,
+                            Subject = schedule.Subject,
+                            HtmlBody = schedule.HtmlBody,
+                            NextSendAt = schedule.NextSendAt,
+                            Remninder = schedule.Remninder,
+                            PaymentTime = false
+                        };
+
+                        db.ScheduledEmails.Add(schedule1);
+                    }
+
+
+                    if (File.Exists(tempPath))
+                    {
+                        File.Delete(tempPath);
+                    }
+
+                    //remove/comment out will send recur messages, will continue if run app again
+                    //recurring.IsActive = false; //will send recur message once
+
+                    //    var now = DateTime.Now;
+                    //    var today = now.Date + schedule.RecurringOrder.TimeOfDay;
+                    //    int daysUntil = ((int)schedule.RecurringOrder.WeeklyDay!.Value - (int)now.DayOfWeek + 7) % 7;
+
+                    //}
+                }
 
                 await db.SaveChangesAsync();
 
