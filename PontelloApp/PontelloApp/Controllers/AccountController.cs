@@ -53,7 +53,7 @@ namespace PontelloApp.Controllers
 
             var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, false);
             if (result.Succeeded)
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "ProductDealer");
 
             ModelState.AddModelError("", "Email or password is incorrect.");
             return View(model);
