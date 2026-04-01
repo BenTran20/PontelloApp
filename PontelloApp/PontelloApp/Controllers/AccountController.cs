@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using PontelloApp.Models;
 using PontelloApp.ViewModels;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace PontelloApp.Controllers
 {
@@ -34,7 +34,28 @@ namespace PontelloApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+                // Find user first to check pending/active status
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    ModelState.AddModelError("", "Email or Password is incorrect.");
+                    return View(model);
+                }
+
+                if (user.Status == AccountStatus.Pending)
+                {
+                    ModelState.AddModelError("", "Your account is pending admin approval. You cannot sign in yet.");
+                    return View(model);
+                }
+
+                if (user.Status == AccountStatus.Inactive)
+                {
+                    ModelState.AddModelError("", "Your account has been deactivated. You cannot sign in.");
+                    return View(model);
+                }
+
+                // Use UserName for sign-in (UserName is Email at registration)
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, false);
 
                 if (result.Succeeded)
                 {
@@ -66,7 +87,9 @@ namespace PontelloApp.Controllers
                     PhoneNumber = model.Phone,
                     Email = model.Email,
                     BINorEIN = model.BINorEIN,
-                    UserName = model.Email
+                    UserName = model.Email,
+                    // New accounts are pending and not active until admin approves
+                    Status = AccountStatus.Pending
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -74,9 +97,9 @@ namespace PontelloApp.Controllers
                 if (result.Succeeded)
                 {
                     // Assign newly registered users to the "Dealer" role by default.
-                    // Ensure roles are created at application startup (see Program.cs seeding).
                     await _userManager.AddToRoleAsync(user, "Dealer");
 
+                    TempData["Message"] = "Registration successful. Your account is pending admin approval.";
                     return RedirectToAction("Login", "Account");
                 }
                 else
@@ -166,8 +189,13 @@ namespace PontelloApp.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Accounts()
         {
+            // All users (model)
             var users = _userManager.Users.ToList();
 
+            // Pending users (for the Pending tab) — use a separate list via query
+            var pendingUsers = _userManager.Users.Where(u => u.Status == AccountStatus.Pending).ToList();
+
+            // Roles dictionary (existing behavior)
             var rolesDict = new Dictionary<string, string>();
             foreach (var u in users)
             {
@@ -176,6 +204,7 @@ namespace PontelloApp.Controllers
             }
 
             ViewBag.UserRoles = rolesDict;
+            ViewBag.PendingUsers = pendingUsers;
 
             return View(users);
         }
@@ -189,28 +218,39 @@ namespace PontelloApp.Controllers
             if (user == null) return NotFound();
 
             ViewBag.AllRoles = _roleManager.Roles.Select(r => r.Name).ToList();
-
             var roles = await _userManager.GetRolesAsync(user);
             ViewBag.UserRoles = roles;
+
+            // Pass enum values for dropdown
+            ViewBag.AllStatuses = Enum.GetValues(typeof(AccountStatus))
+                                      .Cast<AccountStatus>()
+                                      .ToList();
 
             return View(user);
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> EditUser(string id, string firstName, string lastName, string email, string phone, string binOrEIN, bool isActive, List<string> roles)
+        public async Task<IActionResult> EditUser(
+            string id,
+            string firstName,
+            string lastName,
+            string email,
+            string phone,
+            string binOrEIN,
+            AccountStatus status,
+            List<string> roles)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
-            // LOCK SEED ADMIN
             var seedAdminEmail = "admin@gmail.com";
             if (user.Email == seedAdminEmail && !roles.Contains("Admin"))
             {
                 ModelState.AddModelError("", "Seed admin must always have the Admin role.");
-                ModelState.Remove("BINorEIN");
                 ViewBag.AllRoles = _roleManager.Roles.Select(r => r.Name).ToList();
                 ViewBag.UserRoles = await _userManager.GetRolesAsync(user);
+                ViewBag.AllStatuses = Enum.GetValues(typeof(AccountStatus)).Cast<AccountStatus>().ToList();
                 return View(user);
             }
 
@@ -219,8 +259,9 @@ namespace PontelloApp.Controllers
             user.Email = email;
             user.PhoneNumber = phone;
             user.BINorEIN = binOrEIN;
-            user.IsActive = isActive;
+            user.Status = status; 
 
+            // roles
             var currentRoles = await _userManager.GetRolesAsync(user);
             var rolesToAdd = roles.Except(currentRoles).ToList();
             var rolesToRemove = currentRoles.Except(roles).ToList();
@@ -232,7 +273,6 @@ namespace PontelloApp.Controllers
                 await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
 
             await _userManager.UpdateAsync(user);
-
             TempData["Message"] = "User updated successfully!";
             return RedirectToAction("EditUser", new { id = user.Id });
         }
@@ -255,7 +295,7 @@ namespace PontelloApp.Controllers
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
-            user.IsActive = false;
+            user.Status = AccountStatus.Inactive;
             await _userManager.UpdateAsync(user);
 
             TempData["Message"] = $"User {user.Email} deactivated successfully.";
@@ -281,7 +321,7 @@ namespace PontelloApp.Controllers
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
-            user.IsActive = true;
+            user.Status = AccountStatus.Active;
             await _userManager.UpdateAsync(user);
 
             TempData["Message"] = $"User {user.Email} activated successfully.";
@@ -338,6 +378,46 @@ namespace PontelloApp.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApprovePendingConfirmed(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            user.Status = AccountStatus.Active;
+            var result = await _userManager.UpdateAsync(user);
+
+            TempData["Message"] = result.Succeeded
+                ? $"User {user.Email} approved and activated."
+                : $"Unable to approve user {user.Email}.";
+
+            return RedirectToAction("Accounts");
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectPendingConfirmed(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            user.Status = AccountStatus.Rejected;
+            var result = await _userManager.UpdateAsync(user);
+
+            TempData["Message"] = result.Succeeded
+                ? $"User {user.Email} rejected."
+                : $"Unable to reject user {user.Email}.";
+
+            return RedirectToAction("Accounts");
         }
     }
 }
