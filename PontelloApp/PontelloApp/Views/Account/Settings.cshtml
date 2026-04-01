@@ -1,85 +1,142 @@
-﻿@using PontelloApp.Models
+@using PontelloApp.Models
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<User> UserManager
 @inject SignInManager<User> SignInManager
-
 @model User
 
 @{
     ViewData["Title"] = "Account Settings";
+    var roles = await UserManager.GetRolesAsync(Model);
 }
 
-<div class="container py-5">
-    <h2 class="fw-bold mb-4">Account Settings</h2>
+<div class="container py-5" style="max-width: 720px;">
 
-    <div class="row">
-        <!-- LEFT: Profile Info -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm p-4 mb-4">
-                <h5 class="fw-bold mb-3">Profile Information</h5>
-                <div class="mb-2">
-                    <strong>Username:</strong> @Model.UserName
-                </div>
-                <div class="mb-2">
-                    <strong>Email:</strong> @Model.Email
-                </div>
-                <div class="mb-2">
-                    <strong>Roles:</strong> @string.Join(", ", await UserManager.GetRolesAsync(Model))
-                </div>
-                <div class="mb-2">
-                    <strong>Phone Number:</strong> @Model.PhoneNumber
-                </div>
-            </div>
+    <div class="border-bottom border-dark border-2 pb-3 mb-4">
+        <h1 class="fs-3 fw-semibold mb-1">Account Settings</h1>
+        <span class="text-muted">@Model.Email</span>
+    </div>
 
-            <div class="card shadow-sm p-4 mb-4">
-                <h5 class="fw-bold mb-3">Update Profile</h5>
-                <form asp-action="UpdateProfile" asp-controller="Account" method="post">
-                    @Html.AntiForgeryToken()
-                    <div class="mb-3">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @* ── Profile summary ── *@
+    <div class="card border mb-3">
+        <div class="card-body">
+            <p class="text-uppercase fw-semibold mb-3" style="font-size: 11px; letter-spacing: .08em; color: #999;">Profile</p>
+            <dl class="row mb-0" style="font-size: 0.95rem;">
+                <dt class="col-sm-3 fw-normal text-muted">Name</dt>
+                <dd class="col-sm-9 fw-medium mb-2">@Model.FirstName @Model.LastName</dd>
+
+                <dt class="col-sm-3 fw-normal text-muted">Email</dt>
+                <dd class="col-sm-9 mb-2">@Model.Email</dd>
+
+                <dt class="col-sm-3 fw-normal text-muted">Phone</dt>
+                <dd class="col-sm-9 mb-2">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "—" : Model.PhoneNumber)</dd>
+
+                <dt class="col-sm-3 fw-normal text-muted">Role</dt>
+                <dd class="col-sm-9 mb-0">
+                    @if (roles.Any())
+                    {
+                        foreach (var r in roles)
+                        {
+                            <span class="badge bg-dark rounded-pill me-1">@r</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    @* ── Update profile ── *@
+    <div class="card border mb-3">
+        <div class="card-body">
+            <p class="text-uppercase fw-semibold mb-3" style="font-size: 11px; letter-spacing: .08em; color: #999;">Update profile</p>
+            <form asp-action="UpdateProfile" asp-controller="Account" method="post">
+                @Html.AntiForgeryToken()
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label">First name</label>
+                        <input type="text" name="FirstName" value="@Model.FirstName" class="form-control" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Last name</label>
+                        <input type="text" name="LastName" value="@Model.LastName" class="form-control" required />
+                    </div>
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
                         <label class="form-label">Email</label>
                         <input type="email" name="Email" value="@Model.Email" class="form-control" required />
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Phone Number</label>
+                    <div class="col-sm-6">
+                        <label class="form-label">Phone number</label>
                         <input type="tel" name="PhoneNumber" value="@Model.PhoneNumber" class="form-control" />
                     </div>
-                    <button type="submit" class="btn btn-dark">Update Profile</button>
-                </form>
-            </div>
-
-            <div class="card shadow-sm p-4">
-                <h5 class="fw-bold mb-3">Change Password</h5>
-                <form asp-action="ChangePassword" asp-controller="Account" method="post">
-                    @Html.AntiForgeryToken()
-                    <div class="mb-3">
-                        <label class="form-label">Current Password</label>
-                        <input type="password" name="CurrentPassword" class="form-control" required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">New Password</label>
-                        <input type="password" name="NewPassword" class="form-control" required />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Confirm New Password</label>
-                        <input type="password" name="ConfirmPassword" class="form-control" required />
-                    </div>
-                    <button type="submit" class="btn btn-dark">Change Password</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- RIGHT: Actions -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm p-4">
-                <h5 class="fw-bold mb-3">Actions</h5>
-                <p class="mb-3">You can log out from this account anytime.</p>
-                <form asp-action="Logout" asp-controller="Account" method="post">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-outline-danger w-100">Logout</button>
-                </form>
-            </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-dark px-4">Save changes</button>
+                </div>
+            </form>
         </div>
     </div>
+
+    @* ── Change password ── *@
+    <div class="card border mb-3">
+        <div class="card-body">
+            <p class="text-uppercase fw-semibold mb-3" style="font-size: 11px; letter-spacing: .08em; color: #999;">Change password</p>
+            <form asp-action="ChangePasswordSettings" asp-controller="Account" method="post">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label class="form-label">Current password</label>
+                    <input type="password" name="CurrentPassword" class="form-control" required />
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <label class="form-label">New password</label>
+                        <input type="password" name="NewPassword" class="form-control" required />
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Confirm new password</label>
+                        <input type="password" name="ConfirmPassword" class="form-control" required />
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-dark px-4">Update password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @* ── Sign out ── *@
+    <div class="card border">
+        <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <p class="text-uppercase fw-semibold mb-1" style="font-size: 11px; letter-spacing: .08em; color: #999;">Session</p>
+                <p class="text-muted mb-0" style="font-size: 0.9rem;">Sign out of your account on this device.</p>
+            </div>
+            <form asp-action="Logout" asp-controller="Account" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger px-4">Sign out</button>
+            </form>
+        </div>
+    </div>
+
 </div>
 
 @section Scripts {
