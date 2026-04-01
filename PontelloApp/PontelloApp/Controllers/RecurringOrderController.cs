@@ -207,23 +207,40 @@ namespace PontelloApp.Controllers
         private DateTime CalculateNextRun(RecurringOrder r)
         {
             var now = DateTime.Now;
-            var today = now.Date + r.TimeOfDay;
 
             if (r.Frequency == "Daily")
             {
-                return today > now ? today : today.AddDays(1);
+                var next = now.Date.Add(r.TimeOfDay);
+                return next > now ? next : next.AddDays(1);
             }
-            else if (r.Frequency == "Weekly")
+            else if (r.Frequency == "Weekly" && r.WeeklyDay.HasValue)
             {
-                int daysUntil = ((int)r.WeeklyDay!.Value - (int)now.DayOfWeek + 7) % 7;
-                var next = now.Date.AddDays(daysUntil) + r.TimeOfDay;
+                int today = (int)now.DayOfWeek;
+                int target = (int)r.WeeklyDay.Value;
+
+                int daysUntil = (target - today + 7) % 7;
+                var next = now.Date.AddDays(daysUntil).Add(r.TimeOfDay);
+
                 return next > now ? next : next.AddDays(7);
             }
-            else if (r.Frequency == "Monthly")
+            else if (r.Frequency == "Monthly" && r.MonthlyDay.HasValue)
             {
-                var next = new DateTime(now.Year, now.Month, r.MonthlyDay!.Value)
-                           .Add(r.TimeOfDay);
-                if (next <= now) next = next.AddMonths(1);
+                int day = r.MonthlyDay.Value;
+
+                int daysInMonth = DateTime.DaysInMonth(now.Year, now.Month);
+                day = Math.Min(day, daysInMonth);
+
+                var next = new DateTime(now.Year, now.Month, day).Add(r.TimeOfDay);
+
+                if (next <= now)
+                {
+                    var nextMonth = now.AddMonths(1);
+                    int daysNextMonth = DateTime.DaysInMonth(nextMonth.Year, nextMonth.Month);
+                    day = Math.Min(r.MonthlyDay.Value, daysNextMonth);
+
+                    next = new DateTime(nextMonth.Year, nextMonth.Month, day).Add(r.TimeOfDay);
+                }
+
                 return next;
             }
 
@@ -239,224 +256,80 @@ namespace PontelloApp.Controllers
                 .ThenInclude(i => i.Product)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
-            if (order == null)
-                return NotFound();
+            if (order == null) return NotFound();
+            if (string.IsNullOrWhiteSpace(order.Shipping?.Email)) return Ok();
 
-            if (order.Shipping == null)
-                order.Shipping = new Shipping();
+            var nextRun = model.NextRun;
 
-            // Add shipping cost to total
+            var warningTime = nextRun.AddHours(-4);
 
-            order.IsRecurringGenerated = true;
+            if (warningTime <= DateTime.Now)
+                warningTime = DateTime.Now.AddMinutes(1);
 
-            ////Add recurring cost
-            //CalculateTotal(model.OriginalOrderId, order.Shipping);
+            // send order
+            var sendOrderTime = nextRun;
 
-            // Recalculate totals including shipping
-            var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
+            bool exists = _context.ScheduledEmails.Any(e =>
+                e.RecurringOrderId == model.Id &&
+                e.NextSendAt == sendOrderTime
+            );
 
-            // Keep existing tax amount (tax already calculated when shipping was first saved). If you need to recalc,
-            // you can adopt the same BIN/EIN logic used elsewhere. Here we preserve order.TaxAmount.
-            var tax = order.TaxAmount;
+            if (exists) return Ok();
 
-            order.TotalAmount = Math.Round(subtotal + tax + (order.Shipping?.ShippingCost ?? 0m), 2);
+            // PDF
+            byte[] pdfBytes = GeneratePurchaseOrderPdf(order);
+            string tempPath = Path.Combine(Path.GetTempPath(), $"PO_{order.PONumber}.pdf");
+            System.IO.File.WriteAllBytes(tempPath, pdfBytes);
 
-            await _context.SaveChangesAsync();
+            string subject = $"Your Pontello Order {order.PONumber}";
 
-            //Time to send Order Message
-            DateTime SendAt = DateTime.Now;
+            string warningBody = $@"
+        <p>Hi {order.Shipping.FullName},</p>
+        <p>Your recurring order will be processed in <strong>4 hours</strong>.</p>
+        <p>You can still make changes before it is processed.</p>";
 
-            //Time to send Recur Message
-            DateTime SendAt1 = DateTime.Now;
+            string paymentBody = $@"
+        <p>Hi {order.Shipping.FullName},</p>
+        <p>Your recurring order has been processed.</p>";
 
-            DateTime SendAt2 = DateTime.Now;
-
-
-            var recurring = await _context.RecurringOrders.FindAsync(model.Id);
-            recurring.OriginalOrderId = order.Id;
-            await _context.SaveChangesAsync();
-
-            var now = DateTime.Now;
-var today = now.Date + model.TimeOfDay;
-
-//Daily
-TimeSpan Interval1 = TimeSpan.FromMinutes(3);
-TimeSpan Interval2 = TimeSpan.FromMinutes(4);
-TimeSpan Interval = TimeSpan.FromMinutes(6);
-
-// Generate PO PDF bytes
-byte[] pdfBytes = GeneratePurchaseOrderPdf(order);
-
-if (!string.IsNullOrWhiteSpace(order.Shipping?.Email))
-{
-    string subject = $"Your Pontello Order {order.PONumber}";
-    //original message
-    string body = $@"
-                <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
-
-                <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>
-
-                <p>Thank you for your order! We're excited to let you know that your purchase has been received and is being processed.</p>
-
-                <p>You can find your Purchase Order attached for your reference.</p>
-
-                <hr style=""border:none; border-top:1px solid #eee; margin:20px 0;"" />
-
-                <p style=""font-size:12px; color:#777;"">
-                    Pontello Team<br/>
-                    Questions? Reply to this email 
-                </p>
-            </div>";
-
-    string bodyR = $@"
-                <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
-
-                <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>
-
-                <p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 4 hours before being order is shipped.</p>;
-
-                <p>You can find your Purchase Order attached for your reference.</p>
-
-                <hr style=""border:none; border-top:1px solid #eee; margin:20px 0;"" />
-
-                <p style=""font-size:12px; color:#777;"">
-                    Pontello Team<br/>
-                    Questions? Reply to this email 
-                </p>
-            </div>";
-
-    //recurr message
-    string body1 = $@"
-                <div style=""font-family: Arial, sans-serif; font-size: 14px; color: #333; text-align: left;"">
-
-                <p>Hi <strong>{order.Shipping.FullName}</strong>,</p>";
-
-
-    //adjust when to send message
-    if (model.TimeOfDay.TotalMinutes == DateTime.UtcNow.TimeOfDay.TotalMinutes)
-    {
-        SendAt2 = DateTime.UtcNow.AddHours(20);
-        SendAt = DateTime.UtcNow.AddDays(1);
-    }
-    else if (model.TimeOfDay.TotalMinutes < DateTime.UtcNow.TimeOfDay.TotalMinutes)
-    {
-        SendAt2 = DateTime.UtcNow.AddMinutes(1220 - DateTime.UtcNow.TimeOfDay.TotalMinutes + model.TimeOfDay.TotalMinutes);
-        SendAt = DateTime.UtcNow.AddMinutes(1440 - DateTime.UtcNow.TimeOfDay.TotalMinutes + model.TimeOfDay.TotalMinutes);
-
-    }
-    else if (model.TimeOfDay.TotalMinutes > DateTime.UtcNow.TimeOfDay.TotalMinutes)
-    {
-        SendAt2 = DateTime.UtcNow.AddHours(20).AddMinutes(DateTime.UtcNow.TimeOfDay.TotalMinutes - model.TimeOfDay.TotalMinutes);
-        SendAt = DateTime.UtcNow.AddDays(1).AddMinutes(DateTime.UtcNow.TimeOfDay.TotalMinutes - model.TimeOfDay.TotalMinutes);
-    }
-
-    if (model.Frequency == "Daily")
-    {
-        body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 4 hours before being order is shipped.</p>";
-        SendAt1 = DateTime.Now.AddHours(20);
-    }
-    else if (model.Frequency == "Weekly")
-    {
-        body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 3 Days before being order is shipped.</p>";
-        SendAt1 = DateTime.Now.AddDays(3);
-        SendAt2.AddDays(6);
-        SendAt.AddDays(6);
-    
-    }
-    else if (model.Frequency == "Monthly")
-    {
-        body1 += $@"<p>Thank you for your order! This is a reminder that your order is recurred {model.Frequency}. You have 15 Days before being order is shipped.</p>";
-        //TimeSpan Interval = TimeSpan.FromDays(model.MonthlyDay.Value);
-        SendAt1 = DateTime.Now.AddDays(14);
-        SendAt2 = DateTime.Now.AddMonths(1).AddDays(6); //should add change based on each month later
-        SendAt = DateTime.Now.AddMonths(1);
-    }
-
-    body1 += @$"<p>You can find your Purchase Order attached for your reference.</p>
-
-                <hr style=""border:none; border-top:1px solid #eee; margin:20px 0;"" />
-
-                <p style=""font-size:12px; color:#777;"">
-                    Pontello Team<br/>
-                    Questions? Reply to this email 
-                </p>
-            </div>";
-
-    // Save pdf temporarily
-    // Generate PDF into temp file
-    string tempPath = Path.Combine(Path.GetTempPath(), $"PO_{order.PONumber}.pdf");
-
-    try
-    {
-        
-        // IMPORTANT: use System.IO.File
-        System.IO.File.WriteAllBytes(tempPath, pdfBytes);
-
-        //Recurr Message
-        var schedule1 = new ScheduledEmail
-        {
-            RecurringOrderId = model.Id,
-            OrderId = model.OriginalOrderId,
-            Email = order.Shipping.Email,
-            Subject = subject,
-            HtmlBody = body1,
-            AttachmentBytes = pdfBytes,
-            AttachmentName = tempPath,
-            NextSendAt = SendAt1,
-            Remninder = "FirstReminder",
-            PaymentTime = false
-        };
-
-        if (model.Frequency != "Daily")
-        {
-            //reminder 3-4 hour message
-            var schedule2 = new ScheduledEmail
+            // Warning email
+            var warningEmail = new ScheduledEmail
             {
                 RecurringOrderId = model.Id,
                 OrderId = model.OriginalOrderId,
                 Email = order.Shipping.Email,
                 Subject = subject,
-                HtmlBody = bodyR,
+                HtmlBody = warningBody,
                 AttachmentBytes = pdfBytes,
                 AttachmentName = tempPath,
-                NextSendAt = SendAt2,
-                Remninder = "LastReminder",
+                NextSendAt = warningTime,
+                Remninder = "4HourWarning",
                 PaymentTime = false
             };
 
-            _context.ScheduledEmails.Add(schedule2);
-        }
+            // Payment email
+            var paymentEmail = new ScheduledEmail
+            {
+                RecurringOrderId = model.Id,
+                OrderId = model.OriginalOrderId,
+                Email = order.Shipping.Email,
+                Subject = subject,
+                HtmlBody = paymentBody,
+                AttachmentBytes = pdfBytes,
+                AttachmentName = tempPath,
+                NextSendAt = sendOrderTime,
+                Remninder = "PaymentEmail",
+                PaymentTime = true
+            };
 
-        //Order Message
-        var schedule = new ScheduledEmail
-        {
-            RecurringOrderId = model.Id,
-            OrderId = null,
-            Email = order.Shipping.Email,
-            Subject = subject,
-            HtmlBody = body,
-            AttachmentBytes = pdfBytes,
-            AttachmentName = tempPath,
-            NextSendAt = SendAt,
-            //NextSendAt = CalculateNextRun(model), //unsure why the following line doesnt work correctly, test if same issue
-            Remninder = "PaymentEmail",
-            PaymentTime = true
-        };
+            _context.ScheduledEmails.Add(warningEmail);
+            _context.ScheduledEmails.Add(paymentEmail);
 
-        _context.ScheduledEmails.Add(schedule1);
-        _context.ScheduledEmails.Add(schedule);
-        await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
+            try { System.IO.File.Delete(tempPath); } catch { }
 
-                }
-                finally
-                {
-                    // optional: delete temp file after sending
-                    try { System.IO.File.Delete(tempPath); } catch { /* swallow */ }
-                }
-            }
-
-            return RedirectToAction("Index", "Order");
+            return Ok();
         }
 
         private byte[] GeneratePurchaseOrderPdf(Order order)
