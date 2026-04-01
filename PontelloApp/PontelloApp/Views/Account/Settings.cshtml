@@ -1,0 +1,87 @@
+﻿@using PontelloApp.Models
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<User> UserManager
+@inject SignInManager<User> SignInManager
+
+@model User
+
+@{
+    ViewData["Title"] = "Account Settings";
+}
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">Account Settings</h2>
+
+    <div class="row">
+        <!-- LEFT: Profile Info -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="fw-bold mb-3">Profile Information</h5>
+                <div class="mb-2">
+                    <strong>Username:</strong> @Model.UserName
+                </div>
+                <div class="mb-2">
+                    <strong>Email:</strong> @Model.Email
+                </div>
+                <div class="mb-2">
+                    <strong>Roles:</strong> @string.Join(", ", await UserManager.GetRolesAsync(Model))
+                </div>
+                <div class="mb-2">
+                    <strong>Phone Number:</strong> @Model.PhoneNumber
+                </div>
+            </div>
+
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="fw-bold mb-3">Update Profile</h5>
+                <form asp-action="UpdateProfile" asp-controller="Account" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="Email" value="@Model.Email" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" name="PhoneNumber" value="@Model.PhoneNumber" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-dark">Update Profile</button>
+                </form>
+            </div>
+
+            <div class="card shadow-sm p-4">
+                <h5 class="fw-bold mb-3">Change Password</h5>
+                <form asp-action="ChangePassword" asp-controller="Account" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" name="CurrentPassword" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">New Password</label>
+                        <input type="password" name="NewPassword" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" name="ConfirmPassword" class="form-control" required />
+                    </div>
+                    <button type="submit" class="btn btn-dark">Change Password</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- RIGHT: Actions -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm p-4">
+                <h5 class="fw-bold mb-3">Actions</h5>
+                <p class="mb-3">You can log out from this account anytime.</p>
+                <form asp-action="Logout" asp-controller="Account" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger w-100">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

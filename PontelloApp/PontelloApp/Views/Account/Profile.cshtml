@@ -1,0 +1,41 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using PontelloApp.Models
+@inject UserManager<User> UserManager
+
+@model PontelloApp.Models.User
+@{
+    ViewData["Title"] = "Profile";
+    var roles = await UserManager.GetRolesAsync(Model);
+}
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">Your Profile</h2>
+
+    <div class="card shadow-sm p-4">
+        <div class="row mb-3">
+            <div class="col-md-3 fw-bold">Full Name:</div>
+            <div class="col-md-9">@Model.FirstName @Model.LastName</div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3 fw-bold">Email:</div>
+            <div class="col-md-9">@Model.Email</div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3 fw-bold">Phone:</div>
+            <div class="col-md-9">@Model.PhoneNumber</div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-3 fw-bold">Role:</div>
+            <div class="col-md-9">@string.Join(", ", roles)</div>
+        </div>
+
+        <div class="mt-4">
+            <a asp-action="EditProfile" asp-controller="Account" class="btn btn-dark">
+                Edit Profile
+            </a>
+        </div>
+    </div>
+</div>
