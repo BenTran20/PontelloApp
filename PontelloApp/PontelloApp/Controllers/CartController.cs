@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using PontelloApp.Ultilities;
 
 namespace PontelloApp.Controllers
 {
+    [Authorize(Roles = "Dealer")]
     public class CartController : Controller
     {
         private readonly PontelloAppContext _context;
