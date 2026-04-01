@@ -23,12 +23,21 @@
         <a asp-action="Accounts" class="btn btn-sm btn-outline-secondary">← Back to Accounts</a>
     </div>
 
-    <!-- TempData message -->
-    @if (TempData["Message"] != null)
+    <!-- Success message -->
+    @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show fs-7" role="alert">
-            @TempData["Message"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Error message (from TempData) -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show fs-7" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
@@ -77,7 +86,7 @@
                 <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label class="form-label fs-7 fw-semibold">BIN / EIN</label>
-                        <input type="text" name="binOrEIN" class="form-control" value="@Model.BINorEIN" />
+                        <input type="text" name="BINorEIN" class="form-control" value="@Model.BINorEIN" />
                     </div>
                 </div>
 
