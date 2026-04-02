@@ -38,6 +38,23 @@ namespace PontelloApp.Controllers
             if (order == null)
                 return RedirectToAction("Cart", "Cart");
 
+            var user = await _userManager.GetUserAsync(User);
+
+            order.Shipping = new Shipping
+                {
+                    FullName = $"{user?.FirstName} {user?.LastName}",
+                    CompanyName = user?.CompanyName,
+                    Email = user?.Email,
+                    Phone = user?.PhoneNumber,
+                    StreetAddress = user?.AddressLine1,
+                    StreetAddress2 = user?.AddressLine2,
+                    City = user?.City,
+                    Province = user?.Province,
+                    PostalCode = user?.PostalCode,
+                    Country = user?.Country,
+                    BinOrEin = user?.BINorEIN
+                };
+
             return View(order);
         }
 
@@ -74,18 +91,16 @@ namespace PontelloApp.Controllers
             else
             {
                 order.Shipping.FullName = shipping.FullName;
+                order.Shipping.CompanyName = shipping.CompanyName;
                 order.Shipping.Email = shipping.Email;
                 order.Shipping.Phone = shipping.Phone;
-                if (!string.IsNullOrWhiteSpace(binOrEin))
-                {
-                    order.Shipping.BinOrEin = binOrEin;
-                    order.TaxAmount = 0m;
-                }
                 order.Shipping.StreetAddress = shipping.StreetAddress;
+                order.Shipping.StreetAddress2 = shipping.StreetAddress2;
                 order.Shipping.City = shipping.City;
                 order.Shipping.Province = shipping.Province;
                 order.Shipping.PostalCode = shipping.PostalCode;
                 order.Shipping.Country = shipping.Country;
+                order.Shipping.BinOrEin = shipping.BinOrEin;
                 order.Shipping.DeliveryNotes = shipping.DeliveryNotes;
             }
 
