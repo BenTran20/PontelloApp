@@ -54,6 +54,8 @@ namespace PontelloApp.Data
 
         public DbSet<ScheduledEmail> ScheduledEmails { get; set; }
 
+        public DbSet<Notification> Notifications { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //Prevent Cascade Delete from Category to Product
