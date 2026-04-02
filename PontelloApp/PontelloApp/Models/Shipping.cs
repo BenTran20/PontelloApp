@@ -67,6 +67,8 @@ namespace PontelloApp.Models
         public string Province { get; set; }
 
         [Display(Name = "Postal Code")]
+        [RegularExpression(@"^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$",
+            ErrorMessage = "Invalid Canadian postal code (e.g. L2S 3A1)")]
         [Required(ErrorMessage = "Postal Code is required.")]
         public string PostalCode { get; set; }
 
