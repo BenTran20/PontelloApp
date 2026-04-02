@@ -25,6 +25,9 @@ namespace PontelloApp.Models
         [Display(Name = "Full Name")]
         public string FullName { get; set; } = string.Empty;
 
+        [Display(Name = "Company Name")]
+        public string? CompanyName { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "Phone number is required.")]
         [RegularExpression(@"^[2-9]\d{2}[2-9]\d{6}$", ErrorMessage = "Enter a valid 10-digit phone number.")]
         [DataType(DataType.PhoneNumber)]
@@ -49,9 +52,13 @@ namespace PontelloApp.Models
         public string? DeliveryNotes { get; set; }
 
         //Address
-        [Required(ErrorMessage = "Street Address is required.")]
-        [Display(Name = "Street Address")]
+        [Required(ErrorMessage = "Line Address is required.")]
+        [Display(Name = "Line Address 1")]
         public string StreetAddress { get; set; }
+
+        //Address
+        [Display(Name = "Line Address 2")]
+        public string? StreetAddress2 { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "City is required.")]
         public string City { get; set; }
