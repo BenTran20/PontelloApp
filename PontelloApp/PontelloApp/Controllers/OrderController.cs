@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 using PontelloApp.Ultilities;
@@ -12,17 +14,19 @@ using System.IO;
 
 namespace PontelloApp.Controllers
 {
-    public class OrderController : Controller
+    public class OrderController : ElephantController
     {
         private readonly PontelloAppContext _context;
         private readonly EmailSender _emailSender;
         private readonly UserManager<User> _userManager;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public OrderController(PontelloAppContext context, EmailSender emailSender, UserManager<User> userManager)
+        public OrderController(PontelloAppContext context, EmailSender emailSender, UserManager<User> userManager, IHubContext<NotificationHub> hubContext  )
         {
             _context = context;
             _emailSender = emailSender;
             _userManager = userManager;
+            _hubContext = hubContext;
         }
 
         // GET: /Order
@@ -460,6 +464,27 @@ namespace PontelloApp.Controllers
             if (status == "Approved")
             {
                 order.Status = OrderStatus.Approved;
+
+                // Save notification
+                var notification = new Notification
+                {
+                    UserId = order.UserId, // dealer
+                    Title = "Order Approved",
+                    Message = $"Your order {order.PONumber} has been approved by Admin.",
+                    Type = "Order",
+                    Link = $"/Order/Details/{order.Id}"
+                };
+
+                _context.Add(notification);
+                await _context.SaveChangesAsync();
+
+                // Send realtime
+                await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveNotification", new
+                {
+                    Title = notification.Title,
+                    Message = notification.Message,
+                    CreatedAt = notification.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                });
             }
 
             // persist the created order (with its items and shipping placeholder)
