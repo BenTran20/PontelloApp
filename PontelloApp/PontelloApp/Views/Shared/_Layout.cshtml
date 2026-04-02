@@ -18,7 +18,10 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                <a class="navbar-brand d-flex align-items-center"
+                   asp-area=""
+                   asp-controller="@(User.IsInRole("Admin") ? "Product" : "ProductDealer")"
+                   asp-action="@(User.IsInRole("Admin") ? "Index" : "Index")">
                     <img src="~/Images/pontello-Imports-Logo.png"
                          alt="Pontello Logo"
                          height="40"
@@ -75,8 +78,8 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - PontelloApp - <a asp-area="" asp-controller="Home" asp-action="Privacy" style="color:#0246AC">Privacy</a>
-        </div>
+            &copy; 2026 - PontelloApp 
+@*             <a asp-area="" asp-controller="Home" asp-action="Privacy" style="color:#0246AC">Privacy</a>*@        </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
