@@ -1,0 +1,41 @@
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<User> UserManager
+@{
+    var userId = UserManager.GetUserId(User);
+    var notifications = ViewBag.Notifications as List<PontelloApp.Models.Notification> ?? new List<PontelloApp.Models.Notification>();
+    var unreadCount = notifications.Count(n => !n.IsRead);
+}
+
+<div class="dropdown">
+    <a class="nav-link position-relative" href="#" id="notificationDropdown" data-bs-toggle="dropdown">
+        <i class="bi bi-bell fs-5"></i>
+        @if (unreadCount > 0)
+        {
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                @unreadCount
+            </span>
+        }
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="notificationDropdown" style="min-width:300px; max-height:400px; overflow-y:auto;">
+        @if (notifications.Any())
+        {
+            @foreach (var n in notifications.OrderByDescending(x => x.CreatedAt))
+            {
+                <li class="dropdown-item @(!n.IsRead ? "fw-bold bg-light" : "")">
+                    <a href="@n.Link ?? " #"" class="text-decoration-none text-dark">
+                        <div>@n.Title</div>
+                        <small class="text-muted">@n.CreatedAt.ToString("g")</small>
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li class="dropdown-item text-center">
+                    <a href="@Url.Action("Index", "Notification")">View All Notifications</a>
+                </li>
+            }
+        }
+        else
+        {
+            <li class="dropdown-item text-muted">No notifications</li>
+        }
+    </ul>
+</div>
