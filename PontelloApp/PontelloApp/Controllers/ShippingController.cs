@@ -61,7 +61,7 @@ namespace PontelloApp.Controllers
         // POST: Shipping/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int orderId, [Bind("FullName,Email,Phone,StreetAddress,City,Province,PostalCode,Country,DeliveryNotes")] Shipping shipping)
+        public async Task<IActionResult> Create(int orderId, [Bind("FullName,CompanyName,Email,Phone,StreetAddress,City,Province,PostalCode,Country,DeliveryNotes")] Shipping shipping)
         {
             var order = await _context.Orders
                 .Include(o => o.Items)

@@ -44,6 +44,7 @@ namespace PontelloApp.Controllers
 
         // Optional: mark all as read
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> MarkAllAsRead()
         {
             var userId = _userManager.GetUserId(User);

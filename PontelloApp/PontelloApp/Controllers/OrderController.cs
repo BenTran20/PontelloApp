@@ -569,6 +569,24 @@ namespace PontelloApp.Controllers
                 }
             }
 
+            var notification = new Notification
+            {
+                UserId = order.UserId, // dealer
+                Title = "Order Shipped",
+                Message = $"Your order {order.PONumber} has been shipped. Tracking #: {TrackingNumber}.",
+                Type = "Order",
+                Link = $"/Order/Details/{order.Id}"
+            };
+            _context.Add(notification);
+            await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveNotification", new
+            {
+                Title = notification.Title,
+                Message = notification.Message,
+                CreatedAt = notification.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+            });
+
             return RedirectToAction("Admin");
         }
 
@@ -585,6 +603,23 @@ namespace PontelloApp.Controllers
 
             order.Status = OrderStatus.Rejected;
             order.RejectReason = reason;
+
+            var notification = new Notification
+            {
+                UserId = order.UserId,
+                Title = "Order Rejected",
+                Message = $"Your order {order.PONumber} was rejected. Reason: {reason}.",
+                Type = "Order",
+                Link = $"/Order/Details/{order.Id}"
+            };
+            _context.Add(notification);
+            await _context.SaveChangesAsync();
+            await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveNotification", new
+            {
+                Title = notification.Title,
+                Message = notification.Message,
+                CreatedAt = notification.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+            });
 
             await _context.SaveChangesAsync();
 
