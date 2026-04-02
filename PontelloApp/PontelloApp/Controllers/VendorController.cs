@@ -8,7 +8,7 @@ using PontelloApp.Models;
 
 namespace PontelloApp.Controllers
 {
-    public class VendorController : Controller
+    public class VendorController : ElephantController
     {
         private readonly PontelloAppContext _context;
 

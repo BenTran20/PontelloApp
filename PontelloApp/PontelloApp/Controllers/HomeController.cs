@@ -1,10 +1,11 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Models;
+using System.Diagnostics;
 
 namespace PontelloApp.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : ElephantController
     {
         private readonly ILogger<HomeController> _logger;
 

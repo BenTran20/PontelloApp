@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 using QuestPDF.Fluent;
@@ -8,7 +9,7 @@ using QuestPDF.Fluent;
 namespace PontelloApp.Controllers
 {
     [Authorize(Roles = "Admin")]
-    public class ReportController : Controller
+    public class ReportController : ElephantController
     {
         private readonly PontelloAppContext _context;
 

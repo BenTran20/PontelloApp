@@ -12,7 +12,7 @@ using PontelloApp.Models;
 
 namespace PontelloApp.Controllers
 {
-    public class AddProductVariantController : CognizantController
+    public class AddProductVariantController : ElephantController
     {
         private readonly PontelloAppContext _context;
 

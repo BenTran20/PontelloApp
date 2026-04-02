@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 using PontelloApp.Ultilities;
@@ -10,7 +11,7 @@ using System.Timers;
 
 namespace PontelloApp.Controllers
 {
-    public class RecurringOrderController : Controller
+    public class RecurringOrderController : ElephantController
     {
         private readonly PontelloAppContext _context;
         private readonly IWebHostEnvironment _env;

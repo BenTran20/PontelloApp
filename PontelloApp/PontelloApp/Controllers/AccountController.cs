@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Models;
 using PontelloApp.ViewModels;
+using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace PontelloApp.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController : ElephantController
     {
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;

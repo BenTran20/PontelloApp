@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Build.Tasks.Deployment.Bootstrapper;
 using Microsoft.EntityFrameworkCore;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PontelloApp.Controllers
 {
-    public class ProductVariantController : Controller
+    public class ProductVariantController : ElephantController
     {
         private readonly PontelloAppContext _context;
 

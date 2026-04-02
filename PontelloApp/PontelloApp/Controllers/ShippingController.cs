@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 using PontelloApp.Ultilities;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace PontelloApp.Controllers
 {
-    public class ShippingController : Controller
+    public class ShippingController : ElephantController
     {
         private readonly PontelloAppContext _context;
         private readonly UserManager<User> _userManager;

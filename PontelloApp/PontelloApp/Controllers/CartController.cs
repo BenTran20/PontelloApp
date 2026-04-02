@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 using PontelloApp.Ultilities;
@@ -9,7 +10,7 @@ using PontelloApp.Ultilities;
 namespace PontelloApp.Controllers
 {
     [Authorize(Roles = "Dealer")]
-    public class CartController : Controller
+    public class CartController : ElephantController
     {
         private readonly PontelloAppContext _context;
         private readonly UserManager<User> _userManager;

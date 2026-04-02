@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
 
 namespace PontelloApp.Controllers
 {
-    public class NotificationController : Controller
+    public class NotificationController : ElephantController
     {
         private readonly PontelloAppContext _context;
         private readonly UserManager<User> _userManager;
