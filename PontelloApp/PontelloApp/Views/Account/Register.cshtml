@@ -15,7 +15,7 @@
     <form asp-action="Register" method="post" novalidate>
         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-        @*  Personal *@
+        <!--PERSONAL-->
         <div class="card border mb-3">
             <div class="card-body">
                 <h4>Personal Details</h4>
@@ -46,7 +46,7 @@
             </div>
         </div>
 
-        @*  Company  *@
+        <!--COMPANY-->
         <div class="card border mb-3">
             <div class="card-body">
                 <h4>Company</h4>
@@ -68,7 +68,7 @@
             </div>
         </div>
 
-        @*  Address *@
+        <!--ADDRESS-->
         <div class="card border mb-3">
             <div class="card-body">
                 <h4>Shipping / Billing Address</h4>
@@ -112,17 +112,33 @@
             </div>
         </div>
 
-        @*  Password  *@
+        <!--PASSWORD-->
         <div class="card border mb-4">
             <div class="card-body">
                 <h4>Password</h4>
 
                 <div class="row g-3">
+                    <!-- Password -->
                     <div class="col-sm-6">
                         <label asp-for="Password" class="form-label"></label>
                         <input asp-for="Password" type="password" class="form-control" />
+
+                        <!-- Password requirements -->
+                        <div class="form-text small mt-2">
+                            <i class="bi bi-shield-lock me-1"></i>
+                            Your password should include:
+                            <ul class="mb-0 mt-1 ps-3">
+                                <li>6+ characters</li>
+                                <li>Uppercase & lowercase letters</li>
+                                <li>At least one number</li>
+                                <li>At least one special character</li>
+                            </ul>
+                        </div>
+
                         <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
+
+                    <!-- Confirm Password -->
                     <div class="col-sm-6">
                         <label asp-for="ConfirmedPassword" class="form-label"></label>
                         <input asp-for="ConfirmedPassword" type="password" class="form-control" />
