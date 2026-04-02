@@ -91,3 +91,34 @@
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
 </script>
+
+<script src="~/lib/signalr/signalr.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationHub")
+        .build();
+
+    connection.on("ReceiveNotification", (notification) => {
+        // show toast
+        const toastHtml = `<div class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${notification.title}: ${notification.message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML("beforeend", toastHtml);
+        const toastEl = document.querySelector(".toast:last-child");
+        new bootstrap.Toast(toastEl, { delay: 5000 }).show();
+
+        // update bell unread count
+        const badge = document.querySelector("#notificationDropdown .badge");
+        if(badge) {
+            let count = parseInt(badge.textContent);
+            badge.textContent = count + 1;
+        }
+    });
+
+    connection.start().catch(err => console.error(err.toString()));
+</script>
