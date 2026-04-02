@@ -72,8 +72,18 @@ namespace PontelloApp.Controllers
                 LastName = model.LastName,
                 PhoneNumber = model.Phone,
                 Email = model.Email,
-                BINorEIN = model.BINorEIN,
                 UserName = model.Email,
+                BINorEIN = model.BINorEIN,
+                // Company
+                CompanyName = model.CompanyName,
+                // Address
+                AddressLine1 = model.AddressLine1,
+                AddressLine2 = model.AddressLine2,
+                City = model.City,
+                Province = model.Province,
+                PostalCode = model.PostalCode,
+                Country = model.Country,
+                // Status
                 Status = AccountStatus.Pending
             };
 
@@ -175,7 +185,11 @@ namespace PontelloApp.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateProfile(string FirstName, string LastName, string Email, string PhoneNumber)
+        public async Task<IActionResult> UpdateProfile(
+            string FirstName, string LastName, string Email, string PhoneNumber,
+            string CompanyName, string BINorEIN,
+            string AddressLine1, string AddressLine2,
+            string City, string Province, string PostalCode, string Country)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _userManager.FindByIdAsync(userId);
@@ -186,9 +200,20 @@ namespace PontelloApp.Controllers
             user.Email = Email;
             user.UserName = Email;
             user.PhoneNumber = PhoneNumber;
+            user.CompanyName = CompanyName;
+            user.BINorEIN = BINorEIN;
+            user.AddressLine1 = AddressLine1;
+            user.AddressLine2 = AddressLine2;
+            user.City = City;
+            user.Province = Province;
+            user.PostalCode = PostalCode;
+            user.Country = Country;
 
             var result = await _userManager.UpdateAsync(user);
-            TempData["SuccessMessage"] = result.Succeeded ? "Profile updated successfully." : "Update failed.";
+            if (result.Succeeded)
+                TempData["SuccessMessage"] = "Profile updated successfully.";
+            else
+                TempData["ErrorMessage"] = "Update failed.";
             return RedirectToAction("Settings");
         }
 
