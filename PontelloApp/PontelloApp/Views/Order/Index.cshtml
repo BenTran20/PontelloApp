@@ -3,6 +3,8 @@
 
 @{
     ViewData["Title"] = "My Orders";
+
+    int index = 1;
 }
 <div class="container-fluid mt-4">
     <!-- FILTER CARD -->
@@ -40,10 +42,7 @@
                             Status
                         </label>
                         @Html.DropDownList(
-                        "Status",
-                                                (SelectList)ViewData["OrderStatusID"],
-                                                "All Status",
-                                                new { @class = "form-select" })
+                        "Status", (SelectList)ViewData["OrderStatusID"], "All Status", new { @class = "form-select" })
                     </div>
 
                     <!-- SEARCH PO -->
@@ -54,10 +53,8 @@
 
                         <div class="input-group">
                             @Html.TextBox(
-                                                        "SearchString",
-                                                        null,
-                                                        new { @class = "form-control", placeholder = "Search PO #" })
-
+                            "SearchString", null,
+                            new { @class = "form-control", placeholder = "Search PO #" })
                             <button class="btn btn-outline-secondary" type="submit">
                                 <i class="bi bi-search"></i>
                             </button>
@@ -129,11 +126,13 @@
                             };
 
                             <tr>
-
                                 <!-- ID -->
                                 <td>
-                                    <span class="text-muted">#@o.Id</span>
+                                    <span class="text-muted">#@index</span>
                                 </td>
+                                @{
+                                    index++;
+                                }
 
                                 <!-- PO -->
                                 <td>
