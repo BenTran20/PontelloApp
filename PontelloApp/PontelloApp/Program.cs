@@ -86,10 +86,13 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
+builder.Services.AddSignalR();
 
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+app.MapHub<NotificationHub>("/notificationHub");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
