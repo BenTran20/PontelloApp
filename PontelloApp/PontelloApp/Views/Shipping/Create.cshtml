@@ -194,4 +194,20 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const postalInput = document.querySelector("[name='Shipping.PostalCode']");
+
+        if (postalInput) {
+            postalInput.addEventListener("input", function (e) {
+                let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+                if (value.length > 3) {
+                    value = value.slice(0, 3) + " " + value.slice(3, 6);
+                }
+
+                e.target.value = value;
+            });
+        }
+    </script>
 }
