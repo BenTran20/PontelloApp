@@ -21,21 +21,21 @@
             </div>
 
             <div class="mb-3 text-end">
-                <a asp-controller="Account" asp-action="VerifyEmail" class="text-decoration-none">
+                <a asp-controller="Account" asp-action="VerifyEmail" class="text-decoration">
                     Forgot password?
                 </a>
             </div>
 
             <div class="mb-3 form-check">
                 <input asp-for="RememberMe" class="form-check-input" />
-                <label class="form-check-label">@Html.DisplayNameFor(m => m.RememberMe)</label>
+                <label for="RememberMe" class="form-check-label">@Html.DisplayNameFor(m => m.RememberMe)</label>
             </div>
 
             <button type="submit" class="btn btn-success w-100 p-2">Login</button>
 
             <p class="text-center mt-3">
                 Don't have an account?
-                <a asp-controller="Account" asp-action="Register" class="text-decoration-none">Register</a>
+                <a asp-controller="Account" asp-action="Register" class="text-decoration">Register</a>
             </p>
         </form>
     </div>
