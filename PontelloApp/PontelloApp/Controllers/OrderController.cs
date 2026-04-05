@@ -490,16 +490,9 @@ namespace PontelloApp.Controllers
             // persist the created order (with its items and shipping placeholder)
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Order Status Confirmed";
+            TempData["Success"] = $"Order {order.PONumber} has been approved!";
             if (order.Status == OrderStatus.Approved)
-            {
                 TempData["Status"] = "Status: Approved";
-            }
-            else
-            {
-                TempData["Status"] = "Status: Rejected";
-            
-            }
 
             return RedirectToAction("Admin", "Order");
         }
@@ -579,10 +572,10 @@ namespace PontelloApp.Controllers
                     try { System.IO.File.Delete(tempPath); } catch { /* swallow */ }
                 }
 
-                TempData["Success"] = "Order Status Confirmed";
+                TempData["Success"] = $"Order {order.PONumber} has been shipped!";
                 if (order.Status == OrderStatus.Shipped)
                 {
-                    TempData["Status"] = "Status: Shipped";
+                    TempData["Status"] = "Status: Shipped ";
                 }
             }
 
@@ -631,6 +624,7 @@ namespace PontelloApp.Controllers
             };
             _context.Add(notification);
             await _context.SaveChangesAsync();
+
             await _hubContext.Clients.User(order.UserId).SendAsync("ReceiveNotification", new
             {
                 Title = notification.Title,
@@ -639,6 +633,12 @@ namespace PontelloApp.Controllers
             });
 
             await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"Order {order.PONumber} has been rejected.";
+            if (order.Status == OrderStatus.Rejected)
+            {
+                TempData["Status"] = "Status: Rejected";
+            }
 
             return RedirectToAction("Admin");
         }
