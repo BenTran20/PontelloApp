@@ -8,16 +8,18 @@
         <form asp-action="Login" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+            <!-- Email -->
             <div class="mb-3">
-                <label asp-for="Email"></label>
-                <input asp-for="Email" placeholder="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" id="Email" placeholder="Email" class="form-control" aria-describedby="Email-error" />
+                <span asp-validation-for="Email" id="Email-error" class="text-danger"></span>
             </div>
 
+            <!-- Password -->
             <div class="mb-3">
-                <label asp-for="Password"></label>
-                <input asp-for="Password" type="password" placeholder="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" id="Password" type="password" placeholder="Password" class="form-control" aria-describedby="Password-error" />
+                <span asp-validation-for="Password" id="Password-error" class="text-danger"></span>
             </div>
 
             <div class="mb-3 text-end">
@@ -27,8 +29,8 @@
             </div>
 
             <div class="mb-3 form-check">
-                <input asp-for="RememberMe" class="form-check-input" />
-                <label for="RememberMe" class="form-check-label">@Html.DisplayNameFor(m => m.RememberMe)</label>
+                <input asp-for="RememberMe" id="RememberMe" class="form-check-input" />
+                <label asp-for="RememberMe" class="form-check-label"></label>
             </div>
 
             <button type="submit" class="btn btn-success w-100 p-2">Login</button>
@@ -43,5 +45,7 @@
 
 @section Scripts
 {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial.cshtml");
+    }
 }
