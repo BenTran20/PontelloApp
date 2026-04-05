@@ -490,6 +490,17 @@ namespace PontelloApp.Controllers
             // persist the created order (with its items and shipping placeholder)
             await _context.SaveChangesAsync();
 
+            TempData["Success"] = "Order Status Confirmed";
+            if (order.Status == OrderStatus.Approved)
+            {
+                TempData["Status"] = "Status: Approved";
+            }
+            else
+            {
+                TempData["Status"] = "Status: Rejected";
+            
+            }
+
             return RedirectToAction("Admin", "Order");
         }
 
@@ -566,6 +577,12 @@ namespace PontelloApp.Controllers
                 {
                     // optional: delete temp file after sending
                     try { System.IO.File.Delete(tempPath); } catch { /* swallow */ }
+                }
+
+                TempData["Success"] = "Order Status Confirmed";
+                if (order.Status == OrderStatus.Shipped)
+                {
+                    TempData["Status"] = "Status: Shipped";
                 }
             }
 
