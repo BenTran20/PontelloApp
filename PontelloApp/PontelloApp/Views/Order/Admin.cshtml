@@ -12,6 +12,27 @@
     var scheduleCount = schedules?.Count() ?? 0;
 }
 
+@if (TempData["Success"] != null)
+{
+    <div id="successAlert" class="alert alert-success fade show">
+        <strong>
+            @TempData["Success"] <br />
+            @TempData["Status"]
+        </strong>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            const alert = document.getElementById("successAlert");
+            if (alert) {
+                alert.style.transition = "opacity 0.5s ease";
+                alert.style.opacity = "0";
+                setTimeout(() => alert.remove(), 500);
+            }
+        }, 4000);
+    </script>
+}
+
 <div class="container-fluid">
 
     <!-- Header -->
