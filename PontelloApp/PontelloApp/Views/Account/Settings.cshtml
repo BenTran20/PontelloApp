@@ -66,20 +66,20 @@
                         <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#53585D;">Personal details</p>
                         <div class="row g-3 mb-3">
                             <div class="col-sm-6">
-                                <label class="form-label">First name</label>
-                                <input type="text" name="FirstName" value="@Model.FirstName" class="form-control" required />
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" id="firstName" name="FirstName" value="@Model.FirstName" class="form-control" required />
                             </div>
                             <div class="col-sm-6">
-                                <label class="form-label">Last name</label>
-                                <input type="text" name="LastName" value="@Model.LastName" class="form-control" required />
+                                <label for="lastName" class="form-label">Last name</label>
+                                <input type="text" id="lastName" name="LastName" value="@Model.LastName" class="form-control" required />
                             </div>
                             <div class="col-sm-6">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="Email" value="@Model.Email" class="form-control" required />
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" id="email" name="Email" value="@Model.Email" class="form-control" required />
                             </div>
                             <div class="col-sm-6">
-                                <label class="form-label">Phone number</label>
-                                <input type="tel" name="PhoneNumber" value="@Model.PhoneNumber" class="form-control" />
+                                <label for="phoneNumber" class="form-label">Phone number</label>
+                                <input type="tel" id="phoneNumber" name="PhoneNumber" value="@Model.PhoneNumber" class="form-control" />
                             </div>
                         </div>
 
@@ -87,15 +87,15 @@
                         <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#53585D;">Company</p>
                         <div class="row g-3 mb-3">
                             <div class="col-sm-7">
-                                <label class="form-label">Company name</label>
-                                <input type="text" name="CompanyName" value="@Model.CompanyName" class="form-control" />
+                                <label for="companyName" class="form-label">Company name</label>
+                                <input type="text" id="companyName" name="CompanyName" value="@Model.CompanyName" class="form-control" />
                             </div>
                             <div class="col-sm-5">
-                                <label class="form-label">
+                                <label for="BINorEIN" class="form-label">
                                     BIN / EIN
                                     <span class="text-muted fw-normal">(optional)</span>
                                 </label>
-                                <input type="text" name="BINorEIN" value="@Model.BINorEIN" class="form-control" placeholder="12-3456789" />
+                                <input type="text" id="BINorEIN" name="BINorEIN" value="@Model.BINorEIN" class="form-control" placeholder="12-3456789" />
                                 <div class="form-text">Marks account as tax-exempt.</div>
                             </div>
                         </div>
@@ -104,28 +104,28 @@
                         <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#53585D;">Shipping / billing address</p>
                         <div class="row g-3 mb-3">
                             <div class="col-sm-7">
-                                <label class="form-label">Street address</label>
-                                <input type="text" name="AddressLine1" value="@Model.AddressLine1" class="form-control" placeholder="123 Main Street" />
+                                <label for="streetAddress" class="form-label">Street address</label>
+                                <input type="text" id="streetAddress" name="AddressLine1" value="@Model.AddressLine1" class="form-control" placeholder="123 Main Street" />
                             </div>
                             <div class="col-sm-5">
-                                <label class="form-label">Suite / Unit <span class="text-muted fw-normal">(optional)</span></label>
-                                <input type="text" name="AddressLine2" value="@Model.AddressLine2" class="form-control" placeholder="Suite 400" />
+                                <label for="SuiteorUnit" class="form-label">Suite / Unit <span class="text-muted fw-normal">(optional)</span></label>
+                                <input type="text" id="SuiteorUnit" name="AddressLine2" value="@Model.AddressLine2" class="form-control" placeholder="Suite 400" />
                             </div>
                             <div class="col-sm-4">
-                                <label class="form-label">City</label>
-                                <input type="text" name="City" value="@Model.City" class="form-control" />
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" id="city" name="City" value="@Model.City" class="form-control" />
                             </div>
                             <div class="col-sm-3">
-                                <label class="form-label">Province / State</label>
-                                <input type="text" name="Province" value="@Model.Province" class="form-control" placeholder="ON" />
+                                <label for="ProvinceorState" class="form-label">Province / State</label>
+                                <input type="text" id="ProvinceorState" name="Province" value="@Model.Province" class="form-control" placeholder="ON" />
                             </div>
                             <div class="col-sm-2">
-                                <label class="form-label">Postal / ZIP</label>
-                                <input type="text" name="PostalCode" value="@Model.PostalCode" class="form-control" />
+                                <label for="PostalorZip" class="form-label">Postal / ZIP</label>
+                                <input type="text" id="PostalorZip" name="PostalCode" value="@Model.PostalCode" class="form-control" />
                             </div>
                             <div class="col-sm-3">
-                                <label class="form-label">Country</label>
-                                <select name="Country" class="form-select">
+                                <label for="country" class="form-label">Country</label>
+                                <select name="Country" id=country class="form-select">
                                     <option value="Canada" selected="@(Model.Country == "Canada")">Canada</option>
                                     <option value="United States" selected="@(Model.Country == "United States")">United States</option>
                                 </select>
