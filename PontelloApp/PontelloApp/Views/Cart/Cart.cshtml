@@ -58,25 +58,20 @@
                                     <form asp-action="UpdateCart" asp-controller="Cart" method="post" class="d-flex justify-content-center">
                                         <input type="hidden" name="id" value="@item.Id" />
 
-                                        <button type="submit"
-                                                name="quantity"
-                                                value="@(item.Quantity - 1)"
-                                                class="btn btn-outline-dark btn-sm">
-                                            -
-                                        </button>
+                                         <button type="submit" name="action" value="minus" class="btn btn-outline-dark btn-sm">-</button>
 
-                                        <input type="text"
-                                               value="@item.Quantity"
-                                               class="form-control text-center mx-2"
-                                               style="width:60px;"
-                                               readonly />
-
-                                        <button type="submit"
+                                         <input type="text"
+                                                inputmode="numeric"
+                                                pattern="[0-9]*"
                                                 name="quantity"
-                                                value="@(item.Quantity + 1)"
-                                                class="btn btn-outline-dark btn-sm">
-                                            +
-                                        </button>
+                                                value="@item.Quantity"
+                                                class="form-control text-center mx-2 allow-enter"
+                                                style="width:60px;"
+                                                 />
+                                        
+                                         <button type="submit" name="action" value="plus" class="btn btn-outline-dark btn-sm">+</button>
+                                        
+                                         <button type="submit" class="d-none update-typed"></button>
                                     </form>
                                 </div>
 
@@ -179,3 +174,21 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+    $(function () {
+        $('.allow-enter').on('keydown', function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                    $(this).closest('form').submit(); // submit typed value
+
+            }
+        });
+
+        $('.allow-enter').on('change', function () {
+            $(this).closest('form').submit();
+        });
+    });
+</script>
+}
