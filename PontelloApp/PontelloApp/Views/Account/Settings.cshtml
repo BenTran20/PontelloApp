@@ -63,7 +63,7 @@
                     <form asp-action="UpdateProfile" asp-controller="Account" method="post">
                         @Html.AntiForgeryToken()
 
-                        <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#adb5bd;">Personal details</p>
+                        <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#53585D;">Personal details</p>
                         <div class="row g-3 mb-3">
                             <div class="col-sm-6">
                                 <label class="form-label">First name</label>
@@ -84,7 +84,7 @@
                         </div>
 
                         <hr class="my-3" />
-                        <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#adb5bd;">Company</p>
+                        <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#53585D;">Company</p>
                         <div class="row g-3 mb-3">
                             <div class="col-sm-7">
                                 <label class="form-label">Company name</label>
@@ -101,7 +101,7 @@
                         </div>
 
                         <hr class="my-3" />
-                        <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#adb5bd;">Shipping / billing address</p>
+                        <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#53585D;">Shipping / billing address</p>
                         <div class="row g-3 mb-3">
                             <div class="col-sm-7">
                                 <label class="form-label">Street address</label>
@@ -142,7 +142,7 @@
             @* ── Change password ── *@
             <div class="card border mb-3">
                 <div class="card-body">
-                    <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#adb5bd;">Change password</p>
+                    <p class="text-uppercase fw-semibold mb-3" style="font-size:12px; letter-spacing:.07em; color:#53585D;">Change password</p>
                     <form asp-action="ChangePasswordSettings" asp-controller="Account" method="post">
                         @Html.AntiForgeryToken()
                         <div class="row g-3 mb-3">
@@ -172,7 +172,7 @@
             <div class="card border">
                 <div class="card-body d-flex align-items-center justify-content-between gap-3 flex-wrap">
                     <div>
-                        <p class="text-uppercase fw-semibold mb-1" style="font-size:11px; letter-spacing:.07em; color:#adb5bd;">Session</p>
+                        <p class="text-uppercase fw-semibold mb-1" style="font-size:11px; letter-spacing:.07em; color:#53585D;">Session</p>
                         <p class="text-muted mb-0">Sign out of your account on this device.</p>
                     </div>
                     <form asp-action="Logout" asp-controller="Account" method="post">
