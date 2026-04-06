@@ -41,8 +41,15 @@ namespace PontelloApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateCart(int id, int quantity)
+        public async Task<IActionResult> UpdateCart(int id, int quantity, string action)
         {
+             // Handle + and -
+             if (action == "minus")
+                 quantity -= 1;
+            
+             if (action == "plus")
+                 quantity += 1;
+     
             var item = await _context.OrderItems
                 .Include(i => i.Order)
                     .ThenInclude(o => o.Items)
@@ -53,6 +60,11 @@ namespace PontelloApp.Controllers
             if (item == null)
             {
                 return RedirectToAction("Cart");
+            }
+
+            if (quantity > item.ProductVariant.StockQuantity)
+            {
+                quantity = (int)item.ProductVariant.StockQuantity;
             }
 
             var order = item.Order;
