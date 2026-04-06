@@ -6,7 +6,8 @@
     var subtotal = Model.Items.Sum(i => i.TotalPrice);
     var hasBin = !string.IsNullOrWhiteSpace(Model.Shipping?.BinOrEin);
     var tax = hasBin ? 0m : Math.Round(subtotal * 0.13m, 2);
-    var total = Math.Round(subtotal + tax, 2);
+    var shippingFee = subtotal >= 50m ? 0m : Math.Clamp(Math.Round(subtotal * 0.10m, 2), 2m, 15m);
+    var total = Math.Round(subtotal + tax + shippingFee, 2);
 }
 
 <div class="container-fluid py-2" style="max-width: 1150px;">
@@ -170,9 +171,16 @@
                         </span>
                         <span>@(hasBin ? "—" : $"${tax.ToString("F2")}")</span>
                     </div>
-                    <div class="d-flex justify-content-between mb-1  text-muted">
-                        <span>Shipping</span>
-                        <span>TBD</span>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted">Shipping</span>
+                        @if (shippingFee == 0)
+                        {
+                            <span class="text-success fw-semibold">Free</span>
+                        }
+                        else
+                        {
+                            <span>$@shippingFee.ToString("F2")</span>
+                        }
                     </div>
 
                     <hr class="my-2" />

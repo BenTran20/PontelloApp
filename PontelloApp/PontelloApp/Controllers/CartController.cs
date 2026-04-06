@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
-using PontelloApp.Ultilities;
 
 namespace PontelloApp.Controllers
 {
@@ -155,7 +154,7 @@ namespace PontelloApp.Controllers
                 Phone = string.Empty,
                 Email = string.Empty,
                 BinOrEin = string.Empty,
-                ShippingCost = 0m,
+                ShippingCost = null,
                 OrderId = order.Id
             };
 

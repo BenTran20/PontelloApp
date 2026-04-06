@@ -116,10 +116,10 @@
                     <h5 class="fw-bold mb-3">Order Summary</h5>
 
                     @{
-
                         var subtotal = Model.Items.Sum(i => i.TotalPrice);
                         var tax = Math.Round(subtotal * 0.13m, 2);
-                        var grandTotal = Math.Round(subtotal + tax, 2);
+                        var shippingFee = subtotal >= 50m ? 0m : Math.Clamp(Math.Round(subtotal * 0.10m, 2), 2m, 15m);
+                        var grandTotal = Math.Round(subtotal + tax + shippingFee, 2);
 
                     }
 
@@ -132,7 +132,17 @@
                         <span>Tax (13%): </span>
                         <span>$@tax.ToString("0.00")</span>
                     </div>
-
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping:</span>
+                        @if (shippingFee == 0)
+                        {
+                            <span class="text-success fw-semibold">Free</span>
+                        }
+                        else
+                        {
+                            <span>$@shippingFee.ToString("0.00")</span>
+                        }
+                    </div>
                     <hr />
 
                     <div class="d-flex justify-content-between fs-4 fw-bold mb-4">

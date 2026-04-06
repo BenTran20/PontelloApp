@@ -1,14 +1,9 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PontelloApp.Custom_Controllers;
 using PontelloApp.Data;
 using PontelloApp.Models;
-using PontelloApp.Ultilities;
-using QuestPDF.Fluent;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PontelloApp.Controllers
 {
@@ -42,19 +37,19 @@ namespace PontelloApp.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             order.Shipping = new Shipping
-                {
-                    FullName = $"{user?.FirstName} {user?.LastName}",
-                    CompanyName = user?.CompanyName,
-                    Email = user?.Email,
-                    Phone = user?.PhoneNumber,
-                    StreetAddress = user?.AddressLine1,
-                    StreetAddress2 = user?.AddressLine2,
-                    City = user?.City,
-                    Province = user?.Province,
-                    PostalCode = user?.PostalCode,
-                    Country = user?.Country,
-                    BinOrEin = user?.BINorEIN
-                };
+            {
+                FullName = $"{user?.FirstName} {user?.LastName}",
+                CompanyName = user?.CompanyName,
+                Email = user?.Email,
+                Phone = user?.PhoneNumber,
+                StreetAddress = user?.AddressLine1,
+                StreetAddress2 = user?.AddressLine2,
+                City = user?.City,
+                Province = user?.Province,
+                PostalCode = user?.PostalCode,
+                Country = user?.Country,
+                BinOrEin = user?.BINorEIN
+            };
 
             return View(order);
         }
@@ -107,13 +102,13 @@ namespace PontelloApp.Controllers
 
             // Recalculate tax and total on the order immediately so the saved order reflects exemption
             var subtotal = order.Items?.Sum(i => i.TotalPrice) ?? 0m;
-            
+
             var taxableSubtotal = order.Items?
                 .Where(i => i.ProductVariant != null &&
                             i.ProductVariant.Product != null &&
                             i.ProductVariant.Product.IsTaxable)
                 .Sum(i => i.TotalPrice) ?? 0m;
-            
+
             if (!string.IsNullOrWhiteSpace(order.Shipping?.BinOrEin))
             {
                 order.TaxAmount = 0m;
@@ -122,8 +117,15 @@ namespace PontelloApp.Controllers
             {
                 order.TaxAmount = Math.Round(taxableSubtotal * 0.13m, 2);
             }
-            
-            order.TotalAmount = Math.Round(subtotal + order.TaxAmount, 2);
+
+            decimal shippingFee = subtotal >= 50m
+                ? 0m
+                : Math.Clamp(Math.Round(subtotal * 0.10m, 2), 2m, 15m);
+
+            if (order.Shipping != null)
+                order.Shipping.ShippingCost = shippingFee;
+
+            order.TotalAmount = Math.Round(subtotal + order.TaxAmount + shippingFee, 2);
 
             // We will mark submitted now that shipping is provided.
             // Before persisting, decrement stock for each variant in an atomic transaction.
