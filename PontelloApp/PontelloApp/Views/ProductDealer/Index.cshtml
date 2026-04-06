@@ -109,7 +109,8 @@
                                             }
                                         </select>
 
-                                        <input type="number" name="quantity" value="1" min="1" class="form-control form-control-sm" style="max-width:20%;" />
+                                       <label for="quantity-@item.ID" class="visually-hidden">Quantity</label>
+                                       <input type="number" id="quantity-@item.ID" name="quantity" value="1" min="1" class="form-control form-control-sm" style="max-width:20%;" />
 
                                         <button type="submit" class="btn btn-outline-secondary btn-sm" style="min-width:110px;">
                                             <i class="bi bi-cart-plus me-1"></i> Add
